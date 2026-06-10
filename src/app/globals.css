@@ -3,6 +3,15 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+
+  /* TBS Admin palette */
+  --tbs-bg: #0a0f1e;
+  --tbs-surface: #0d1424;
+  --tbs-border: #1f2937;
+  --tbs-accent: #2563eb;
+  --tbs-accent-hover: #1d4ed8;
+  --tbs-text: #f9fafb;
+  --tbs-muted: #6b7280;
 }
 
 @theme inline {
