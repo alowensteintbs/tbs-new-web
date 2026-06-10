@@ -22,3 +22,19 @@ enum Role {
   ADMIN
   COMERCIAL
 }
+
+enum PageStatus {
+  DRAFT
+  PUBLISHED
+}
+
+model Page {
+  id           String     @id @default(cuid())
+  name         String
+  slug         String     @unique
+  figmaFileKey String
+  figmaNodeId  String
+  status       PageStatus @default(DRAFT)
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+}
