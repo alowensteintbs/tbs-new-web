@@ -18,26 +18,43 @@ function createClient() {
 const prisma = createClient();
 
 async function main() {
+  await seedSuperadmin();
+  await seedCurrencies();
+}
+
+async function seedSuperadmin() {
   const email = "admin@tradersbusinessschool.com";
   const existing = await prisma.user.findUnique({ where: { email } });
   if (existing) {
-    console.log("Superadmin already exists, skipping seed.");
+    console.log("Superadmin already exists, skipping.");
     return;
   }
 
   const passwordHash = await bcrypt.hash("TBS_Admin_2026!", 12);
   await prisma.user.create({
-    data: {
-      email,
-      passwordHash,
-      name: "Super Admin",
-      role: "SUPERADMIN",
-    },
+    data: { email, passwordHash, name: "Super Admin", role: "SUPERADMIN" },
   });
 
   console.log("Superadmin created:", email);
   console.log("Default password: TBS_Admin_2026!");
   console.log("IMPORTANT: Change this password after first login.");
+}
+
+const DEFAULT_CURRENCIES = [
+  { code: "EUR", name: "Euro", symbol: "€" },
+  { code: "MXN", name: "Peso mexicano", symbol: "$" },
+  { code: "USD", name: "US Dollar", symbol: "$" },
+];
+
+async function seedCurrencies() {
+  for (const currency of DEFAULT_CURRENCIES) {
+    await prisma.currency.upsert({
+      where: { code: currency.code },
+      update: {},
+      create: currency,
+    });
+  }
+  console.log(`Currencies seeded: ${DEFAULT_CURRENCIES.map((c) => c.code).join(", ")}`);
 }
 
 main()

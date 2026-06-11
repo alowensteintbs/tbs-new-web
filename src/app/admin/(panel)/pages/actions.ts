@@ -4,13 +4,8 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { db } from "@/lib/db";
-import { getSession } from "@/lib/auth/dal";
+import { requireSession } from "@/lib/auth/dal";
 import { deletePageFile, renamePageFile } from "@/lib/page-files";
-
-async function requireSession() {
-  const session = await getSession();
-  if (!session) redirect("/admin/login");
-}
 
 const pageSchema = z.object({
   name: z.string().min(1, "El nombre es requerido").max(100),
