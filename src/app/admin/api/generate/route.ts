@@ -2,9 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 import Anthropic from "@anthropic-ai/sdk";
 import { z } from "zod";
-import { resolveFigmaImageUrl } from "@/lib/figma";
 import { getSession } from "@/lib/auth/dal";
 import { writePageFile } from "@/lib/page-files";
+
+export const maxDuration = 120;
 
 const bodySchema = z.object({
   figmaFileKey: z.string().min(1),
@@ -13,9 +14,7 @@ const bodySchema = z.object({
   slug: z.string().min(1).regex(/^[a-z0-9-]+$/),
 });
 
-const client = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY!,
-});
+const client = new Anthropic();
 
 export async function POST(req: NextRequest) {
   const session = await getSession();
@@ -25,11 +24,10 @@ export async function POST(req: NextRequest) {
 
   const figmaToken = process.env.FIGMA_TOKEN;
   if (!figmaToken) {
-    return NextResponse.json({ error: "FIGMA_TOKEN no configurado en el servidor" }, { status: 500 });
+    return NextResponse.json({ error: "FIGMA_TOKEN no configurado" }, { status: 500 });
   }
 
-  const body = await req.json();
-  const parsed = bodySchema.safeParse(body);
+  const parsed = bodySchema.safeParse(await req.json());
   if (!parsed.success) {
     return NextResponse.json({ error: "Payload inválido" }, { status: 400 });
   }
@@ -37,111 +35,150 @@ export async function POST(req: NextRequest) {
   const { figmaFileKey, figmaNodeId, pageName, slug } = parsed.data;
 
   try {
-    // Fetch JSON del nodo e imagen PNG en paralelo
-    const [nodeRes, imgRes] = await Promise.all([
-      fetch(
-        `https://api.figma.com/v1/files/${figmaFileKey}/nodes?ids=${figmaNodeId}`,
-        { headers: { "X-Figma-Token": figmaToken } }
-      ),
-      fetch(
-        `https://api.figma.com/v1/images/${figmaFileKey}?ids=${figmaNodeId}&format=png&scale=2`,
-        { headers: { "X-Figma-Token": figmaToken } }
-      ),
-    ]);
+    const figmaJson = await fetchNodeTree(figmaFileKey, figmaNodeId, figmaToken);
+    const code = await generateCode(pageName, figmaJson);
 
-    if (!nodeRes.ok) {
-      const err = await nodeRes.json().catch(() => ({}));
-      return NextResponse.json(
-        { error: `Figma API error ${nodeRes.status}: ${(err as { err?: string }).err ?? "error desconocido"}` },
-        { status: 502 }
-      );
+    const validationError = validateGeneratedCode(code);
+    if (validationError) {
+      return NextResponse.json({ error: validationError, code }, { status: 502 });
     }
-    if (!imgRes.ok) {
-      return NextResponse.json({ error: `Figma Images API error ${imgRes.status}` }, { status: 502 });
-    }
-
-    const [figmaJson, imgData] = await Promise.all([
-      nodeRes.json(),
-      imgRes.json() as Promise<{ images?: Record<string, string> }>,
-    ]);
-
-    const imageUrl = resolveFigmaImageUrl(imgData.images ?? {}, figmaNodeId);
-    if (!imageUrl) {
-      return NextResponse.json({ error: "Figma no devolvió URL de imagen. Verificá el Node ID." }, { status: 502 });
-    }
-
-    const imageResponse = await fetch(imageUrl);
-    if (!imageResponse.ok) {
-      return NextResponse.json({ error: "No se pudo descargar la imagen de Figma" }, { status: 502 });
-    }
-    const base64Image = Buffer.from(await imageResponse.arrayBuffer()).toString("base64");
-
-    const message = await client.messages.create({
-      model: "claude-sonnet-4-6",
-      max_tokens: 8192,
-      messages: [
-        {
-          role: "user",
-          content: [
-            {
-              type: "image",
-              source: { type: "base64", media_type: "image/png", data: base64Image },
-            },
-            {
-              type: "text",
-              text: buildPrompt(pageName, figmaJson),
-            },
-          ],
-        },
-      ],
-    });
-
-    const textBlock = message.content.find(
-      (b): b is Extract<(typeof message.content)[number], { type: "text" }> => b.type === "text"
-    );
-    if (!textBlock) {
-      return NextResponse.json({ error: "Sin respuesta de texto del modelo" }, { status: 500 });
-    }
-
-    const match = textBlock.text.match(/```(?:tsx|jsx|typescript|ts)?\n([\s\S]*?)```/);
-    const code = match ? match[1].trim() : textBlock.text.trim();
 
     await writePageFile(slug, code);
     revalidatePath(`/${slug}`);
 
     return NextResponse.json({ code });
   } catch (e) {
-    const msg = e instanceof Error ? e.message : "Error interno";
-    return NextResponse.json({ error: msg }, { status: 500 });
+    console.error("[generate] error:", e);
+    const status = e instanceof FigmaError ? 502 : 500;
+    const message = e instanceof Error ? e.message : "Error interno";
+    return NextResponse.json({ error: message }, { status });
   }
 }
 
+// --- Figma -----------------------------------------------------------------
+
+class FigmaError extends Error {}
+
+const FIGMA_TIMEOUT_MS = 20_000;
+const FIGMA_MAX_RETRIES = 4;
+
+/** Fetch a la API de Figma que reintenta ante 429/503, respetando Retry-After. */
+async function figmaFetch(url: string, token: string): Promise<Response> {
+  for (let attempt = 0; ; attempt++) {
+    const res = await fetch(url, {
+      headers: { "X-Figma-Token": token },
+      signal: AbortSignal.timeout(FIGMA_TIMEOUT_MS),
+    });
+
+    if ((res.status !== 429 && res.status !== 503) || attempt >= FIGMA_MAX_RETRIES) {
+      return res;
+    }
+
+    const retryAfter = Number(res.headers.get("retry-after"));
+    const delay = Number.isFinite(retryAfter) && retryAfter > 0
+      ? retryAfter * 1_000
+      : 1_000 * 2 ** attempt;
+    await new Promise((r) => setTimeout(r, Math.min(delay, 30_000)));
+  }
+}
+
+// Cache del árbol por (file:node) durante 10 min: regenerar la misma página
+// no vuelve a pegarle a Figma, evitando rate limits al iterar.
+const nodeCache = new Map<string, { expires: number; tree: unknown }>();
+const NODE_CACHE_TTL_MS = 10 * 60 * 1_000;
+
+async function fetchNodeTree(fileKey: string, nodeId: string, token: string): Promise<unknown> {
+  const key = `${fileKey}:${nodeId}`;
+  const cached = nodeCache.get(key);
+  if (cached && cached.expires > Date.now()) return cached.tree;
+
+  const res = await figmaFetch(
+    `https://api.figma.com/v1/files/${fileKey}/nodes?ids=${nodeId}`,
+    token
+  );
+  if (!res.ok) {
+    const err = (await res.json().catch(() => ({}))) as { err?: string };
+    throw new FigmaError(`Figma API error ${res.status}: ${err.err ?? "error desconocido"}`);
+  }
+
+  const tree = await res.json();
+  nodeCache.set(key, { expires: Date.now() + NODE_CACHE_TTL_MS, tree });
+  return tree;
+}
+
+// --- Generación ------------------------------------------------------------
+
+async function generateCode(pageName: string, figmaJson: unknown): Promise<string> {
+  const stream = client.messages.stream({
+    model: "claude-opus-4-8",
+    max_tokens: 16000,
+    system: SYSTEM_PROMPT,
+    messages: [{ role: "user", content: buildPrompt(pageName, figmaJson) }],
+  });
+
+  const message = await stream.finalMessage();
+  if (message.stop_reason === "max_tokens") {
+    throw new FigmaError("La respuesta se cortó por límite de tokens. Probá con una sección más chica.");
+  }
+
+  const text = message.content.find((b) => b.type === "text");
+  if (!text || text.type !== "text") {
+    throw new Error("Sin respuesta de texto del modelo.");
+  }
+  return extractCode(text.text);
+}
+
+const SYSTEM_PROMPT = `You are an expert Next.js 16 + React developer. You convert a Figma design's JSON node structure into production-ready Next.js page components.
+
+You receive the Figma node tree (JSON): each node has its type, name, text content, colors (fills/strokes), typography (font family, size, weight, line height), layout (auto-layout direction, spacing, padding, alignment), corner radius, and absolute size. Derive the visual design entirely from this tree.
+
+Output format (CRITICAL):
+- Output ONLY raw TSX code. No markdown fences, no \`\`\`tsx wrapper, no explanation, no prose before or after.
+- The very first character MUST be "import" or "export". The very last character MUST be the closing brace of the component.
+
+Code requirements:
+1. Default export named after the page (PascalCase + "Page" suffix).
+2. MUST be a React Server Component:
+   - NO "use client". NO useState/useEffect/useRef/any hook. NO onClick/onChange/onSubmit/any event handler.
+   - <form>: static markup only (inputs, labels, button). No onSubmit, no action prop.
+3. Next.js primitives: import Link from "next/link" for internal navigation (href starting with "/"). Use <a> only for external links.
+4. Icons/vectors: inline <svg> matching the design. Do NOT import any icon library.
+5. Images: do NOT import real images. Use placeholder <div> with bg-gradient-to-br + the right colors and aspect ratios, sized correctly.
+6. Styling: Tailwind CSS v4 utilities only. Use the EXACT colors (hex), spacing, sizes and typography from the JSON. TBS tokens where they fit: bg-[#0A0F1E], bg-[#0D1424], text-[#F9FAFB], text-[#6B7280], border-[#1F2937], bg-[#2563EB], hover:bg-[#1D4ED8].
+7. Semantic HTML (<header>, <main>, <section>, <footer>, <nav>, <article>), fully responsive (sm:/md:/lg:). Reproduce ALL nodes/sections in the tree, in order.
+8. Self-contained. Only allowed imports: "next/link", "next/image". Do not import React.
+9. No comments explaining JSX. Finish the component completely — never stop mid-element. If running out of space, simplify SVG icons rather than truncating.`;
+
 function buildPrompt(pageName: string, figmaJson: unknown): string {
-  const componentName = toPascalCase(pageName);
-  const jsonStr = JSON.stringify(figmaJson).slice(0, 8000);
+  return `Page name: "${pageName}"
+Expected component: export default function ${toPascalCase(pageName)}Page() { ... }
 
-  return `You are an expert frontend developer. Convert the provided Figma design screenshot and its JSON node structure into a production-ready React component.
+Figma node tree (JSON):
+${JSON.stringify(figmaJson).slice(0, 30000)}
 
-Page name: "${pageName}"
+Reproduce every section in the tree faithfully, using the exact colors, typography, spacing and layout encoded in the nodes.`;
+}
 
-Figma node structure (JSON):
-${jsonStr}
+// --- Helpers ---------------------------------------------------------------
 
-Rules:
-1. Output ONLY the TSX component code inside a single \`\`\`tsx code fence — no explanation, no prose.
-2. Use Tailwind CSS v4 utility classes for ALL styling. No external CSS.
-3. Use these TBS design tokens where applicable:
-   - Dark backgrounds: bg-[#0A0F1E], bg-[#0D1424]
-   - Text: text-[#F9FAFB], text-[#6B7280]
-   - Border: border-[#1F2937]
-   - Accent: bg-[#2563EB], hover:bg-[#1D4ED8]
-4. The component must be a DEFAULT export: export default function ${componentName}Page() { ... }
-5. Reproduce ALL sections visible in the screenshot as accurately as possible.
-6. Use semantic HTML elements: header, main, section, footer, nav, article.
-7. Make it fully responsive using Tailwind responsive prefixes (sm:, md:, lg:).
-8. Do NOT import any external icon libraries — use inline SVG elements.
-9. Do NOT import any images — use placeholder divs or CSS gradients instead.
-10. The component must be self-contained with no external dependencies other than React.`;
+function validateGeneratedCode(code: string): string | null {
+  if (!code) return "El modelo no devolvió código.";
+  if (!/export\s+default\s+function/.test(code)) return "El código no tiene un default export.";
+  if (/^\s*["']use client["']/m.test(code)) return "El código usa \"use client\" — debería ser Server Component.";
+
+  const open = (code.match(/\{/g) ?? []).length;
+  const close = (code.match(/\}/g) ?? []).length;
+  if (open !== close) return `Llaves desbalanceadas (${open}/${close}). Posible truncado.`;
+
+  if (/<svg[^>]*$/.test(code) || /viewBox\s*=\s*"[^"]*$/.test(code)) {
+    return "El código parece truncado dentro de un SVG.";
+  }
+  return null;
+}
+
+function extractCode(raw: string): string {
+  const fenceMatch = raw.match(/```(?:tsx|jsx|typescript|ts)?\s*\n([\s\S]*?)```/);
+  return (fenceMatch ? fenceMatch[1] : raw).trim();
 }
 
 function toPascalCase(str: string): string {
