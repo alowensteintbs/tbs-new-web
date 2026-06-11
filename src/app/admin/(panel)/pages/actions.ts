@@ -47,8 +47,8 @@ export async function createPage(
     return { fieldErrors: z.flattenError(parsed.error).fieldErrors };
   }
   const page = await db.page.create({ data: parsed.data });
-  revalidatePath("/admin/paginas");
-  redirect(`/admin/paginas/${page.id}`);
+  revalidatePath("/admin/pages");
+  redirect(`/admin/pages/${page.id}`);
 }
 
 export async function updatePage(
@@ -78,8 +78,8 @@ export async function updatePage(
     revalidatePath(`/${previous.slug}`);
     revalidatePath(`/${data.slug}`);
   }
-  revalidatePath("/admin/paginas");
-  revalidatePath(`/admin/paginas/${id}`);
+  revalidatePath("/admin/pages");
+  revalidatePath(`/admin/pages/${id}`);
   return {};
 }
 
@@ -94,5 +94,5 @@ export async function deletePage(id: string): Promise<void> {
     await deletePageFile(page.slug);
     revalidatePath(`/${page.slug}`);
   }
-  revalidatePath("/admin/paginas");
+  revalidatePath("/admin/pages");
 }

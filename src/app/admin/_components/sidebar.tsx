@@ -17,7 +17,7 @@ const navItems = [
     ),
   },
   {
-    href: "/admin/paginas",
+    href: "/admin/pages",
     label: "Páginas",
     icon: (
       <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>

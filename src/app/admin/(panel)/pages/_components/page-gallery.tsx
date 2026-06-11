@@ -102,13 +102,13 @@ export function PageGallery({ pages, thumbnails }: Props) {
 
               <div className="mt-4 flex items-center gap-2">
                 <Link
-                  href={`/admin/paginas/${page.id}/generar`}
+                  href={`/admin/pages/${page.id}/generate`}
                   className="flex-1 rounded-lg bg-blue-600 px-3 py-2 text-center text-xs font-semibold text-white transition hover:bg-blue-700"
                 >
                   Generar
                 </Link>
                 <Link
-                  href={`/admin/paginas/${page.id}`}
+                  href={`/admin/pages/${page.id}`}
                   className="rounded-lg border border-gray-200 px-3 py-2 text-xs font-medium text-gray-600 transition hover:bg-gray-50"
                 >
                   Editar

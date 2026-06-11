@@ -31,7 +31,7 @@ export default async function GenerarPage({
     <div className="space-y-6">
       <div className="flex items-center gap-3">
         <Link
-          href={`/admin/paginas/${id}`}
+          href={`/admin/pages/${id}`}
           className="text-sm text-gray-500 hover:text-gray-700"
         >
           ← Volver

@@ -60,7 +60,7 @@ export default async function PaginasPage() {
           </p>
         </div>
         <Link
-          href="/admin/paginas/nueva"
+          href="/admin/pages/new"
           className="rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-700"
         >
           + Nueva página

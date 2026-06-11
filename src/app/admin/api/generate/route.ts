@@ -29,7 +29,7 @@ export async function POST(req: NextRequest) {
 
   const parsed = bodySchema.safeParse(await req.json());
   if (!parsed.success) {
-    return NextResponse.json({ error: "Payload inválido" }, { status: 400 });
+    return NextResponse.json({ error: "Datos inválidos" }, { status: 400 });
   }
 
   const { figmaFileKey, figmaNodeId, pageName, slug } = parsed.data;
@@ -38,75 +38,56 @@ export async function POST(req: NextRequest) {
     const figmaJson = await fetchNodeTree(figmaFileKey, figmaNodeId, figmaToken);
     const code = await generateCode(pageName, figmaJson);
 
-    const validationError = validateGeneratedCode(code);
-    if (validationError) {
-      return NextResponse.json({ error: validationError, code }, { status: 502 });
-    }
-
     await writePageFile(slug, code);
     revalidatePath(`/${slug}`);
 
     return NextResponse.json({ code });
   } catch (e) {
-    console.error("[generate] error:", e);
-    const status = e instanceof FigmaError ? 502 : 500;
-    const message = e instanceof Error ? e.message : "Error interno";
-    return NextResponse.json({ error: message }, { status });
-  }
-}
-
-// --- Figma -----------------------------------------------------------------
-
-class FigmaError extends Error {}
-
-const FIGMA_TIMEOUT_MS = 20_000;
-const FIGMA_MAX_RETRIES = 4;
-
-/** Fetch a la API de Figma que reintenta ante 429/503, respetando Retry-After. */
-async function figmaFetch(url: string, token: string): Promise<Response> {
-  for (let attempt = 0; ; attempt++) {
-    const res = await fetch(url, {
-      headers: { "X-Figma-Token": token },
-      signal: AbortSignal.timeout(FIGMA_TIMEOUT_MS),
-    });
-
-    if ((res.status !== 429 && res.status !== 503) || attempt >= FIGMA_MAX_RETRIES) {
-      return res;
+    if (e instanceof UserError) {
+      return NextResponse.json({ error: e.message }, { status: e.status });
     }
-
-    const retryAfter = Number(res.headers.get("retry-after"));
-    const delay = Number.isFinite(retryAfter) && retryAfter > 0
-      ? retryAfter * 1_000
-      : 1_000 * 2 ** attempt;
-    await new Promise((r) => setTimeout(r, Math.min(delay, 30_000)));
+    console.error("[generate] error:", e);
+    return NextResponse.json({ error: "No se pudo generar la página. Probá de nuevo." }, { status: 500 });
   }
 }
 
-// Cache del árbol por (file:node) durante 10 min: regenerar la misma página
-// no vuelve a pegarle a Figma, evitando rate limits al iterar.
-const nodeCache = new Map<string, { expires: number; tree: unknown }>();
-const NODE_CACHE_TTL_MS = 10 * 60 * 1_000;
+/** Error with a user-facing message (for designers), not a technical one. */
+class UserError extends Error {
+  constructor(message: string, readonly status: number) {
+    super(message);
+  }
+}
+
+/** Turns the Retry-After header (seconds) into a human wait message. */
+function retryAfterMessage(res: Response): string {
+  const seconds = Number(res.headers.get("retry-after"));
+  if (!Number.isFinite(seconds) || seconds <= 0) {
+    return "Esperá unos minutos y volvé a intentar.";
+  }
+  if (seconds < 60) return "Esperá un minuto y volvé a intentar.";
+  if (seconds < 3600) return `Volvé a intentar en unos ${Math.ceil(seconds / 60)} minutos.`;
+  if (seconds < 86400) return `Volvé a intentar en unas ${Math.ceil(seconds / 3600)} horas.`;
+  return `Volvé a intentar en ${Math.ceil(seconds / 86400)} días.`;
+}
 
 async function fetchNodeTree(fileKey: string, nodeId: string, token: string): Promise<unknown> {
-  const key = `${fileKey}:${nodeId}`;
-  const cached = nodeCache.get(key);
-  if (cached && cached.expires > Date.now()) return cached.tree;
-
-  const res = await figmaFetch(
+  const res = await fetch(
     `https://api.figma.com/v1/files/${fileKey}/nodes?ids=${nodeId}`,
-    token
+    { headers: { "X-Figma-Token": token }, signal: AbortSignal.timeout(20_000) }
   );
+
+  if (res.status === 429) {
+    throw new UserError(`Alcanzaste el límite de peticiones de Figma. ${retryAfterMessage(res)}`, 429);
+  }
+  if (res.status === 403 || res.status === 404) {
+    throw new UserError("No se pudo acceder al diseño. Revisá que el link de Figma sea correcto y tenga acceso.", 400);
+  }
   if (!res.ok) {
-    const err = (await res.json().catch(() => ({}))) as { err?: string };
-    throw new FigmaError(`Figma API error ${res.status}: ${err.err ?? "error desconocido"}`);
+    throw new UserError("Figma no respondió correctamente. Probá de nuevo en un momento.", 502);
   }
 
-  const tree = await res.json();
-  nodeCache.set(key, { expires: Date.now() + NODE_CACHE_TTL_MS, tree });
-  return tree;
+  return res.json();
 }
-
-// --- Generación ------------------------------------------------------------
 
 async function generateCode(pageName: string, figmaJson: unknown): Promise<string> {
   const stream = client.messages.stream({
@@ -117,14 +98,12 @@ async function generateCode(pageName: string, figmaJson: unknown): Promise<strin
   });
 
   const message = await stream.finalMessage();
-  if (message.stop_reason === "max_tokens") {
-    throw new FigmaError("La respuesta se cortó por límite de tokens. Probá con una sección más chica.");
+  const text = message.content.find((b) => b.type === "text");
+
+  if (message.stop_reason === "max_tokens" || !text || text.type !== "text") {
+    throw new UserError("El diseño es muy grande para generar de una. Probá con una sección más chica.", 502);
   }
 
-  const text = message.content.find((b) => b.type === "text");
-  if (!text || text.type !== "text") {
-    throw new Error("Sin respuesta de texto del modelo.");
-  }
   return extractCode(text.text);
 }
 
@@ -147,7 +126,7 @@ Code requirements:
 6. Styling: Tailwind CSS v4 utilities only. Use the EXACT colors (hex), spacing, sizes and typography from the JSON. TBS tokens where they fit: bg-[#0A0F1E], bg-[#0D1424], text-[#F9FAFB], text-[#6B7280], border-[#1F2937], bg-[#2563EB], hover:bg-[#1D4ED8].
 7. Semantic HTML (<header>, <main>, <section>, <footer>, <nav>, <article>), fully responsive (sm:/md:/lg:). Reproduce ALL nodes/sections in the tree, in order.
 8. Self-contained. Only allowed imports: "next/link", "next/image". Do not import React.
-9. No comments explaining JSX. Finish the component completely — never stop mid-element. If running out of space, simplify SVG icons rather than truncating.`;
+9. No comments explaining JSX. Finish the component completely — never stop mid-element.`;
 
 function buildPrompt(pageName: string, figmaJson: unknown): string {
   return `Page name: "${pageName}"
@@ -157,23 +136,6 @@ Figma node tree (JSON):
 ${JSON.stringify(figmaJson).slice(0, 30000)}
 
 Reproduce every section in the tree faithfully, using the exact colors, typography, spacing and layout encoded in the nodes.`;
-}
-
-// --- Helpers ---------------------------------------------------------------
-
-function validateGeneratedCode(code: string): string | null {
-  if (!code) return "El modelo no devolvió código.";
-  if (!/export\s+default\s+function/.test(code)) return "El código no tiene un default export.";
-  if (/^\s*["']use client["']/m.test(code)) return "El código usa \"use client\" — debería ser Server Component.";
-
-  const open = (code.match(/\{/g) ?? []).length;
-  const close = (code.match(/\}/g) ?? []).length;
-  if (open !== close) return `Llaves desbalanceadas (${open}/${close}). Posible truncado.`;
-
-  if (/<svg[^>]*$/.test(code) || /viewBox\s*=\s*"[^"]*$/.test(code)) {
-    return "El código parece truncado dentro de un SVG.";
-  }
-  return null;
 }
 
 function extractCode(raw: string): string {

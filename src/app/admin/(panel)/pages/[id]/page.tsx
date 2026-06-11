@@ -27,7 +27,7 @@ export default async function PageDetailPage({
           <p className="mt-1 text-sm text-gray-500">/{page.slug}</p>
         </div>
         <Link
-          href={`/admin/paginas/${id}/generar`}
+          href={`/admin/pages/${id}/generate`}
           className="rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-700"
         >
           Generar desde Figma
