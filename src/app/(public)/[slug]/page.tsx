@@ -3,8 +3,6 @@ import { notFound } from "next/navigation";
 import { db } from "@/lib/db";
 import { buildPageMetadata } from "@/lib/seo";
 
-export const dynamicParams = true;
-
 export async function generateMetadata({
   params,
 }: {
@@ -14,14 +12,6 @@ export async function generateMetadata({
   const page = await db.page.findUnique({ where: { slug } });
   if (!page || page.status !== "PUBLISHED") return {};
   return buildPageMetadata(page);
-}
-
-export async function generateStaticParams() {
-  const pages = await db.page.findMany({
-    where: { status: "PUBLISHED" },
-    select: { slug: true },
-  });
-  return pages.map((p) => ({ slug: p.slug }));
 }
 
 export default async function PublicPage({

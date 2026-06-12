@@ -71,6 +71,9 @@ model Currency {
   name      String // e.g. "Euro"
   symbol    String // e.g. "€"
   enabled   Boolean        @default(true)
+  // CSV of ISO-3166 alpha-2 country codes that resolve to this currency,
+  // e.g. "MX" or "ES,IT,FR". Used to pick a currency by visitor country.
+  countryCodes String @default("")
   createdAt DateTime       @default(now())
   updatedAt DateTime       @updatedAt
   prices    ProductPrice[]
@@ -79,17 +82,53 @@ model Currency {
   @@index([enabled]) // filter by status
 }
 
+/// Product category (editable from the admin panel).
+model Category {
+  id          String    @id @default(cuid())
+  name        String
+  slug        String    @unique
+  description String?   @db.Text
+  visible     Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  products    Product[]
+
+  @@index([visible])
+}
+
 model Product {
   id          String         @id @default(cuid())
   name        String
+  slug        String         @unique
+  sku         String?
   description String         @db.Text
   academyId   String         @default("") // external academy identifier
+  visible     Boolean        @default(true)
+  featured    Boolean        @default(false)
+  categoryId  String?
+  category    Category?      @relation(fields: [categoryId], references: [id], onDelete: SetNull)
   createdAt   DateTime       @default(now())
   updatedAt   DateTime       @updatedAt
   prices      ProductPrice[]
+  images      ProductImage[]
 
   @@index([name]) // search by name
   @@index([updatedAt]) // default sort
+  @@index([slug])
+  @@index([visible])
+  @@index([categoryId])
+}
+
+/// Product image hosted on Bunny CDN.
+model ProductImage {
+  id        String  @id @default(cuid())
+  productId String
+  url       String  @db.Text
+  alt       String?
+  position  Int     @default(0)
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@index([productId])
 }
 
 model ProductPrice {

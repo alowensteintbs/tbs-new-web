@@ -1,11 +1,14 @@
 import type { Metadata } from "next";
 import { ProductForm } from "../_components/product-form";
-import { getEnabledCurrencies } from "../_lib/queries";
+import { getEnabledCurrencies, getCategoryOptions } from "../_lib/queries";
 
 export const metadata: Metadata = { title: "Nuevo producto" };
 
 export default async function NewProductPage() {
-  const currencies = await getEnabledCurrencies();
+  const [currencies, categories] = await Promise.all([
+    getEnabledCurrencies(),
+    getCategoryOptions(),
+  ]);
 
   return (
     <div className="mx-auto max-w-xl space-y-6">
@@ -15,7 +18,7 @@ export default async function NewProductPage() {
           Cargá el nombre, la descripción y los precios por moneda.
         </p>
       </div>
-      <ProductForm currencies={currencies} />
+      <ProductForm currencies={currencies} categories={categories} />
     </div>
   );
 }

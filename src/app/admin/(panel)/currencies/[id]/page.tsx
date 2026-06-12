@@ -24,6 +24,7 @@ export default async function EditCurrencyPage({
           name: currency.name,
           symbol: currency.symbol,
           enabled: currency.enabled,
+          countryCodes: currency.countryCodes,
         }}
       />
     </div>

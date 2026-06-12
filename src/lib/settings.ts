@@ -1,4 +1,4 @@
-import { cache } from "react";
+import { unstable_cache, revalidateTag } from "next/cache";
 import { db } from "@/lib/db";
 
 /**
@@ -7,11 +7,17 @@ import { db } from "@/lib/db";
  */
 export type SettingKey = "gtm_id" | "default_currency" | "site_name";
 
-/** All settings as a key→value map, cached per request. */
-export const getSettings = cache(async (): Promise<Record<string, string>> => {
-  const rows = await db.siteSetting.findMany();
-  return Object.fromEntries(rows.map((r) => [r.key, r.value]));
-});
+export const SETTINGS_TAG = "site-settings";
+
+/** All settings as a key→value map (cached; invalidated by SETTINGS_TAG). */
+export const getSettings = unstable_cache(
+  async (): Promise<Record<string, string>> => {
+    const rows = await db.siteSetting.findMany();
+    return Object.fromEntries(rows.map((r) => [r.key, r.value]));
+  },
+  ["site-settings"],
+  { tags: [SETTINGS_TAG] }
+);
 
 /** Read a single setting, or `undefined` if not set. */
 export async function getSetting(key: SettingKey): Promise<string | undefined> {
@@ -26,4 +32,5 @@ export async function setSetting(key: SettingKey, value: string): Promise<void> 
     create: { key, value },
     update: { value },
   });
+  revalidateTag(SETTINGS_TAG, "max");
 }

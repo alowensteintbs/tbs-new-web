@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { db } from "@/lib/db";
 import { ProductForm } from "../_components/product-form";
-import { getEnabledCurrencies } from "../_lib/queries";
+import { getEnabledCurrencies, getCategoryOptions } from "../_lib/queries";
 
 export const metadata: Metadata = { title: "Editar producto" };
 
@@ -13,12 +13,13 @@ export default async function EditProductPage({
 }) {
   const { id } = await params;
 
-  const [product, currencies] = await Promise.all([
+  const [product, currencies, categories] = await Promise.all([
     db.product.findUnique({
       where: { id },
-      include: { prices: true },
+      include: { prices: true, images: { orderBy: { position: "asc" } } },
     }),
     getEnabledCurrencies(),
+    getCategoryOptions(),
   ]);
 
   if (!product) notFound();
@@ -33,12 +34,19 @@ export default async function EditProductPage({
       <h2 className="text-xl font-bold text-gray-900">Editar producto</h2>
       <ProductForm
         currencies={currencies}
+        categories={categories}
         initialValues={{
           id: product.id,
           name: product.name,
+          slug: product.slug,
+          sku: product.sku,
           description: product.description,
           academyId: product.academyId,
+          categoryId: product.categoryId,
+          visible: product.visible,
+          featured: product.featured,
           prices,
+          images: product.images.map((img) => ({ url: img.url, alt: img.alt })),
         }}
       />
     </div>

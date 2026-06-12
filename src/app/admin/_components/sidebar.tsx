@@ -45,6 +45,16 @@ const navItems: NavItem[] = [
     ),
   },
   {
+    href: "/admin/categories",
+    label: "Categorías",
+    ready: true,
+    icon: (
+      <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M7 7h.01M7 3h5a1.99 1.99 0 011.414.586l7 7a2 2 0 010 2.828l-5 5a2 2 0 01-2.828 0l-7-7A1.99 1.99 0 013 7V4a1 1 0 011-1z" />
+      </svg>
+    ),
+  },
+  {
     href: "/admin/currencies",
     label: "Monedas",
     ready: true,

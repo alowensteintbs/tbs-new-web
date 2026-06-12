@@ -1,10 +1,17 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { db } from "@/lib/db";
 import { requireSession } from "@/lib/auth/dal";
+import { CATALOG_TAGS } from "@/lib/catalog";
+
+/** Invalidate cached data that depends on currencies (resolution + pricing). */
+function revalidateCurrencyCaches() {
+  revalidateTag(CATALOG_TAGS.currencies, "max");
+  revalidateTag(CATALOG_TAGS.products, "max"); // catalog prices depend on currency
+}
 
 const currencySchema = z.object({
   code: z
@@ -14,6 +21,18 @@ const currencySchema = z.object({
   name: z.string().min(1, "El nombre es requerido").max(60),
   symbol: z.string().min(1, "El símbolo es requerido").max(8),
   enabled: z.boolean().default(true),
+  // CSV of ISO-3166 alpha-2 country codes, normalized to uppercase.
+  countryCodes: z
+    .string()
+    .trim()
+    .transform((v) =>
+      v
+        .split(",")
+        .map((c) => c.trim().toUpperCase())
+        .filter(Boolean)
+        .join(",")
+    )
+    .default(""),
 });
 
 export type CurrencyFormState = {
@@ -27,6 +46,7 @@ function parseForm(formData: FormData) {
     name: formData.get("name"),
     symbol: formData.get("symbol"),
     enabled: formData.get("enabled") === "on",
+    countryCodes: formData.get("countryCodes") ?? "",
   });
 }
 
@@ -49,6 +69,7 @@ export async function createCurrency(
 
   await db.currency.create({ data: parsed.data });
   revalidatePath("/admin/currencies");
+  revalidateCurrencyCaches();
   redirect("/admin/currencies");
 }
 
@@ -74,6 +95,7 @@ export async function updateCurrency(
 
   await db.currency.update({ where: { id }, data: parsed.data });
   revalidatePath("/admin/currencies");
+  revalidateCurrencyCaches();
   redirect("/admin/currencies");
 }
 
@@ -82,6 +104,7 @@ export async function toggleCurrency(id: string, enabled: boolean): Promise<void
   await requireSession();
   await db.currency.update({ where: { id }, data: { enabled } });
   revalidatePath("/admin/currencies");
+  revalidateCurrencyCaches();
 }
 
 export async function deleteCurrency(id: string): Promise<{ error?: string }> {
@@ -98,5 +121,6 @@ export async function deleteCurrency(id: string): Promise<{ error?: string }> {
 
   await db.currency.delete({ where: { id } });
   revalidatePath("/admin/currencies");
+  revalidateCurrencyCaches();
   return {};
 }

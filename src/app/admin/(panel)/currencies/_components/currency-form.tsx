@@ -14,6 +14,7 @@ type InitialValues = {
   name: string;
   symbol: string;
   enabled: boolean;
+  countryCodes: string;
 };
 
 export function CurrencyForm({ initialValues }: { initialValues?: InitialValues }) {
@@ -61,6 +62,19 @@ export function CurrencyForm({ initialValues }: { initialValues?: InitialValues 
         errors={state.fieldErrors?.name}
         required
       />
+
+      <Field label="Países (códigos ISO)" name="countryCodes">
+        <input
+          name="countryCodes"
+          defaultValue={initialValues?.countryCodes}
+          placeholder="MX, US o ES,IT,FR"
+          className={inputCls}
+        />
+        <p className="mt-1 text-xs text-gray-400">
+          Códigos de país (ISO-3166 alpha-2) separados por coma. Los visitantes de
+          esos países verán los precios en esta moneda.
+        </p>
+      </Field>
 
       <label className="flex items-center gap-2 text-sm text-gray-700">
         <input

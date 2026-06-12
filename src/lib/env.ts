@@ -17,6 +17,12 @@ const schema = z.object({
   SITE_URL: z.string().url().optional(),
   // Google Tag Manager container id (fallback when no SiteSetting is stored)
   NEXT_PUBLIC_GTM_ID: z.string().optional(),
+  // Bunny Storage (product images). Optional: the upload endpoint errors clearly
+  // if these are missing, but the rest of the app still works.
+  BUNNY_STORAGE_ZONE: z.string().optional(),
+  BUNNY_STORAGE_API_KEY: z.string().optional(),
+  BUNNY_STORAGE_HOST: z.string().optional(), // e.g. storage.bunnycdn.com
+  BUNNY_CDN_URL: z.string().url().optional(), // e.g. https://tu-zona.b-cdn.net
   NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
 });
 
