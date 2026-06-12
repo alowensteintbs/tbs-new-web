@@ -1,8 +1,9 @@
 import { PrismaMariaDb } from "@prisma/adapter-mariadb";
 import { PrismaClient } from "@/generated/prisma/client";
+import { env } from "@/lib/env";
 
 function createPrismaClient() {
-  const url = new URL(process.env.DATABASE_URL!);
+  const url = new URL(env.DATABASE_URL);
   const adapter = new PrismaMariaDb({
     host: url.hostname,
     port: Number(url.port) || 3306,

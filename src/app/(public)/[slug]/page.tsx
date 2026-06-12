@@ -1,7 +1,20 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { db } from "@/lib/db";
+import { buildPageMetadata } from "@/lib/seo";
 
 export const dynamicParams = true;
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
+  const { slug } = await params;
+  const page = await db.page.findUnique({ where: { slug } });
+  if (!page || page.status !== "PUBLISHED") return {};
+  return buildPageMetadata(page);
+}
 
 export async function generateStaticParams() {
   const pages = await db.page.findMany({

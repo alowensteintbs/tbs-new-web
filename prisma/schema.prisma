@@ -35,8 +35,34 @@ model Page {
   figmaFileKey String
   figmaNodeId  String
   status       PageStatus @default(DRAFT)
+  // SEO (replaces Rank Math per-page meta)
+  metaTitle       String?
+  metaDescription String? @db.Text
+  ogImage         String?
+  canonical       String?
+  noindex         Boolean @default(false)
   createdAt    DateTime   @default(now())
   updatedAt    DateTime   @updatedAt
+}
+
+/// Editable key/value site configuration (GTM id, default currency, etc.).
+model SiteSetting {
+  key       String   @id
+  value     String   @db.Text
+  updatedAt DateTime @updatedAt
+}
+
+/// URL redirects (replaces the Redirection plugin). Applied in proxy.ts.
+model Redirect {
+  id         String   @id @default(cuid())
+  from       String   @unique // incoming path, e.g. "/old-page"
+  to         String // destination path or absolute URL
+  statusCode Int      @default(301)
+  enabled    Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([enabled])
 }
 
 model Currency {

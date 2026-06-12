@@ -10,6 +10,11 @@ type InitialValues = {
   figmaFileKey: string;
   figmaNodeId: string;
   status: "DRAFT" | "PUBLISHED";
+  metaTitle: string | null;
+  metaDescription: string | null;
+  ogImage: string | null;
+  canonical: string | null;
+  noindex: boolean;
 };
 
 type FigmaParseState = { ok: true } | { ok: false; message: string } | null;
@@ -137,6 +142,58 @@ export function PageForm({ initialValues }: { initialValues?: InitialValues }) {
           </select>
         </div>
       )}
+
+      <details className="rounded-lg border border-gray-200 p-4" open={isEditing}>
+        <summary className="cursor-pointer text-sm font-semibold text-gray-700">
+          SEO (opcional)
+        </summary>
+        <div className="mt-4 space-y-4">
+          <Field
+            label="Meta título"
+            name="metaTitle"
+            placeholder="Título para buscadores (por defecto usa el nombre)"
+            defaultValue={initialValues?.metaTitle ?? undefined}
+            error={state.fieldErrors?.metaTitle?.[0]}
+          />
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1.5">
+              Meta descripción
+            </label>
+            <textarea
+              name="metaDescription"
+              rows={2}
+              placeholder="Descripción que aparece en los resultados de búsqueda"
+              defaultValue={initialValues?.metaDescription ?? undefined}
+              className={inputCls}
+            />
+          </div>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <Field
+              label="Imagen Open Graph (URL)"
+              name="ogImage"
+              placeholder="https://..."
+              defaultValue={initialValues?.ogImage ?? undefined}
+              error={state.fieldErrors?.ogImage?.[0]}
+            />
+            <Field
+              label="URL canónica"
+              name="canonical"
+              placeholder="https://..."
+              defaultValue={initialValues?.canonical ?? undefined}
+              error={state.fieldErrors?.canonical?.[0]}
+            />
+          </div>
+          <label className="flex items-center gap-2 text-sm text-gray-700">
+            <input
+              type="checkbox"
+              name="noindex"
+              defaultChecked={initialValues?.noindex}
+              className="h-4 w-4 rounded border-gray-300"
+            />
+            No indexar esta página (noindex)
+          </label>
+        </div>
+      </details>
 
       {state.error && (
         <p className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">

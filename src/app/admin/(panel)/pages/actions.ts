@@ -7,6 +7,12 @@ import { db } from "@/lib/db";
 import { requireSession } from "@/lib/auth/dal";
 import { deletePageFile, renamePageFile } from "@/lib/page-files";
 
+const optionalText = z
+  .string()
+  .trim()
+  .transform((v) => (v === "" ? null : v))
+  .nullable();
+
 const pageSchema = z.object({
   name: z.string().min(1, "El nombre es requerido").max(100),
   slug: z
@@ -15,6 +21,12 @@ const pageSchema = z.object({
     .regex(/^[a-z0-9-]+$/, "Solo letras minúsculas, números y guiones"),
   figmaFileKey: z.string().min(1, "La Figma file key es requerida"),
   figmaNodeId: z.string().min(1, "El Figma node ID es requerido"),
+  // SEO
+  metaTitle: optionalText,
+  metaDescription: optionalText,
+  ogImage: optionalText,
+  canonical: optionalText,
+  noindex: z.boolean().default(false),
 });
 
 const updatePageSchema = pageSchema.extend({
@@ -37,6 +49,11 @@ export async function createPage(
     slug: formData.get("slug"),
     figmaFileKey: formData.get("figmaFileKey"),
     figmaNodeId: formData.get("figmaNodeId"),
+    metaTitle: formData.get("metaTitle"),
+    metaDescription: formData.get("metaDescription"),
+    ogImage: formData.get("ogImage"),
+    canonical: formData.get("canonical"),
+    noindex: formData.get("noindex") === "on",
   });
   if (!parsed.success) {
     return { fieldErrors: z.flattenError(parsed.error).fieldErrors };
@@ -58,6 +75,11 @@ export async function updatePage(
     figmaFileKey: formData.get("figmaFileKey"),
     figmaNodeId: formData.get("figmaNodeId"),
     status: formData.get("status"),
+    metaTitle: formData.get("metaTitle"),
+    metaDescription: formData.get("metaDescription"),
+    ogImage: formData.get("ogImage"),
+    canonical: formData.get("canonical"),
+    noindex: formData.get("noindex") === "on",
   });
   if (!parsed.success) {
     return { fieldErrors: z.flattenError(parsed.error).fieldErrors };

@@ -42,6 +42,11 @@ export default async function PageDetailPage({
           figmaFileKey: page.figmaFileKey,
           figmaNodeId: page.figmaNodeId,
           status: page.status,
+          metaTitle: page.metaTitle,
+          metaDescription: page.metaDescription,
+          ogImage: page.ogImage,
+          canonical: page.canonical,
+          noindex: page.noindex,
         }}
       />
 
