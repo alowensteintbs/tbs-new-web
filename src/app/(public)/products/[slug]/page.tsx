@@ -56,6 +56,14 @@ export default async function ProductDetailPage({
             currencyCode={currency?.code ?? null}
             className="block text-2xl font-semibold text-gray-900"
           />
+          {product.amount != null && (
+            <Link
+              href={`/checkout/${product.id}`}
+              className="inline-flex items-center justify-center rounded-lg bg-blue-600 px-6 py-3 text-base font-medium text-white transition-colors hover:bg-blue-700"
+            >
+              Comprar ahora
+            </Link>
+          )}
           {product.description && (
             <div className="whitespace-pre-line text-gray-600">
               {product.description}

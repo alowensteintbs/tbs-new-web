@@ -1,7 +1,9 @@
-import "dotenv/config";
+import "./load-env"; // must be first: loads env before src/lib/env.ts runs
 import { PrismaMariaDb } from "@prisma/adapter-mariadb";
 import { PrismaClient } from "../src/generated/prisma/client";
 import bcrypt from "bcryptjs";
+import { encrypt } from "../src/lib/crypto";
+import { PAYMENT_PROVIDERS } from "../src/lib/payments/providers";
 
 function createClient() {
   const url = new URL(process.env.DATABASE_URL!);
@@ -20,6 +22,7 @@ const prisma = createClient();
 async function main() {
   await seedSuperadmin();
   await seedCurrencies();
+  await seedGateways();
 }
 
 async function seedSuperadmin() {
@@ -55,6 +58,32 @@ async function seedCurrencies() {
     });
   }
   console.log(`Currencies seeded: ${DEFAULT_CURRENCIES.map((c) => c.code).join(", ")}`);
+}
+
+/**
+ * One disabled row per supported provider (WooCommerce-style fixed list).
+ * The admin fills credentials/currencies and enables them. Existing rows are
+ * left untouched so re-seeding never clobbers configured gateways.
+ */
+async function seedGateways() {
+  const emptyConfig = encrypt("{}");
+  for (const [i, provider] of PAYMENT_PROVIDERS.entries()) {
+    await prisma.paymentGateway.upsert({
+      where: { provider: provider.key },
+      update: {},
+      create: {
+        provider: provider.key,
+        name: provider.label,
+        enabled: false,
+        live: false,
+        position: i,
+        config: emptyConfig,
+      },
+    });
+  }
+  console.log(
+    `Gateways seeded: ${PAYMENT_PROVIDERS.map((p) => p.key).join(", ")}`
+  );
 }
 
 main()

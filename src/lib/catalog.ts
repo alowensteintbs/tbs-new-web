@@ -113,6 +113,7 @@ export const getProductDetail = unstable_cache(
     const product = await db.product.findUnique({
       where: { slug },
       select: {
+        id: true,
         name: true,
         description: true,
         visible: true,
@@ -126,6 +127,7 @@ export const getProductDetail = unstable_cache(
 
     if (!product || !product.visible) return null;
     return {
+      id: product.id,
       name: product.name,
       description: product.description,
       category: product.category,
