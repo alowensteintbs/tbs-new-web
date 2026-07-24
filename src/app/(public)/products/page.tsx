@@ -6,6 +6,7 @@ import { getPagination, getTotalPages } from "@/lib/pagination";
 import { Container } from "@/components/ui/container";
 import { ProductCard } from "@/components/catalog/product-card";
 import { Pagination } from "@/app/admin/_components/pagination";
+import { cn } from "@/lib/utils";
 
 export const metadata: Metadata = {
   title: "Productos",
@@ -40,11 +41,22 @@ export default async function ProductsPage({
   const totalPages = getTotalPages(total);
 
   return (
-    <Container className="py-12">
-      <h1 className="text-2xl font-bold text-gray-900">Productos</h1>
+    <Container className="py-12 sm:py-16">
+      <div className="flex flex-col gap-2">
+        <span className="text-xs font-semibold uppercase tracking-widest text-blue-600">
+          Catálogo
+        </span>
+        <h1 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
+          Productos
+        </h1>
+        <p className="max-w-2xl text-sm text-gray-500 sm:text-base">
+          Explorá los cursos y programas de Traders Business School para potenciar tu
+          operativa en los mercados.
+        </p>
+      </div>
 
       {categories.length > 0 && (
-        <nav className="mt-6 flex flex-wrap gap-2">
+        <nav className="mt-8 flex flex-wrap gap-2" aria-label="Categorías">
           <CategoryChip href="/products" active={!categorySlug} label="Todos" />
           {categories.map((c) => (
             <CategoryChip
@@ -58,9 +70,28 @@ export default async function ProductsPage({
       )}
 
       {products.length === 0 ? (
-        <p className="mt-10 text-sm text-gray-500">No hay productos disponibles.</p>
+        <div className="mt-10 flex flex-col items-center justify-center rounded-2xl border border-dashed border-gray-200 bg-gray-50/60 px-6 py-20 text-center">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={1.5}
+            className="h-12 w-12 text-gray-300"
+            aria-hidden="true"
+          >
+            <path d="M6 7h12l1 13.5a1 1 0 0 1-1 1.5H6a1 1 0 0 1-1-1.5L6 7Z" />
+            <path d="M9 10V6a3 3 0 0 1 6 0v4" />
+          </svg>
+          <p className="mt-4 text-sm font-medium text-gray-900">
+            No hay productos disponibles
+          </p>
+          <p className="mt-1 max-w-sm text-sm text-gray-500">
+            Todavía no cargamos productos en esta categoría. Volvé a intentarlo más
+            tarde o probá con otra categoría.
+          </p>
+        </div>
       ) : (
-        <div className="mt-8 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+        <div className="mt-10 grid grid-cols-2 gap-4 sm:grid-cols-3 sm:gap-6 lg:grid-cols-4 lg:gap-8">
           {products.map((p) => (
             <ProductCard
               key={p.slug}
@@ -76,7 +107,7 @@ export default async function ProductsPage({
         </div>
       )}
 
-      <div className="mt-8">
+      <div className="mt-12">
         <Pagination page={page} totalPages={totalPages} searchParams={params} />
       </div>
     </Container>
@@ -95,11 +126,12 @@ function CategoryChip({
   return (
     <Link
       href={href}
-      className={
+      className={cn(
+        "rounded-full px-4 py-1.5 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2",
         active
-          ? "rounded-full bg-gray-900 px-3 py-1.5 text-sm text-white"
-          : "rounded-full border border-gray-300 px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50"
-      }
+          ? "bg-blue-600 text-white shadow-sm shadow-blue-600/20"
+          : "border border-gray-200 bg-white text-gray-600 hover:border-gray-300 hover:text-gray-900"
+      )}
     >
       {label}
     </Link>

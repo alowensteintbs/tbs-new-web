@@ -154,8 +154,10 @@ model PaymentGateway {
   id        String  @id @default(cuid())
   /// Stable provider key resolved by the integration layer, e.g.
   /// "stripe", "paypal", "afterpay", "klarna", "sequra", "manual".
-  /// One row per provider (WooCommerce-style fixed list): unique.
-  provider  String  @unique
+  /// NOT unique: a provider can have several instances with distinct
+  /// credentials (e.g. a Stripe account per region — US vs. EU), each linked
+  /// to the currencies it serves. Selection at checkout is by currency.
+  provider  String
   name      String // display label shown to the buyer, e.g. "Tarjeta (Stripe)"
   enabled   Boolean @default(true)
   // false = test/sandbox credentials, true = live.
@@ -173,6 +175,7 @@ model PaymentGateway {
   orders     Order[]
 
   @@index([enabled])
+  @@index([provider])
 }
 
 /// Join: which currencies a gateway accepts.

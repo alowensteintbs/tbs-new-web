@@ -1,9 +1,16 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import { Field, inputCls } from "@/app/admin/_components/form-field";
-import { getProvider } from "@/lib/payments/providers";
-import { updateGateway, type GatewayFormState } from "../actions";
+import {
+  PAYMENT_PROVIDERS,
+  getProvider,
+} from "@/lib/payments/providers";
+import {
+  createGateway,
+  updateGateway,
+  type GatewayFormState,
+} from "../actions";
 
 export type CurrencyOption = { id: string; code: string; name: string };
 
@@ -21,23 +28,51 @@ type InitialValues = {
 export function GatewayForm({
   currencies,
   initialValues,
+  mode = "edit",
 }: {
   currencies: CurrencyOption[];
   initialValues: InitialValues;
+  mode?: "create" | "edit";
 }) {
+  const isCreate = mode === "create";
   const [state, formAction, isPending] = useActionState<GatewayFormState, FormData>(
-    updateGateway,
+    isCreate ? createGateway : updateGateway,
     {}
   );
 
-  const def = getProvider(initialValues.provider);
+  // On create the provider is chosen here and drives the credential fields; on
+  // edit it's fixed and read from the stored row.
+  const [provider, setProvider] = useState(
+    initialValues.provider || PAYMENT_PROVIDERS[0]?.key || ""
+  );
+  const def = getProvider(isCreate ? provider : initialValues.provider);
 
   return (
     <form
       action={formAction}
       className="space-y-5 rounded-xl border border-gray-200 bg-white p-6 shadow-sm"
     >
-      <input type="hidden" name="id" value={initialValues.id} />
+      {isCreate ? (
+        <input type="hidden" name="provider" value={provider} />
+      ) : (
+        <input type="hidden" name="id" value={initialValues.id} />
+      )}
+
+      {isCreate && (
+        <Field label="Proveedor" name="providerSelect">
+          <select
+            value={provider}
+            onChange={(e) => setProvider(e.target.value)}
+            className={inputCls}
+          >
+            {PAYMENT_PROVIDERS.map((p) => (
+              <option key={p.key} value={p.key}>
+                {p.label}
+              </option>
+            ))}
+          </select>
+        </Field>
+      )}
 
       {def?.description && (
         <p className="rounded-lg bg-gray-50 px-4 py-3 text-sm text-gray-500">
@@ -49,7 +84,7 @@ export function GatewayForm({
         label="Nombre visible"
         name="name"
         defaultValue={initialValues.name}
-        placeholder="Tarjeta (Stripe)"
+        placeholder="Tarjeta (Stripe) — EEUU"
         errors={state.fieldErrors?.name}
         required
       />
@@ -142,7 +177,11 @@ export function GatewayForm({
         disabled={isPending}
         className="rounded-lg bg-[#2563EB] px-5 py-2.5 text-sm font-medium text-white transition hover:bg-[#1D4ED8] disabled:opacity-50"
       >
-        {isPending ? "Guardando…" : "Guardar cambios"}
+        {isPending
+          ? "Guardando…"
+          : isCreate
+            ? "Crear pasarela"
+            : "Guardar cambios"}
       </button>
     </form>
   );

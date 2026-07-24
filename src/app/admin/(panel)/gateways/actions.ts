@@ -6,7 +6,7 @@ import { z } from "zod";
 import { db } from "@/lib/db";
 import { requireSession } from "@/lib/auth/dal";
 import { decrypt, encrypt } from "@/lib/crypto";
-import { getProvider } from "@/lib/payments/providers";
+import { getProvider, isKnownProvider } from "@/lib/payments/providers";
 
 const gatewaySchema = z.object({
   name: z.string().min(1, "El nombre es requerido").max(80),
@@ -72,9 +72,46 @@ async function setCurrencies(gatewayId: string, currencyIds: string[]) {
 }
 
 /**
- * Configure an existing gateway. Providers are a fixed, seeded list — they are
- * never created or deleted here, only edited and enabled/disabled. The provider
- * key is read from the stored row, not the form.
+ * Create a new gateway instance for a provider. A provider can have several
+ * instances (e.g. a Stripe account per region), so the provider key IS taken
+ * from the form here — but validated against the registry.
+ */
+export async function createGateway(
+  _prev: GatewayFormState,
+  formData: FormData
+): Promise<GatewayFormState> {
+  await requireSession();
+
+  const provider = String(formData.get("provider") ?? "");
+  if (!isKnownProvider(provider)) return { error: "Proveedor inválido." };
+
+  const parsed = parseForm(formData);
+  if (!parsed.success) {
+    return { fieldErrors: z.flattenError(parsed.error).fieldErrors };
+  }
+
+  const { currencyIds, ...data } = parsed.data;
+  const config = buildConfig(provider, formData);
+
+  // Place new rows after existing ones so checkout ordering stays stable.
+  const last = await db.paymentGateway.findFirst({
+    orderBy: { position: "desc" },
+    select: { position: true },
+  });
+
+  const gateway = await db.paymentGateway.create({
+    data: { ...data, provider, config, position: (last?.position ?? -1) + 1 },
+    select: { id: true },
+  });
+  await setCurrencies(gateway.id, currencyIds);
+
+  revalidatePath("/admin/gateways");
+  redirect("/admin/gateways");
+}
+
+/**
+ * Configure an existing gateway. The provider key is read from the stored row,
+ * not the form — it can't be changed after creation.
  */
 export async function updateGateway(
   _prev: GatewayFormState,
@@ -112,4 +149,15 @@ export async function toggleGateway(id: string, enabled: boolean): Promise<void>
   await requireSession();
   await db.paymentGateway.update({ where: { id }, data: { enabled } });
   revalidatePath("/admin/gateways");
+}
+
+/**
+ * Delete a gateway instance. Orders keep their history: the FK is `SetNull`,
+ * so past orders simply lose the live link to the deleted gateway.
+ */
+export async function deleteGateway(id: string): Promise<{ error?: string }> {
+  await requireSession();
+  await db.paymentGateway.delete({ where: { id } });
+  revalidatePath("/admin/gateways");
+  return {};
 }

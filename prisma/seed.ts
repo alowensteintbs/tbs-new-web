@@ -61,17 +61,22 @@ async function seedCurrencies() {
 }
 
 /**
- * One disabled row per supported provider (WooCommerce-style fixed list).
- * The admin fills credentials/currencies and enables them. Existing rows are
- * left untouched so re-seeding never clobbers configured gateways.
+ * Seed one disabled starter row per supported provider so the admin has
+ * something to configure out of the box. Providers can now have several
+ * instances (e.g. a Stripe account per region), so this is only a convenience:
+ * once a provider has any row, we leave it alone and never clobber configured
+ * gateways. `provider` is no longer unique, hence the existence check.
  */
 async function seedGateways() {
   const emptyConfig = encrypt("{}");
   for (const [i, provider] of PAYMENT_PROVIDERS.entries()) {
-    await prisma.paymentGateway.upsert({
+    const existing = await prisma.paymentGateway.findFirst({
       where: { provider: provider.key },
-      update: {},
-      create: {
+      select: { id: true },
+    });
+    if (existing) continue;
+    await prisma.paymentGateway.create({
+      data: {
         provider: provider.key,
         name: provider.label,
         enabled: false,

@@ -3,7 +3,7 @@ import { randomInt } from "node:crypto";
 import { db } from "@/lib/db";
 import { decrypt } from "@/lib/crypto";
 import { getProvider } from "./providers";
-import type { GatewayConfig } from "./types";
+import type { GatewayConfig, WebhookResult } from "./types";
 
 export type AvailableGateway = {
   id: string;
@@ -41,6 +41,63 @@ export function readGatewayConfig(encrypted: string): GatewayConfig {
   } catch {
     return {};
   }
+}
+
+/**
+ * Apply a provider webhook result to its order. Resolves the order by our
+ * stored `paymentRef` first, then by the explicit `orderId` the adapter parsed
+ * from the event. Idempotent and non-regressing: re-delivered events are safe,
+ * and a late FAILED/expired event can't undo an already-PAID order.
+ *
+ * Returns the affected order id, or null if nothing matched / no state change.
+ */
+export async function applyWebhookResult(
+  result: WebhookResult
+): Promise<string | null> {
+  if (!result.status) return null;
+
+  const order = await db.order.findFirst({
+    where: {
+      OR: [
+        ...(result.paymentRef ? [{ paymentRef: result.paymentRef }] : []),
+        ...(result.orderId ? [{ id: result.orderId }] : []),
+      ],
+    },
+    select: { id: true, status: true, paidAt: true },
+  });
+  if (!order) return null;
+
+  // Guard against out-of-order / regressive transitions.
+  if (result.status === "FAILED" && order.status !== "PENDING") return null;
+  if (
+    result.status === "REFUNDED" &&
+    order.status !== "PAID" &&
+    order.status !== "FULFILLED"
+  ) {
+    return null;
+  }
+  if (order.status === result.status) {
+    // Already in this state; just persist the latest raw payload for auditing.
+    if (result.raw) {
+      await db.order.update({
+        where: { id: order.id },
+        data: { paymentMeta: result.raw },
+      });
+    }
+    return null;
+  }
+
+  await db.order.update({
+    where: { id: order.id },
+    data: {
+      status: result.status,
+      paidAt:
+        result.status === "PAID" ? order.paidAt ?? new Date() : order.paidAt,
+      paymentMeta: result.raw ?? undefined,
+    },
+  });
+
+  return order.id;
 }
 
 /**

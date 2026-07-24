@@ -21,13 +21,13 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
+/*
+ * The public store and the admin content area are light-themed by design
+ * (white surfaces, `text-gray-900`). The admin's only dark surface — the
+ * sidebar — sets its own color explicitly (`bg-[#0D1424]`). So we do NOT honor
+ * the OS `prefers-color-scheme: dark`: doing that turned the body near-black
+ * and made every light-on-dark page unreadable.
+ */
 body {
   background: var(--background);
   color: var(--foreground);

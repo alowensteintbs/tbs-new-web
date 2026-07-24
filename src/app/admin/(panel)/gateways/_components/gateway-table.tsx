@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useTransition } from "react";
-import { toggleGateway } from "../actions";
+import { useState, useTransition } from "react";
+import { deleteGateway, toggleGateway } from "../actions";
 
 export type GatewayRow = {
   id: string;
@@ -39,9 +39,17 @@ export function GatewayTable({ rows }: { rows: GatewayRow[] }) {
 
 function GatewayRowItem({ row }: { row: GatewayRow }) {
   const [isPending, startTransition] = useTransition();
+  const [confirming, setConfirming] = useState(false);
 
   function handleToggle() {
     startTransition(() => toggleGateway(row.id, !row.enabled));
+  }
+
+  function handleDelete() {
+    startTransition(async () => {
+      await deleteGateway(row.id);
+      setConfirming(false);
+    });
   }
 
   return (
@@ -74,12 +82,39 @@ function GatewayRowItem({ row }: { row: GatewayRow }) {
         </button>
       </td>
       <td className="px-5 py-3 text-right">
-        <Link
-          href={`/admin/gateways/${row.id}`}
-          className="text-sm font-medium text-[#2563EB] hover:underline"
-        >
-          Configurar
-        </Link>
+        <div className="flex items-center justify-end gap-3">
+          <Link
+            href={`/admin/gateways/${row.id}`}
+            className="text-sm font-medium text-[#2563EB] hover:underline"
+          >
+            Configurar
+          </Link>
+          {confirming ? (
+            <>
+              <button
+                onClick={handleDelete}
+                disabled={isPending}
+                className="text-sm font-medium text-red-600 hover:underline disabled:opacity-50"
+              >
+                Confirmar
+              </button>
+              <button
+                onClick={() => setConfirming(false)}
+                disabled={isPending}
+                className="text-sm text-gray-400 hover:underline"
+              >
+                Cancelar
+              </button>
+            </>
+          ) : (
+            <button
+              onClick={() => setConfirming(true)}
+              className="text-sm font-medium text-gray-400 hover:text-red-600 hover:underline"
+            >
+              Eliminar
+            </button>
+          )}
+        </div>
       </td>
     </tr>
   );

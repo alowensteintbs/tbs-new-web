@@ -3,6 +3,7 @@
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { db } from "@/lib/db";
+import { getSiteUrl } from "@/lib/env";
 import { getAdapter } from "@/lib/payments";
 import {
   generateOrderNumber,
@@ -128,7 +129,11 @@ export async function placeOrder(
     customer: { email: customer.email, name: customer.name },
   };
 
-  const start = await adapter.createPayment(payable, readGatewayConfig(gateway.config));
+  const start = await adapter.createPayment(
+    payable,
+    readGatewayConfig(gateway.config),
+    { baseUrl: getSiteUrl() }
+  );
 
   if (start.paymentRef) {
     await db.order.update({

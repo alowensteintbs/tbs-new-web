@@ -16,7 +16,7 @@ type Status = "idle" | "generating" | "done" | "error";
 
 const STATUS_LABEL: Record<Status, string> = {
   idle:       "Generar componente",
-  generating: "Generando código con IA...",
+  generating: "Clonando el diseño de Figma...",
   done:       "Generar de nuevo",
   error:      "Reintentar",
 };
@@ -25,6 +25,8 @@ export function GeneratePanel({ page }: { page: Page }) {
   const [status, setStatus] = useState<Status>("idle");
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [generatedCode, setGeneratedCode] = useState<string | null>(page.generatedCode);
+  const [force, setForce] = useState(false);
+  const [cached, setCached] = useState(false);
   const abortRef = useRef<AbortController | null>(null);
 
   useEffect(() => () => { abortRef.current?.abort(); }, []);
@@ -48,6 +50,7 @@ export function GeneratePanel({ page }: { page: Page }) {
           figmaNodeId:  page.figmaNodeId,
           pageName:     page.name,
           slug:         page.slug,
+          force,
         }),
         signal: controller.signal,
       });
@@ -57,8 +60,9 @@ export function GeneratePanel({ page }: { page: Page }) {
         throw new Error((err as { error?: string }).error ?? "Error al generar código");
       }
 
-      const { code } = await res.json() as { code: string };
+      const { code, cached } = await res.json() as { code: string; cached?: boolean };
       setGeneratedCode(code);
+      setCached(Boolean(cached));
       setStatus("done");
     } catch (e) {
       if (e instanceof DOMException && e.name === "AbortError") return;
@@ -73,7 +77,8 @@ export function GeneratePanel({ page }: { page: Page }) {
         <div>
           <h3 className="text-sm font-semibold text-gray-900">Generar componente React</h3>
           <p className="mt-1 text-xs text-gray-500">
-            Claude va a leer el diseño de Figma y generar el componente TSX con Tailwind.
+            Se clona el diseño de Figma pixel-perfect a un componente TSX. Si el diseño no
+            cambió, se reutiliza la caché (sin volver a renderizar imágenes en Figma).
           </p>
         </div>
 
@@ -100,10 +105,21 @@ export function GeneratePanel({ page }: { page: Page }) {
               <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
               </svg>
-              Guardado
+              {cached ? "Sin cambios en Figma — reusé la caché" : "Guardado"}
             </span>
           )}
         </div>
+
+        <label className="flex items-center gap-2 text-xs text-gray-600">
+          <input
+            type="checkbox"
+            checked={force}
+            onChange={(e) => setForce(e.target.checked)}
+            disabled={isLoading}
+            className="h-3.5 w-3.5 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+          />
+          Volver a traer de Figma (ignorar caché)
+        </label>
 
         {errorMsg && (
           <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">

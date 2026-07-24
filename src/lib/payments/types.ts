@@ -19,6 +19,15 @@ export type PaymentStart =
   | { kind: "redirect"; url: string; paymentRef?: string }
   | { kind: "internal"; paymentRef?: string };
 
+/**
+ * Request-time context the checkout passes to an adapter. Providers that send
+ * the buyer off-site (Stripe, PayPal) build their success/cancel URLs from
+ * `baseUrl` — the app's public origin, without trailing slash.
+ */
+export type PaymentContext = {
+  baseUrl: string;
+};
+
 /** Outcome of processing a provider webhook/notification. */
 export type WebhookResult = {
   /** The order this event refers to (our id or a provider ref we can resolve). */
@@ -37,7 +46,11 @@ export type WebhookResult = {
 export type PaymentAdapter = {
   provider: string;
   /** Start a payment for an order. Called server-side at checkout. */
-  createPayment(order: PayableOrder, config: GatewayConfig): Promise<PaymentStart>;
+  createPayment(
+    order: PayableOrder,
+    config: GatewayConfig,
+    ctx: PaymentContext
+  ): Promise<PaymentStart>;
   /**
    * Verify and interpret an incoming webhook. Returns null if the event is
    * irrelevant. Omitted for providers confirmed manually (e.g. transfer).

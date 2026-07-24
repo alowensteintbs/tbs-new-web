@@ -42,3 +42,9 @@ next-env.d.ts
 
 /src/generated/prisma
 /src/generated/pages
+
+# Generated Figma page assets
+/public/generated
+
+# Figma source cache (raw node tree + asset manifest, keyed by version)
+/.figma-cache
