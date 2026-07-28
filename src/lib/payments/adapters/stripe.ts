@@ -2,15 +2,17 @@ import Stripe from "stripe";
 import type { PaymentAdapter, GatewayConfig } from "../types";
 
 /**
- * Stripe adapter (hosted Checkout). We create a Checkout Session and redirect
- * the buyer to Stripe's page; payment is confirmed asynchronously via the
+ * Stripe adapter (embedded Checkout). We create a Checkout Session in
+ * `ui_mode: "embedded_page"` and hand its `client_secret` back to the browser,
+ * where Stripe.js mounts the payment form inline on our own checkout page — no
+ * redirect to checkout.stripe.com. Payment is confirmed asynchronously via the
  * webhook (`checkout.session.completed`), never trusted from the return URL.
  *
  * Credentials live in the gateway `config` (encrypted at rest):
+ *   - publishableKey → Stripe publishable key (pk_test_… / pk_live_…), sent to
+ *     the client so Stripe.js can render the embedded form.
  *   - secretKey     → Stripe API secret (sk_test_… / sk_live_…)
  *   - webhookSecret → signing secret of the webhook endpoint (whsec_…)
- * `publishableKey` is only needed for client-side Elements, which the hosted
- * Checkout flow doesn't use, so it's ignored here.
  */
 
 // Stripe expects amounts in the smallest currency unit. Most currencies are
@@ -40,6 +42,8 @@ export const stripeAdapter: PaymentAdapter = {
 
     const session = await stripe.checkout.sessions.create({
       mode: "payment",
+      // Inline form on our own page instead of the hosted checkout.stripe.com.
+      ui_mode: "embedded_page",
       // Reconciliation handles are stamped both on the session and the
       // resulting PaymentIntent/Charge so any webhook can resolve the order.
       client_reference_id: order.id,
@@ -56,14 +60,20 @@ export const stripeAdapter: PaymentAdapter = {
           product_data: { name: it.productName },
         },
       })),
-      // Buyer returns to our order status page; the real state comes from the
-      // webhook, so success/cancel just route back here.
-      success_url: `${ctx.baseUrl}/orders/${order.number}?paid=1`,
-      cancel_url: `${ctx.baseUrl}/orders/${order.number}`,
+      // After the embedded form completes, Stripe redirects the buyer here
+      // (required for embedded_page). The real state still comes from the
+      // webhook, so this just routes back to our order status page.
+      return_url: `${ctx.baseUrl}/orders/${order.number}?paid=1`,
     });
 
-    if (!session.url) throw new Error("Stripe: la sesión no devolvió URL");
-    return { kind: "redirect", url: session.url, paymentRef: session.id };
+    if (!session.client_secret) {
+      throw new Error("Stripe: la sesión no devolvió client_secret");
+    }
+    return {
+      kind: "embedded",
+      clientSecret: session.client_secret,
+      paymentRef: session.id,
+    };
   },
 
   async handleWebhook(rawBody, headers, config) {

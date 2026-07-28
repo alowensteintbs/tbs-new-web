@@ -12,11 +12,14 @@ export type PayableOrder = Pick<Order, "id" | "number" | "total" | "status"> & {
 
 /**
  * Where to send the buyer after starting a payment.
- * - `redirect`: external provider page (Stripe Checkout, PayPal, …).
+ * - `redirect`: external provider page (PayPal, hosted Checkout, …).
+ * - `embedded`: mount the provider's payment form inline on our checkout page
+ *   using `clientSecret` (Stripe embedded Checkout). No off-site redirect.
  * - `internal`: stay on our site (manual transfer instructions / thank-you).
  */
 export type PaymentStart =
   | { kind: "redirect"; url: string; paymentRef?: string }
+  | { kind: "embedded"; clientSecret: string; paymentRef?: string }
   | { kind: "internal"; paymentRef?: string };
 
 /**

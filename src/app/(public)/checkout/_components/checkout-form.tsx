@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import type { AvailableGateway } from "@/lib/payments/checkout";
 import { placeOrder, type CheckoutState } from "../actions";
+import { StripeEmbeddedCheckout } from "./stripe-embedded-checkout";
 
 function FieldError({ errors }: { errors?: string[] }) {
   if (!errors?.length) return null;
@@ -24,6 +25,17 @@ export function CheckoutForm({
     placeOrder,
     {}
   );
+
+  // Gateway needs an inline payment form (Stripe embedded): swap the details
+  // form for it once the server has created the payment session.
+  if (state.embedded) {
+    return (
+      <StripeEmbeddedCheckout
+        publishableKey={state.embedded.publishableKey}
+        clientSecret={state.embedded.clientSecret}
+      />
+    );
+  }
 
   return (
     <form action={formAction} className="space-y-5">

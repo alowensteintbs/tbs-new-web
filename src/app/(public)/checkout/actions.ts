@@ -24,6 +24,17 @@ const checkoutSchema = z.object({
 export type CheckoutState = {
   error?: string;
   fieldErrors?: Record<string, string[]>;
+  /**
+   * Set when the chosen gateway needs an inline payment form (Stripe embedded
+   * Checkout). The client mounts Stripe.js with these and never sees any
+   * secret key — only the publishable key, which is public by design.
+   */
+  embedded?: {
+    provider: string;
+    clientSecret: string;
+    publishableKey: string;
+    orderNumber: string;
+  };
 };
 
 export async function placeOrder(
@@ -129,17 +140,32 @@ export async function placeOrder(
     customer: { email: customer.email, name: customer.name },
   };
 
-  const start = await adapter.createPayment(
-    payable,
-    readGatewayConfig(gateway.config),
-    { baseUrl: getSiteUrl() }
-  );
+  const config = readGatewayConfig(gateway.config);
+  const start = await adapter.createPayment(payable, config, {
+    baseUrl: getSiteUrl(),
+  });
 
   if (start.paymentRef) {
     await db.order.update({
       where: { id: order.id },
       data: { paymentRef: start.paymentRef },
     });
+  }
+
+  // Embedded providers (Stripe) render their form inline: hand the client the
+  // client secret + publishable key so Stripe.js can mount it. No redirect.
+  if (start.kind === "embedded") {
+    if (!config.publishableKey) {
+      return { error: "El método de pago no está configurado correctamente." };
+    }
+    return {
+      embedded: {
+        provider: gateway.provider,
+        clientSecret: start.clientSecret,
+        publishableKey: config.publishableKey,
+        orderNumber: order.number,
+      },
+    };
   }
 
   // External providers redirect off-site; manual/internal go to our status page.
