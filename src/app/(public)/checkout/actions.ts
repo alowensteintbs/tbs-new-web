@@ -17,8 +17,13 @@ const checkoutSchema = z.object({
   gatewayId: z.string().min(1, "Elegí un método de pago"),
   email: z.email("Email inválido"),
   name: z.string().trim().min(1, "El nombre es requerido").max(120),
-  phone: z.string().trim().max(40).optional(),
-  country: z.string().trim().length(2).optional(),
+  surname: z.string().trim().min(1, "Los apellidos son requeridos").max(120),
+  phone: z.string().trim().min(1, "El teléfono es requerido").max(40),
+  addressLine: z.string().trim().min(1, "La dirección es requerida").max(200),
+  city: z.string().trim().min(1, "La población es requerida").max(120),
+  postalCode: z.string().trim().min(1, "El código postal es requerido").max(20),
+  province: z.string().trim().min(1, "La provincia es requerida").max(120),
+  country: z.string().trim().length(2, "El país es requerido"),
 });
 
 export type CheckoutState = {
@@ -35,6 +40,16 @@ export type CheckoutState = {
     publishableKey: string;
     orderNumber: string;
   };
+  /**
+   * Set when the gateway returns an HTML+JS snippet to embed inline (SeQura's
+   * identification form). The client injects it and lets its script drive the
+   * flow; the order is confirmed later via the IPN webhook.
+   */
+  widget?: {
+    provider: string;
+    html: string;
+    orderNumber: string;
+  };
 };
 
 export async function placeOrder(
@@ -47,8 +62,13 @@ export async function placeOrder(
     gatewayId: formData.get("gatewayId"),
     email: formData.get("email"),
     name: formData.get("name"),
-    phone: formData.get("phone") || undefined,
-    country: (formData.get("country") as string)?.toUpperCase() || undefined,
+    surname: formData.get("surname"),
+    phone: formData.get("phone"),
+    addressLine: formData.get("addressLine"),
+    city: formData.get("city"),
+    postalCode: formData.get("postalCode"),
+    province: formData.get("province"),
+    country: (formData.get("country") as string)?.toUpperCase(),
   });
   if (!parsed.success) {
     return { fieldErrors: z.flattenError(parsed.error).fieldErrors };
@@ -77,7 +97,7 @@ export async function placeOrder(
         enabled: true,
         currencies: { some: { currencyId: input.currencyId } },
       },
-      select: { id: true, provider: true, config: true },
+      select: { id: true, provider: true, config: true, live: true },
     }),
   ]);
 
@@ -90,16 +110,32 @@ export async function placeOrder(
   if (!adapter) return { error: "El método de pago no está disponible." };
 
   // Reuse a customer by email, or create one.
+  const customerData = {
+    name: input.name,
+    surname: input.surname,
+    phone: input.phone,
+    addressLine: input.addressLine,
+    city: input.city,
+    postalCode: input.postalCode,
+    province: input.province,
+    country: input.country,
+  };
   const customer = await db.customer.upsert({
     where: { email: input.email },
-    update: { name: input.name, phone: input.phone, country: input.country },
-    create: {
-      email: input.email,
-      name: input.name,
-      phone: input.phone,
-      country: input.country,
+    update: customerData,
+    create: { email: input.email, ...customerData },
+    select: {
+      id: true,
+      email: true,
+      name: true,
+      surname: true,
+      phone: true,
+      addressLine: true,
+      city: true,
+      postalCode: true,
+      province: true,
+      country: true,
     },
-    select: { id: true, email: true, name: true },
   });
 
   const order = await db.order.create({
@@ -137,12 +173,24 @@ export async function placeOrder(
     status: order.status,
     currencyCode: order.currency.code,
     items: order.items,
-    customer: { email: customer.email, name: customer.name },
+    customer: {
+      email: customer.email,
+      name: customer.name,
+      surname: customer.surname,
+      phone: customer.phone,
+      addressLine: customer.addressLine,
+      city: customer.city,
+      postalCode: customer.postalCode,
+      province: customer.province,
+      country: customer.country,
+    },
   };
 
   const config = readGatewayConfig(gateway.config);
   const start = await adapter.createPayment(payable, config, {
     baseUrl: getSiteUrl(),
+    gatewayId: gateway.id,
+    live: gateway.live,
   });
 
   if (start.paymentRef) {
@@ -163,6 +211,18 @@ export async function placeOrder(
         provider: gateway.provider,
         clientSecret: start.clientSecret,
         publishableKey: config.publishableKey,
+        orderNumber: order.number,
+      },
+    };
+  }
+
+  // Providers that return an HTML+JS form (SeQura): hand it to the client to
+  // embed. The buyer completes it inline; the IPN webhook confirms the order.
+  if (start.kind === "html") {
+    return {
+      widget: {
+        provider: gateway.provider,
+        html: start.html,
         orderNumber: order.number,
       },
     };

@@ -49,6 +49,12 @@ export const PAYMENT_PROVIDERS: PaymentProvider[] = [
     fields: [
       { key: "clientId", label: "Client ID", placeholder: "AY…" },
       { key: "clientSecret", label: "Client secret", secret: true },
+      {
+        key: "webhookId",
+        label: "Webhook ID",
+        placeholder: "WH-…",
+        help: "El ID del webhook creado en el panel de PayPal (Apps & Credentials → tu app → Webhooks). Se usa para verificar la firma de las notificaciones. Apuntá el webhook a /api/payments/webhook/<id-del-gateway>.",
+      },
     ],
   },
   {
@@ -72,11 +78,21 @@ export const PAYMENT_PROVIDERS: PaymentProvider[] = [
   {
     key: "sequra",
     label: "SeQura",
-    description: "Pago fraccionado. España.",
+    description: "Pago fraccionado / financiación. EUR.",
     fields: [
-      { key: "merchantRef", label: "Merchant reference" },
-      { key: "username", label: "Username" },
-      { key: "secret", label: "Secret", secret: true },
+      {
+        key: "merchantRef",
+        label: "Merchant ID",
+        placeholder: "logeecom_test",
+        help: "El merchant id de SeQura (va en el payload del pedido).",
+      },
+      { key: "username", label: "API username" },
+      {
+        key: "secret",
+        label: "API secret",
+        secret: true,
+        help: "Usá credenciales de sandbox para probar antes de pasar a live.",
+      },
     ],
   },
   {

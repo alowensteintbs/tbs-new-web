@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import type { AvailableGateway } from "@/lib/payments/checkout";
 import { placeOrder, type CheckoutState } from "../actions";
 import { StripeEmbeddedCheckout } from "./stripe-embedded-checkout";
+import { SequraCheckout } from "./sequra-checkout";
 
 function FieldError({ errors }: { errors?: string[] }) {
   if (!errors?.length) return null;
@@ -37,17 +38,32 @@ export function CheckoutForm({
     );
   }
 
+  // Gateway returned an HTML+JS form to embed inline (SeQura).
+  if (state.widget) {
+    return <SequraCheckout html={state.widget.html} />;
+  }
+
   return (
     <form action={formAction} className="space-y-5">
       <input type="hidden" name="productId" value={productId} />
       <input type="hidden" name="currencyId" value={currencyId} />
 
-      <div>
-        <label className="mb-1.5 block text-sm font-medium text-gray-700">
-          Nombre completo
-        </label>
-        <Input name="name" placeholder="Tu nombre" required />
-        <FieldError errors={state.fieldErrors?.name} />
+      <div className="grid gap-4 sm:grid-cols-2">
+        <div>
+          <label className="mb-1.5 block text-sm font-medium text-gray-700">
+            Nombre
+          </label>
+          <Input name="name" placeholder="Tu nombre" required />
+          <FieldError errors={state.fieldErrors?.name} />
+        </div>
+
+        <div>
+          <label className="mb-1.5 block text-sm font-medium text-gray-700">
+            Apellidos
+          </label>
+          <Input name="surname" placeholder="Tus apellidos" required />
+          <FieldError errors={state.fieldErrors?.surname} />
+        </div>
       </div>
 
       <div>
@@ -58,10 +74,64 @@ export function CheckoutForm({
 
       <div>
         <label className="mb-1.5 block text-sm font-medium text-gray-700">
-          Teléfono <span className="text-gray-400">(opcional)</span>
+          Teléfono
         </label>
-        <Input name="phone" type="tel" placeholder="+34 600 000 000" />
+        <Input name="phone" type="tel" placeholder="+34 600 000 000" required />
         <FieldError errors={state.fieldErrors?.phone} />
+      </div>
+
+      <div>
+        <label className="mb-1.5 block text-sm font-medium text-gray-700">
+          Dirección
+        </label>
+        <Input name="addressLine" placeholder="Calle, número, piso" required />
+        <FieldError errors={state.fieldErrors?.addressLine} />
+      </div>
+
+      <div className="grid gap-4 sm:grid-cols-2">
+        <div>
+          <label className="mb-1.5 block text-sm font-medium text-gray-700">
+            Población
+          </label>
+          <Input name="city" placeholder="Ciudad" required />
+          <FieldError errors={state.fieldErrors?.city} />
+        </div>
+
+        <div>
+          <label className="mb-1.5 block text-sm font-medium text-gray-700">
+            Código postal
+          </label>
+          <Input name="postalCode" placeholder="28001" required />
+          <FieldError errors={state.fieldErrors?.postalCode} />
+        </div>
+      </div>
+
+      <div className="grid gap-4 sm:grid-cols-2">
+        <div>
+          <label className="mb-1.5 block text-sm font-medium text-gray-700">
+            Provincia
+          </label>
+          <Input name="province" placeholder="Madrid" required />
+          <FieldError errors={state.fieldErrors?.province} />
+        </div>
+
+        <div>
+          <label className="mb-1.5 block text-sm font-medium text-gray-700">
+            País
+          </label>
+          <select
+            name="country"
+            defaultValue="ES"
+            required
+            className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500"
+          >
+            <option value="ES">España</option>
+            <option value="PT">Portugal</option>
+            <option value="IT">Italia</option>
+            <option value="FR">Francia</option>
+          </select>
+          <FieldError errors={state.fieldErrors?.country} />
+        </div>
       </div>
 
       <fieldset className="space-y-2">

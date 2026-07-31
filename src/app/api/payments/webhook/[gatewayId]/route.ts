@@ -1,5 +1,6 @@
 import { revalidatePath } from "next/cache";
 import { db } from "@/lib/db";
+import { getSiteUrl } from "@/lib/env";
 import { getAdapter } from "@/lib/payments";
 import { applyWebhookResult, readGatewayConfig } from "@/lib/payments/checkout";
 
@@ -24,7 +25,7 @@ export async function POST(
 
   const gateway = await db.paymentGateway.findUnique({
     where: { id: gatewayId },
-    select: { provider: true, config: true, enabled: true },
+    select: { provider: true, config: true, enabled: true, live: true },
   });
   if (!gateway || !gateway.enabled) {
     return new Response("Gateway not configured", { status: 404 });
@@ -43,7 +44,8 @@ export async function POST(
     result = await adapter.handleWebhook(
       rawBody,
       request.headers,
-      readGatewayConfig(gateway.config)
+      readGatewayConfig(gateway.config),
+      { baseUrl: getSiteUrl(), gatewayId, live: gateway.live }
     );
   } catch (err) {
     // Bad signature or malformed event → 400 so the provider retries.
