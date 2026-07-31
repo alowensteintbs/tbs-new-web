@@ -5,6 +5,14 @@ import { z } from "zod";
 import { db } from "@/lib/db";
 import { requireSession } from "@/lib/auth/dal";
 import { ORDER_STATUSES } from "./_lib/status";
+import type { OrderStatus } from "@/generated/prisma/client";
+
+/**
+ * Statuses that imply the buyer's money was received at some point, so `paidAt`
+ * must be kept: PAID/FULFILLED are live paid states, REFUNDED was paid then
+ * returned. Only truly-unpaid states (PENDING/CANCELLED/FAILED) clear it.
+ */
+const PAID_STATES: readonly OrderStatus[] = ["PAID", "FULFILLED", "REFUNDED"];
 
 const statusSchema = z.object({
   id: z.string().min(1),
@@ -13,8 +21,9 @@ const statusSchema = z.object({
 
 /**
  * Change an order's status from the admin (e.g. confirm a manual transfer →
- * PAID, or cancel). Stamps `paidAt` when entering PAID and clears it otherwise,
- * so the timestamp always reflects the current paid state.
+ * PAID, or cancel). Stamps `paidAt` the first time the order reaches a paid
+ * state and keeps it while it stays paid (PAID→FULFILLED→REFUNDED); only a
+ * return to an unpaid state (CANCELLED/FAILED/PENDING) clears it.
  */
 export async function updateOrderStatus(
   id: string,
@@ -31,13 +40,15 @@ export async function updateOrderStatus(
   });
   if (!order) return { error: "El pedido no existe." };
 
-  const becomingPaid = parsed.data.status === "PAID";
+  const nextStatus = parsed.data.status as OrderStatus;
+  const isPaidState = PAID_STATES.includes(nextStatus);
   await db.order.update({
     where: { id: parsed.data.id },
     data: {
       status: parsed.data.status as never,
-      // Set paidAt on first transition to PAID; clear it if leaving PAID.
-      paidAt: becomingPaid ? order.paidAt ?? new Date() : null,
+      // Stamp on first entry to a paid state; preserve it while paid; clear
+      // only when returning to an unpaid state.
+      paidAt: isPaidState ? order.paidAt ?? new Date() : null,
     },
   });
 

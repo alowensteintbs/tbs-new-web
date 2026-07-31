@@ -6,6 +6,7 @@ import {
   PAYMENT_PROVIDERS,
   getProvider,
 } from "@/lib/payments/providers";
+import { ProviderLogo } from "./provider-logo";
 import {
   createGateway,
   updateGateway,
@@ -59,19 +60,34 @@ export function GatewayForm({
       )}
 
       {isCreate && (
-        <Field label="Proveedor" name="providerSelect">
-          <select
-            value={provider}
-            onChange={(e) => setProvider(e.target.value)}
-            className={inputCls}
-          >
+        <div>
+          <label className="mb-1.5 block text-sm font-medium text-gray-700">
+            Proveedor
+          </label>
+          <div className="grid gap-2 sm:grid-cols-2">
             {PAYMENT_PROVIDERS.map((p) => (
-              <option key={p.key} value={p.key}>
-                {p.label}
-              </option>
+              <label
+                key={p.key}
+                title={p.label}
+                className={`flex h-14 cursor-pointer items-center justify-center rounded-lg border p-3 transition ${
+                  provider === p.key
+                    ? "border-[#2563EB] bg-blue-50"
+                    : "border-gray-200 hover:border-blue-300"
+                }`}
+              >
+                <input
+                  type="radio"
+                  name="providerRadio"
+                  value={p.key}
+                  checked={provider === p.key}
+                  onChange={() => setProvider(p.key)}
+                  className="sr-only"
+                />
+                <ProviderLogo provider={p.key} />
+              </label>
             ))}
-          </select>
-        </Field>
+          </div>
+        </div>
       )}
 
       {def?.description && (

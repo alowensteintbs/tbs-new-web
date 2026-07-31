@@ -11,6 +11,7 @@ type NavItem = {
   label: string;
   icon: React.ReactNode;
   ready?: boolean; // false/undefined => "Próximamente", not clickable
+  requiredRole?: string; // only rendered for a session with this role
 };
 
 const navItems: NavItem[] = [
@@ -95,6 +96,17 @@ const navItems: NavItem[] = [
     ),
   },
   {
+    href: "/admin/users",
+    label: "Usuarios",
+    ready: true,
+    requiredRole: "SUPERADMIN",
+    icon: (
+      <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+      </svg>
+    ),
+  },
+  {
     href: "/admin/descuentos",
     label: "Descuentos",
     icon: (
@@ -121,24 +133,19 @@ const navItems: NavItem[] = [
       </svg>
     ),
   },
-  {
-    href: "/admin/usuarios",
-    label: "Usuarios",
-    icon: (
-      <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-      </svg>
-    ),
-  },
 ];
 
 type SidebarProps = {
   collapsed: boolean;
   onToggle: () => void;
+  role?: string;
 };
 
-export function Sidebar({ collapsed, onToggle }: SidebarProps) {
+export function Sidebar({ collapsed, onToggle, role }: SidebarProps) {
   const pathname = usePathname();
+  // Role-gated items (e.g. Usuarios) only show for the matching role; the page
+  // and its actions enforce the real check server-side regardless.
+  const items = navItems.filter((i) => !i.requiredRole || i.requiredRole === role);
 
   return (
     <aside
@@ -178,7 +185,7 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
 
       {/* Nav */}
       <nav className="flex-1 space-y-0.5 overflow-y-auto px-2 py-3">
-        {navItems.map((item) => {
+        {items.map((item) => {
           // Not developed yet: render a disabled item with a "Próximamente" badge.
           if (!item.ready) {
             return (
@@ -230,12 +237,18 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
   );
 }
 
-export function SidebarShell({ children }: { children: React.ReactNode }) {
+export function SidebarShell({
+  children,
+  role,
+}: {
+  children: React.ReactNode;
+  role?: string;
+}) {
   const [collapsed, setCollapsed] = useState(false);
 
   return (
     <div className="flex h-screen overflow-hidden bg-gray-50">
-      <Sidebar collapsed={collapsed} onToggle={() => setCollapsed((c) => !c)} />
+      <Sidebar collapsed={collapsed} onToggle={() => setCollapsed((c) => !c)} role={role} />
       <div className="flex flex-1 flex-col overflow-hidden">{children}</div>
     </div>
   );

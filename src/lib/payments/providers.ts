@@ -57,24 +57,10 @@ export const PAYMENT_PROVIDERS: PaymentProvider[] = [
       },
     ],
   },
-  {
-    key: "afterpay",
-    label: "Afterpay",
-    description: "Pago en cuotas (BNPL). Estados Unidos.",
-    fields: [
-      { key: "merchantId", label: "Merchant ID" },
-      { key: "secretKey", label: "Secret key", secret: true },
-    ],
-  },
-  {
-    key: "klarna",
-    label: "Klarna",
-    description: "Pago en cuotas (BNPL). Estados Unidos.",
-    fields: [
-      { key: "username", label: "API username (UID)" },
-      { key: "password", label: "API password", secret: true },
-    ],
-  },
+  // Nota: Klarna, Afterpay/Clearpay y Affirm NO son pasarelas propias acá — son
+  // métodos de pago BNPL de Stripe. Se activan en el Dashboard de Stripe y
+  // aparecen solos en el checkout embebido (dynamic payment methods), sin
+  // gateway ni adapter aparte. SeQura sí es propia porque tiene su API directa.
   {
     key: "sequra",
     label: "SeQura",

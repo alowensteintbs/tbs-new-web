@@ -3,10 +3,12 @@
 import Link from "next/link";
 import { useState, useTransition } from "react";
 import { deleteGateway, toggleGateway } from "../actions";
+import { ProviderLogo } from "./provider-logo";
 
 export type GatewayRow = {
   id: string;
   name: string;
+  provider: string;
   providerLabel: string;
   live: boolean;
   enabled: boolean;
@@ -55,7 +57,11 @@ function GatewayRowItem({ row }: { row: GatewayRow }) {
   return (
     <tr className="text-gray-900">
       <td className="px-5 py-3 font-medium">{row.name}</td>
-      <td className="px-5 py-3 text-gray-600">{row.providerLabel}</td>
+      <td className="px-5 py-3 text-gray-600">
+        <span className="flex h-5 items-center" title={row.providerLabel}>
+          <ProviderLogo provider={row.provider} />
+        </span>
+      </td>
       <td className="px-5 py-3 text-gray-600">
         {row.currencyCodes.length > 0 ? row.currencyCodes.join(", ") : "—"}
       </td>

@@ -22,6 +22,7 @@ export default async function GatewaysPage() {
   const rows = gateways.map((g) => ({
     id: g.id,
     name: g.name,
+    provider: g.provider,
     providerLabel: getProvider(g.provider)?.label ?? g.provider,
     live: g.live,
     enabled: g.enabled,
