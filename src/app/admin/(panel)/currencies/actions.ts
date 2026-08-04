@@ -17,7 +17,7 @@ const currencySchema = z.object({
   code: z
     .string()
     .trim()
-    .regex(/^[A-Z]{3}$/, "Usá el código ISO de 3 letras (ej. EUR)"),
+    .regex(/^[A-Z]{3}$/, "Usa el código ISO de 3 letras (ej. EUR)"),
   name: z.string().min(1, "El nombre es requerido").max(60),
   symbol: z.string().min(1, "El símbolo es requerido").max(8),
   enabled: z.boolean().default(true),

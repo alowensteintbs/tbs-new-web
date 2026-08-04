@@ -4,6 +4,7 @@ import { db } from "@/lib/db";
 import { formatPrice } from "@/lib/currency-resolver";
 import { readGatewayConfig } from "@/lib/payments/checkout";
 import { Container } from "@/components/ui/container";
+import { PendingPoller } from "./pending-poller";
 
 export const metadata: Metadata = { title: "Tu pedido" };
 
@@ -42,16 +43,19 @@ const STATUS_COPY: Record<
   FAILED: {
     label: "Pago fallido",
     tone: "bg-red-100 text-red-700",
-    note: "El pago no pudo completarse. Probá de nuevo o contactanos.",
+    note: "El pago no pudo completarse. Prueba de nuevo o contáctanos.",
   },
 };
 
 export default async function OrderStatusPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ paid?: string }>;
 }) {
   const { id } = await params;
+  const { paid } = await searchParams;
   const order = await db.order.findUnique({
     where: { id },
     select: {
@@ -66,6 +70,13 @@ export default async function OrderStatusPage({
   if (!order) notFound();
 
   const status = STATUS_COPY[order.status] ?? STATUS_COPY.PENDING!;
+
+  // The buyer just came back from a redirect provider: the confirming webhook
+  // may still be in flight. Poll (and show a distinct "confirming" copy) while
+  // the order is PENDING, except for manual transfer (no webhook to wait for).
+  const awaitingConfirmation =
+    order.status === "PENDING" && order.gateway?.provider !== "manual";
+  const justReturned = paid === "1";
 
   // For a pending manual transfer, surface the payment instructions.
   const manualInstructions =
@@ -83,8 +94,17 @@ export default async function OrderStatusPage({
             {status.label}
           </span>
           <h1 className="text-2xl font-bold text-gray-900">Pedido {order.number}</h1>
-          <p className="text-sm text-gray-500">{status.note}</p>
+          {awaitingConfirmation && justReturned ? (
+            <p className="flex items-center justify-center gap-2 text-sm text-gray-500">
+              <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-gray-300 border-t-gray-600" />
+              Estamos confirmando tu pago, esto puede tardar unos segundos…
+            </p>
+          ) : (
+            <p className="text-sm text-gray-500">{status.note}</p>
+          )}
         </div>
+
+        {awaitingConfirmation && <PendingPoller active />}
 
         <div className="rounded-xl border border-gray-200 bg-white p-5">
           <ul className="space-y-2 text-sm text-gray-700">

@@ -84,7 +84,7 @@ export function ProductForm({
             ref={slugRef}
             name="slug"
             defaultValue={initialValues?.slug}
-            placeholder="se genera del nombre si lo dejás vacío"
+            placeholder="se genera del nombre si lo dejas vacío"
             className={inputCls}
             onInput={() => {
               if (slugRef.current) slugRef.current.dataset.touched = "1";
@@ -145,7 +145,7 @@ export function ProductForm({
         <legend className="text-sm font-medium text-gray-700">Precios</legend>
         {currencies.length === 0 ? (
           <p className="text-sm text-gray-500">
-            No hay monedas habilitadas. Habilitá al menos una para cargar precios.
+            No hay monedas habilitadas. Habilita al menos una para cargar precios.
           </p>
         ) : (
           <div className="grid gap-3 sm:grid-cols-2">

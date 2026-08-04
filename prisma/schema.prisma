@@ -52,6 +52,32 @@ model SiteSetting {
   updatedAt DateTime @updatedAt
 }
 
+/// Transactional email transport config (singleton row, id = "singleton").
+/// `config` holds the encrypted JSON credentials (Resend API key); the from
+/// name/address are non-sensitive and kept as plain columns.
+model EmailSettings {
+  id        String   @id @default("singleton")
+  fromEmail String   @default("")
+  fromName  String   @default("")
+  // Encrypted JSON, e.g. {"apiKey":"re_..."}. MySQL TEXT has no DEFAULT, so the
+  // empty-encrypted default is written in code (see settings action).
+  config    String   @db.Text
+  updatedAt DateTime @updatedAt
+}
+
+/// A transactional email whose subject/HTML the admin edits. `key` matches an
+/// entry in the email template catalog (src/lib/email/templates.ts), which maps
+/// it to the order event that triggers it (PAID/FAILED/REFUNDED).
+model EmailTemplate {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  enabled   Boolean  @default(false)
+  subject   String
+  html      String   @db.Text
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
 /// URL redirects (replaces the Redirection plugin). Applied in proxy.ts.
 model Redirect {
   id         String   @id @default(cuid())

@@ -48,3 +48,4 @@ next-env.d.ts
 
 # Figma source cache (raw node tree + asset manifest, keyed by version)
 /.figma-cache
+/public/uploads

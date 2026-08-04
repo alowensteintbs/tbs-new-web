@@ -44,9 +44,14 @@ async function seedSuperadmin() {
 }
 
 const DEFAULT_CURRENCIES = [
-  { code: "EUR", name: "Euro", symbol: "€" },
-  { code: "MXN", name: "Peso mexicano", symbol: "$" },
-  { code: "USD", name: "US Dollar", symbol: "$" },
+  {
+    code: "EUR",
+    name: "Euro",
+    symbol: "€",
+    countryCodes: "ES,PT,IT,FR,DE,NL,BE,IE,AT,FI,GR,LU",
+  },
+  { code: "MXN", name: "Peso mexicano", symbol: "$", countryCodes: "MX" },
+  { code: "USD", name: "US Dollar", symbol: "$", countryCodes: "US" },
 ];
 
 async function seedCurrencies() {

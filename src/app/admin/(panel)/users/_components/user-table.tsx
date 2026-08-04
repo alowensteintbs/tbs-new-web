@@ -81,7 +81,7 @@ function UserRowItem({ row, isSelf }: { row: UserRow; isSelf: boolean }) {
     <tr className="text-gray-900">
       <td className="px-5 py-3 font-medium">
         {row.name}
-        {isSelf && <span className="ml-2 text-xs font-normal text-gray-400">(vos)</span>}
+        {isSelf && <span className="ml-2 text-xs font-normal text-gray-400">(tú)</span>}
       </td>
       <td className="px-5 py-3 text-gray-600">{row.email}</td>
       <td className="px-5 py-3">
@@ -102,7 +102,7 @@ function UserRowItem({ row, isSelf }: { row: UserRow; isSelf: boolean }) {
             {isSelf ? (
               <span
                 className="text-sm font-medium text-gray-300"
-                title="No podés eliminar tu propio usuario"
+                title="No puedes eliminar tu propio usuario"
               >
                 Eliminar
               </span>

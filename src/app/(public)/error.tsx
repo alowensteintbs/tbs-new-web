@@ -13,7 +13,7 @@ export default function PublicError({
     <Container className="py-20 text-center">
       <h1 className="text-2xl font-semibold text-gray-900">Algo salió mal</h1>
       <p className="mt-2 text-gray-500">
-        Ocurrió un error al cargar esta página. Intentá de nuevo.
+        Ocurrió un error al cargar esta página. Inténtalo de nuevo.
       </p>
       <Button onClick={reset} className="mt-6">
         Reintentar

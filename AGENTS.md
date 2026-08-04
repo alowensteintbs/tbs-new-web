@@ -28,7 +28,7 @@ TBS (Traders Business School) está construyendo un e-commerce propio en Next.js
 - `src/app/(public)/` — tienda: `[slug]` (páginas generadas), `products/[slug]`, `checkout/[productId]`, `orders/[number]`.
 - `src/app/admin/(panel)/` — panel: `dashboard`, `products`, `categories`, `currencies`, `gateways`, `orders`, `pages`, `redirects`.
 - `src/app/admin/api/` — `generate` (Figma→React), `upload`.
-- `src/lib/` — `db.ts`, `auth/` (`session.ts`, `dal.ts`), `payments/` (registry + adapters), `catalog.ts`, `seo.ts`, `crypto.ts` (AES-256-GCM), `figma-clone.ts`, `page-files.ts`, `currency-resolver.ts`, `settings.ts`, `bunny.ts`.
+- `src/lib/` — `db.ts`, `auth/` (`session.ts`, `dal.ts`), `payments/` (registry + adapters), `catalog.ts`, `seo.ts`, `crypto.ts` (AES-256-GCM), `figma-clone.ts`, `page-files.ts`, `currency-resolver.ts`, `settings.ts`, `storage.ts` (uploads a disco local), `email/`.
 - `src/components/` — `ui/`, `catalog/`, `seo/`. `src/app/admin/_components/` — chrome del panel.
 - `prisma/schema.prisma` · migraciones en `prisma/migrations/` · seed en `prisma/seed.ts`.
 

@@ -6,7 +6,7 @@ export default function PublicNotFound() {
     <Container className="py-20 text-center">
       <h1 className="text-2xl font-semibold text-gray-900">Página no encontrada</h1>
       <p className="mt-2 text-gray-500">
-        El contenido que buscás no existe o fue movido.
+        El contenido que buscas no existe o fue movido.
       </p>
       <Link
         href="/"

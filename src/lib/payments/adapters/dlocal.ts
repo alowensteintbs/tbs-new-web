@@ -1,11 +1,6 @@
 import "server-only";
 import { createHmac, timingSafeEqual } from "node:crypto";
-import type {
-  GatewayConfig,
-  PayableOrder,
-  PaymentAdapter,
-  PaymentContext,
-} from "../types";
+import type { PayableOrder, PaymentAdapter } from "../types";
 
 /**
  * dLocal adapter (payins REDIRECT flow — emerging markets, multi-currency).

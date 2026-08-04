@@ -9,7 +9,7 @@ export default function NewCurrencyPage() {
       <div>
         <h2 className="text-xl font-bold text-gray-900">Nueva moneda</h2>
         <p className="mt-1 text-sm text-gray-500">
-          Agregá una moneda para poder cargar precios en ella.
+          Añade una moneda para poder cargar precios en ella.
         </p>
       </div>
       <CurrencyForm />

@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { db } from "@/lib/db";
 import { getActiveCurrency, formatPrice } from "@/lib/currency-resolver";
 import { getGatewaysForCurrency } from "@/lib/payments/checkout";
+import { countryOptions } from "@/lib/countries";
 import { Container } from "@/components/ui/container";
 import { CheckoutForm } from "../_components/checkout-form";
 
@@ -32,6 +33,18 @@ export default async function CheckoutPage({
 
   const price = product.prices[0];
   const gateways = price ? await getGatewaysForCurrency(currency.id) : [];
+
+  // Billing-country options: restricted to the currency's configured countries
+  // when set (so dLocal/BNPL only see supported countries), else the full list.
+  const currencyRow = await db.currency.findUnique({
+    where: { id: currency.id },
+    select: { countryCodes: true },
+  });
+  const allowedCountries = (currencyRow?.countryCodes ?? "")
+    .split(",")
+    .map((c) => c.trim())
+    .filter(Boolean);
+  const countries = countryOptions(allowedCountries);
 
   return (
     <Container className="py-12">
@@ -63,6 +76,7 @@ export default async function CheckoutPage({
               productId={product.id}
               currencyId={currency.id}
               gateways={gateways}
+              countries={countries}
             />
           </>
         )}

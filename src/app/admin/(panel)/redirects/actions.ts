@@ -16,7 +16,7 @@ const redirectSchema = z.object({
     .trim()
     .min(1, "El destino es requerido")
     .refine((v) => v.startsWith("/") || v.startsWith("http"), {
-      message: "Usá una ruta (/nueva) o una URL absoluta (https://...)",
+      message: "Usa una ruta (/nueva) o una URL absoluta (https://...)",
     }),
   statusCode: z.coerce.number().int().refine((v) => v === 301 || v === 302, {
     message: "El código debe ser 301 o 302",

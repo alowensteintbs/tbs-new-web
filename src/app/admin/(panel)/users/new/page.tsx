@@ -12,7 +12,7 @@ export default async function NewUserPage() {
       <div>
         <h2 className="text-xl font-bold text-gray-900">Nuevo usuario</h2>
         <p className="mt-1 text-sm text-gray-500">
-          Creá un usuario del panel y asignale un rol.
+          Crea un usuario del panel y asígnale un rol.
         </p>
       </div>
       <UserForm />

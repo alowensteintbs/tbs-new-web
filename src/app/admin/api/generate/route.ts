@@ -85,7 +85,7 @@ export async function POST(req: NextRequest) {
       );
     }
     console.error("[generate] error:", e);
-    return NextResponse.json({ error: "No se pudo generar la página. Probá de nuevo." }, { status: 500 });
+    return NextResponse.json({ error: "No se pudo generar la página. Prueba de nuevo." }, { status: 500 });
   }
 }
 
@@ -98,11 +98,11 @@ class UserError extends Error {
 
 /** Turns a Retry-After value (seconds) into a human wait message. */
 function retryWaitMessage(seconds?: number): string {
-  if (!seconds || seconds <= 0) return "Esperá unos minutos y volvé a intentar.";
-  if (seconds < 60) return "Esperá un minuto y volvé a intentar.";
-  if (seconds < 3600) return `Volvé a intentar en unos ${Math.ceil(seconds / 60)} minutos.`;
-  if (seconds < 86400) return `Volvé a intentar en unas ${Math.ceil(seconds / 3600)} horas.`;
-  return `Volvé a intentar en ${Math.ceil(seconds / 86400)} días.`;
+  if (!seconds || seconds <= 0) return "Espera unos minutos y vuelve a intentar.";
+  if (seconds < 60) return "Espera un minuto y vuelve a intentar.";
+  if (seconds < 3600) return `Vuelve a intentar en unos ${Math.ceil(seconds / 60)} minutos.`;
+  if (seconds < 86400) return `Vuelve a intentar en unas ${Math.ceil(seconds / 3600)} horas.`;
+  return `Vuelve a intentar en ${Math.ceil(seconds / 86400)} días.`;
 }
 
 function retryAfterSeconds(res: Response): number | undefined {
@@ -121,10 +121,10 @@ async function fetchFileVersion(fileKey: string, token: string): Promise<string>
     throw new UserError(`Alcanzaste el límite de peticiones de Figma. ${retryWaitMessage(retryAfterSeconds(res))}`, 429);
   }
   if (res.status === 403 || res.status === 404) {
-    throw new UserError("No se pudo acceder al diseño. Revisá que el link de Figma sea correcto y tenga acceso.", 400);
+    throw new UserError("No se pudo acceder al diseño. Revisa que el link de Figma sea correcto y tenga acceso.", 400);
   }
   if (!res.ok) {
-    throw new UserError("Figma no respondió correctamente. Probá de nuevo en un momento.", 502);
+    throw new UserError("Figma no respondió correctamente. Prueba de nuevo en un momento.", 502);
   }
 
   const json = (await res.json()) as { version?: string; lastModified?: string };
@@ -141,10 +141,10 @@ async function fetchNodeTree(fileKey: string, nodeId: string, token: string): Pr
     throw new UserError(`Alcanzaste el límite de peticiones de Figma. ${retryWaitMessage(retryAfterSeconds(res))}`, 429);
   }
   if (res.status === 403 || res.status === 404) {
-    throw new UserError("No se pudo acceder al diseño. Revisá que el link de Figma sea correcto y tenga acceso.", 400);
+    throw new UserError("No se pudo acceder al diseño. Revisa que el link de Figma sea correcto y tenga acceso.", 400);
   }
   if (!res.ok) {
-    throw new UserError("Figma no respondió correctamente. Probá de nuevo en un momento.", 502);
+    throw new UserError("Figma no respondió correctamente. Prueba de nuevo en un momento.", 502);
   }
 
   return res.json();

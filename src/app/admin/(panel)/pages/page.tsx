@@ -56,7 +56,7 @@ export default async function PaginasPage() {
         <div>
           <h2 className="text-2xl font-bold text-gray-900">Maquetador</h2>
           <p className="mt-1 text-sm text-gray-500">
-            Generá componentes React desde Figma usando IA.
+            Genera componentes React desde Figma usando IA.
           </p>
         </div>
         <Link

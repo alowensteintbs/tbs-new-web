@@ -9,7 +9,7 @@ export default function NuevaPage() {
       <div>
         <h2 className="text-xl font-bold text-gray-900">Nueva página</h2>
         <p className="mt-1 text-sm text-gray-500">
-          Ingresá los datos de la página y el frame de Figma a maquetar.
+          Introduce los datos de la página y el frame de Figma a maquetar.
         </p>
       </div>
       <PageForm />

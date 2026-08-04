@@ -57,7 +57,7 @@ export function CategoryForm({ initialValues }: { initialValues?: InitialValues 
           ref={slugRef}
           name="slug"
           defaultValue={initialValues?.slug}
-          placeholder="cursos (se genera del nombre si lo dejás vacío)"
+          placeholder="cursos (se genera del nombre si lo dejas vacío)"
           className={inputCls}
           onInput={() => {
             if (slugRef.current) slugRef.current.dataset.touched = "1";

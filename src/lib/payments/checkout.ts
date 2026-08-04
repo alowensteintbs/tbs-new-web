@@ -1,6 +1,7 @@
 import "server-only";
 import { db } from "@/lib/db";
 import { decrypt } from "@/lib/crypto";
+import { sendOrderStatusEmail } from "@/lib/email/notify";
 import { getProvider } from "./providers";
 import type { GatewayConfig, WebhookResult } from "./types";
 
@@ -95,6 +96,10 @@ export async function applyWebhookResult(
       paymentMeta: result.raw ?? undefined,
     },
   });
+
+  // Fire the transactional email for this transition (best-effort; awaited so it
+  // completes before a serverless invocation ends, but never throws).
+  await sendOrderStatusEmail(order.id, result.status);
 
   return order.id;
 }

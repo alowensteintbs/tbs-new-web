@@ -15,7 +15,7 @@ export default async function NewProductPage() {
       <div>
         <h2 className="text-xl font-bold text-gray-900">Nuevo producto</h2>
         <p className="mt-1 text-sm text-gray-500">
-          Cargá el nombre, la descripción y los precios por moneda.
+          Carga el nombre, la descripción y los precios por moneda.
         </p>
       </div>
       <ProductForm currencies={currencies} categories={categories} />

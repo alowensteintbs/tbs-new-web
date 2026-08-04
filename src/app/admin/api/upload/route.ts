@@ -1,22 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/auth/dal";
-import { buildStoragePath, isBunnyConfigured, uploadToBunny } from "@/lib/bunny";
+import { buildStoragePath, saveUpload } from "@/lib/storage";
 
 const MAX_BYTES = 5 * 1024 * 1024; // 5 MB
 const ALLOWED = new Set(["image/jpeg", "image/png", "image/webp", "image/avif"]);
 
-/** Uploads a product image to Bunny Storage and returns its public CDN URL. */
+/** Uploads a product image to local disk and returns its public URL. */
 export async function POST(req: NextRequest) {
   const session = await getSession();
   if (!session) {
     return NextResponse.json({ error: "No autorizado" }, { status: 401 });
-  }
-
-  if (!isBunnyConfigured()) {
-    return NextResponse.json(
-      { error: "Bunny Storage no está configurado en el servidor." },
-      { status: 500 }
-    );
   }
 
   const formData = await req.formData();
@@ -26,7 +19,7 @@ export async function POST(req: NextRequest) {
   }
   if (!ALLOWED.has(file.type)) {
     return NextResponse.json(
-      { error: "Formato no permitido. Usá JPG, PNG, WebP o AVIF." },
+      { error: "Formato no permitido. Usa JPG, PNG, WebP o AVIF." },
       { status: 400 }
     );
   }
@@ -36,7 +29,7 @@ export async function POST(req: NextRequest) {
 
   try {
     const path = buildStoragePath(file.name);
-    const { url } = await uploadToBunny(await file.arrayBuffer(), path, file.type);
+    const { url } = await saveUpload(await file.arrayBuffer(), path, file.type);
     return NextResponse.json({ url });
   } catch (err) {
     return NextResponse.json(

@@ -113,11 +113,11 @@ export async function updateUser(
     if (superadmins <= 1) {
       return {
         error:
-          "No se puede cambiar el rol: es el único superadmin. Asigná otro superadmin primero.",
+          "No se puede cambiar el rol: es el único superadmin. Asigna otro superadmin primero.",
       };
     }
     if (target.id === session.userId) {
-      return { error: "No podés quitarte a vos mismo el rol de superadmin." };
+      return { error: "No puedes quitarte a ti mismo el rol de superadmin." };
     }
   }
 
@@ -142,7 +142,7 @@ export async function deleteUser(id: string): Promise<{ error?: string }> {
   const session = await requireRole("SUPERADMIN");
 
   if (id === session.userId) {
-    return { error: "No podés eliminar tu propio usuario." };
+    return { error: "No puedes eliminar tu propio usuario." };
   }
 
   const target = await db.user.findUnique({

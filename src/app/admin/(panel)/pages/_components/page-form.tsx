@@ -60,7 +60,7 @@ export function PageForm({ initialValues }: { initialValues?: InitialValues }) {
     if (!val) { setFigmaState(null); return; }
     const parsed = parseFigmaUrl(val);
     if (!parsed) {
-      setFigmaState({ ok: false, message: "No se pudo parsear el link. Asegurate de que sea un link de Figma con un frame seleccionado." });
+      setFigmaState({ ok: false, message: "No se pudo parsear el link. Asegúrate de que sea un link de Figma con un frame seleccionado." });
       return;
     }
     if (fileKeyRef.current) fileKeyRef.current.value = parsed.fileKey;
@@ -125,7 +125,7 @@ export function PageForm({ initialValues }: { initialValues?: InitialValues }) {
         )}
         {figmaError && <p className="mt-1.5 text-xs text-red-500">{figmaError}</p>}
         <p className="mt-1 text-xs text-gray-400">
-          Seleccioná un frame en Figma, copiá el link (Ctrl+L) y pegalo acá.
+          Selecciona un frame en Figma, copia el link (Ctrl+L) y pégalo aquí.
         </p>
       </div>
 

@@ -9,7 +9,7 @@ export default function NewRedirectPage() {
       <div>
         <h2 className="text-xl font-bold text-gray-900">Nueva redirección</h2>
         <p className="mt-1 text-sm text-gray-500">
-          Redirigí una URL vieja a una nueva (301 permanente o 302 temporal).
+          Redirige una URL vieja a una nueva (301 permanente o 302 temporal).
         </p>
       </div>
       <RedirectForm />

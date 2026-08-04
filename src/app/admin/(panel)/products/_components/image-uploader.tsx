@@ -6,9 +6,9 @@ import { useState, useTransition } from "react";
 export type ProductImageValue = { url: string; alt: string | null };
 
 /**
- * Uploads images to Bunny (via /admin/api/upload) and tracks the resulting CDN
- * URLs. The URLs are submitted with the product form as `image_url[]` /
- * `image_alt[]` hidden inputs, in order.
+ * Uploads images (via /admin/api/upload) and tracks the resulting public URLs.
+ * The URLs are submitted with the product form as `image_url[]` / `image_alt[]`
+ * hidden inputs, in order.
  */
 export function ImageUploader({
   initialImages,

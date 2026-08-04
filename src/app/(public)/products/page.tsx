@@ -50,7 +50,7 @@ export default async function ProductsPage({
           Productos
         </h1>
         <p className="max-w-2xl text-sm text-gray-500 sm:text-base">
-          Explorá los cursos y programas de Traders Business School para potenciar tu
+          Explora los cursos y programas de Traders Business School para potenciar tu
           operativa en los mercados.
         </p>
       </div>
@@ -86,8 +86,8 @@ export default async function ProductsPage({
             No hay productos disponibles
           </p>
           <p className="mt-1 max-w-sm text-sm text-gray-500">
-            Todavía no cargamos productos en esta categoría. Volvé a intentarlo más
-            tarde o probá con otra categoría.
+            Todavía no cargamos productos en esta categoría. Vuelve a intentarlo más
+            tarde o prueba con otra categoría.
           </p>
         </div>
       ) : (

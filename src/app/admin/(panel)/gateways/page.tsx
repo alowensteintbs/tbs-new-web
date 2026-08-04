@@ -35,7 +35,7 @@ export default async function GatewaysPage() {
         <div>
           <h2 className="text-xl font-bold text-gray-900">Pasarelas de pago</h2>
           <p className="mt-1 text-sm text-gray-500">
-            Configurá los métodos de pago. Un proveedor puede tener varias
+            Configura los métodos de pago. Un proveedor puede tener varias
             instancias (ej: una cuenta Stripe por región), cada una con sus
             propias credenciales y monedas.
           </p>

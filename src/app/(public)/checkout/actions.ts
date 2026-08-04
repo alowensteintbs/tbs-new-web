@@ -15,7 +15,7 @@ import type { PayableOrder } from "@/lib/payments/types";
 const checkoutSchema = z.object({
   productId: z.string().min(1),
   currencyId: z.string().min(1),
-  gatewayId: z.string().min(1, "Elegí un método de pago"),
+  gatewayId: z.string().min(1, "Elige un método de pago"),
   email: z.email("Email inválido"),
   name: z.string().trim().min(1, "El nombre es requerido").max(120),
   surname: z.string().trim().min(1, "Los apellidos son requeridos").max(120),

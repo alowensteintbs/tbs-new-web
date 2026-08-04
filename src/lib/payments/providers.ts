@@ -58,11 +58,11 @@ export const PAYMENT_PROVIDERS: PaymentProvider[] = [
         key: "webhookId",
         label: "Webhook ID",
         placeholder: "WH-…",
-        help: "El ID del webhook creado en el panel de PayPal (Apps & Credentials → tu app → Webhooks). Se usa para verificar la firma de las notificaciones. Apuntá el webhook a /api/payments/webhook/<id-del-gateway>.",
+        help: "El ID del webhook creado en el panel de PayPal (Apps & Credentials → tu app → Webhooks). Se usa para verificar la firma de las notificaciones. Apunta el webhook a /api/payments/webhook/<id-del-gateway>.",
       },
     ],
   },
-  // Nota: Klarna, Afterpay/Clearpay y Affirm NO son pasarelas propias acá — son
+  // Nota: Klarna, Afterpay/Clearpay y Affirm NO son pasarelas propias aquí — son
   // métodos de pago BNPL de Stripe. Se activan en el Dashboard de Stripe y
   // aparecen solos en el checkout embebido (dynamic payment methods), sin
   // gateway ni adapter aparte. SeQura sí es propia porque tiene su API directa.
@@ -82,7 +82,7 @@ export const PAYMENT_PROVIDERS: PaymentProvider[] = [
         key: "secret",
         label: "API secret",
         secret: true,
-        help: "Usá credenciales de sandbox para probar antes de pasar a live.",
+        help: "Usa credenciales de sandbox para probar antes de pasar a live.",
       },
     ],
   },
@@ -95,12 +95,12 @@ export const PAYMENT_PROVIDERS: PaymentProvider[] = [
         key: "privateKey",
         label: "Clave privada de API",
         secret: true,
-        help: "Bearer token de Aplazame. Usá la clave de sandbox para probar y la de producción al pasar a live. Autentica tanto la creación del checkout como las notificaciones (webhook).",
+        help: "Bearer token de Aplazame. Usa la clave de sandbox para probar y la de producción al pasar a live. Autentica tanto la creación del checkout como las notificaciones (webhook).",
       },
       {
         key: "productType",
         label: "Modalidad a ofrecer",
-        help: "Elegí qué financiación mostrar en el checkout de Aplazame. «Que elija el comprador» ofrece todas las modalidades habilitadas en tu cuenta.",
+        help: "Elige qué financiación mostrar en el checkout de Aplazame. «Que elija el comprador» ofrece todas las modalidades habilitadas en tu cuenta.",
         options: [
           { value: "", label: "Que elija el comprador (todas)" },
           { value: "instalments", label: "A plazos (instalments)" },
@@ -127,7 +127,7 @@ export const PAYMENT_PROVIDERS: PaymentProvider[] = [
         key: "secretKey",
         label: "Secret Key",
         secret: true,
-        help: "Clave secreta usada para firmar (HMAC-SHA256) las peticiones y verificar las notificaciones. Usá credenciales de sandbox para probar.",
+        help: "Clave secreta usada para firmar (HMAC-SHA256) las peticiones y verificar las notificaciones. Usa credenciales de sandbox para probar.",
       },
     ],
   },
@@ -135,7 +135,7 @@ export const PAYMENT_PROVIDERS: PaymentProvider[] = [
     key: "manual",
     label: "Transferencia / Manual",
     description:
-      "Sin API: el cliente paga por fuera y marcás el pedido como pagado a mano.",
+      "Sin API: el cliente paga por fuera y marcas el pedido como pagado a mano.",
     fields: [
       {
         key: "instructions",

@@ -59,7 +59,7 @@ export default function LoginPage() {
 
           <div className="mb-8">
             <h1 className="text-2xl font-bold text-gray-900">Iniciar sesión</h1>
-            <p className="mt-1 text-sm text-gray-500">Ingresá con tu cuenta de administrador</p>
+            <p className="mt-1 text-sm text-gray-500">Accede con tu cuenta de administrador</p>
           </div>
 
           <LoginForm />

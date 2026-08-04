@@ -52,7 +52,7 @@ export function PageGallery({ pages, thumbnails }: Props) {
           <LayoutGridIcon className="h-7 w-7 text-gray-400" />
         </div>
         <p className="text-sm font-medium text-gray-700">Sin páginas todavía</p>
-        <p className="mt-1 text-xs text-gray-400">Creá tu primera página para empezar a maquetar.</p>
+        <p className="mt-1 text-xs text-gray-400">Crea tu primera página para empezar a maquetar.</p>
       </div>
     );
   }

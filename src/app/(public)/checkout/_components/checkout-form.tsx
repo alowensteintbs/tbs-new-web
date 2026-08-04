@@ -4,6 +4,7 @@ import { useActionState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import type { AvailableGateway } from "@/lib/payments/checkout";
+import type { CountryOption } from "@/lib/countries";
 import { placeOrder, type CheckoutState } from "../actions";
 import { StripeEmbeddedCheckout } from "./stripe-embedded-checkout";
 import { SequraCheckout } from "./sequra-checkout";
@@ -17,10 +18,12 @@ export function CheckoutForm({
   productId,
   currencyId,
   gateways,
+  countries,
 }: {
   productId: string;
   currencyId: string;
   gateways: AvailableGateway[];
+  countries: CountryOption[];
 }) {
   const [state, formAction, isPending] = useActionState<CheckoutState, FormData>(
     placeOrder,
@@ -121,14 +124,15 @@ export function CheckoutForm({
           </label>
           <select
             name="country"
-            defaultValue="ES"
+            defaultValue={countries[0]?.code}
             required
             className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500"
           >
-            <option value="ES">España</option>
-            <option value="PT">Portugal</option>
-            <option value="IT">Italia</option>
-            <option value="FR">Francia</option>
+            {countries.map((c) => (
+              <option key={c.code} value={c.code}>
+                {c.name}
+              </option>
+            ))}
           </select>
           <FieldError errors={state.fieldErrors?.country} />
         </div>
