@@ -1,5 +1,4 @@
 import "server-only";
-import { randomInt } from "node:crypto";
 import { db } from "@/lib/db";
 import { decrypt } from "@/lib/crypto";
 import { getProvider } from "./providers";
@@ -101,15 +100,10 @@ export async function applyWebhookResult(
 }
 
 /**
- * Human-friendly, collision-resistant order number, e.g. "TBS-20260616-4827".
- * Date prefix for readability + random suffix; `number` is unique in the DB so
- * the rare clash surfaces as a constraint error and the order is retried.
+ * Human-friendly order number derived from the order's atomic autoincrement
+ * `seq`, e.g. "TBS-000123". Sequential and guaranteed unique — no random suffix,
+ * so no birthday-collision crash at checkout.
  */
-export function generateOrderNumber(): string {
-  const d = new Date();
-  const ymd = `${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, "0")}${String(
-    d.getDate()
-  ).padStart(2, "0")}`;
-  const suffix = String(randomInt(0, 10000)).padStart(4, "0");
-  return `TBS-${ymd}-${suffix}`;
+export function formatOrderNumber(seq: number): string {
+  return `TBS-${String(seq).padStart(6, "0")}`;
 }

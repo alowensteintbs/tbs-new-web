@@ -115,8 +115,8 @@ function buildOrderBody(order: PayableSubset, ctx: PaymentContext) {
           locale: "es-ES",
           shipping_preference: "NO_SHIPPING", // digital goods
           user_action: "PAY_NOW",
-          return_url: `${ctx.baseUrl}/orders/${order.number}?paid=1`,
-          cancel_url: `${ctx.baseUrl}/orders/${order.number}`,
+          return_url: `${ctx.baseUrl}/orders/${order.id}?paid=1`,
+          cancel_url: `${ctx.baseUrl}/orders/${order.id}`,
         },
       },
     },

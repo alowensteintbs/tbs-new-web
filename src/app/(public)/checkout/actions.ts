@@ -1,12 +1,13 @@
 "use server";
 
+import { randomUUID } from "node:crypto";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { db } from "@/lib/db";
 import { getSiteUrl } from "@/lib/env";
 import { getAdapter } from "@/lib/payments";
 import {
-  generateOrderNumber,
+  formatOrderNumber,
   readGatewayConfig,
 } from "@/lib/payments/checkout";
 import type { PayableOrder } from "@/lib/payments/types";
@@ -138,32 +139,43 @@ export async function placeOrder(
     },
   });
 
-  const order = await db.order.create({
-    data: {
-      number: generateOrderNumber(),
-      customerId: customer.id,
-      currencyId: input.currencyId,
-      gatewayId: gateway.id,
-      total: price.amount,
-      status: "PENDING",
-      items: {
-        create: {
-          productId: product.id,
-          productName: product.name,
-          productSku: product.sku,
-          unitPrice: price.amount,
-          quantity: 1,
+  // The pretty number is derived from the atomic autoincrement `seq`, which only
+  // exists after insert. So we create the row (with a throwaway-unique temp
+  // number to satisfy the NOT NULL + UNIQUE column), then rewrite `number` from
+  // `seq` in the same transaction. Readers never observe the temp value.
+  const order = await db.$transaction(async (tx) => {
+    const created = await tx.order.create({
+      data: {
+        number: `tmp-${randomUUID()}`,
+        customerId: customer.id,
+        currencyId: input.currencyId,
+        gatewayId: gateway.id,
+        total: price.amount,
+        status: "PENDING",
+        items: {
+          create: {
+            productId: product.id,
+            productName: product.name,
+            productSku: product.sku,
+            unitPrice: price.amount,
+            quantity: 1,
+          },
         },
       },
-    },
-    select: {
-      id: true,
-      number: true,
-      total: true,
-      status: true,
-      currency: { select: { code: true } },
-      items: { select: { productName: true, unitPrice: true, quantity: true } },
-    },
+      select: { id: true, seq: true },
+    });
+    return tx.order.update({
+      where: { id: created.id },
+      data: { number: formatOrderNumber(created.seq) },
+      select: {
+        id: true,
+        number: true,
+        total: true,
+        status: true,
+        currency: { select: { code: true } },
+        items: { select: { productName: true, unitPrice: true, quantity: true } },
+      },
+    });
   });
 
   const payable: PayableOrder = {
@@ -229,6 +241,7 @@ export async function placeOrder(
   }
 
   // External providers redirect off-site; manual/internal go to our status page.
+  // The status URL keys off the unguessable `id`, not the sequential number.
   if (start.kind === "redirect") redirect(start.url);
-  redirect(`/orders/${order.number}`);
+  redirect(`/orders/${order.id}`);
 }

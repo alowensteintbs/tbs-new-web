@@ -15,6 +15,11 @@ export type CredentialField = {
   secret?: boolean;
   placeholder?: string;
   help?: string;
+  /**
+   * When set, the admin renders a `<select>` with these options instead of a
+   * free-text input (avoids typos on constrained values). Not for secrets.
+   */
+  options?: { value: string; label: string }[];
 };
 
 export type PaymentProvider = {
@@ -78,6 +83,51 @@ export const PAYMENT_PROVIDERS: PaymentProvider[] = [
         label: "API secret",
         secret: true,
         help: "Usá credenciales de sandbox para probar antes de pasar a live.",
+      },
+    ],
+  },
+  {
+    key: "aplazame",
+    label: "Aplazame",
+    description: "Pago fraccionado / financiación (BNPL). EUR.",
+    fields: [
+      {
+        key: "privateKey",
+        label: "Clave privada de API",
+        secret: true,
+        help: "Bearer token de Aplazame. Usá la clave de sandbox para probar y la de producción al pasar a live. Autentica tanto la creación del checkout como las notificaciones (webhook).",
+      },
+      {
+        key: "productType",
+        label: "Modalidad a ofrecer",
+        help: "Elegí qué financiación mostrar en el checkout de Aplazame. «Que elija el comprador» ofrece todas las modalidades habilitadas en tu cuenta.",
+        options: [
+          { value: "", label: "Que elija el comprador (todas)" },
+          { value: "instalments", label: "A plazos (instalments)" },
+          { value: "pay_in_4", label: "En 4 pagos (pay_in_4)" },
+          { value: "pay_later", label: "Pago aplazado (pay_later)" },
+        ],
+      },
+    ],
+  },
+  {
+    key: "dlocal",
+    label: "dLocal",
+    description:
+      "Pagos en mercados emergentes (LatAm, África, Asia). Redirección al checkout local.",
+    fields: [
+      {
+        key: "login",
+        label: "X-Login",
+        placeholder: "tu x-login de dLocal",
+        help: "Identificador de login del comercio (header X-Login).",
+      },
+      { key: "transKey", label: "X-Trans-Key", secret: true },
+      {
+        key: "secretKey",
+        label: "Secret Key",
+        secret: true,
+        help: "Clave secreta usada para firmar (HMAC-SHA256) las peticiones y verificar las notificaciones. Usá credenciales de sandbox para probar.",
       },
     ],
   },

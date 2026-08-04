@@ -113,18 +113,32 @@ export function GatewayForm({
           </legend>
           {def.fields.map((f) => (
             <Field key={f.key} label={f.label} name={`config.${f.key}`}>
-              <input
-                name={`config.${f.key}`}
-                type={f.secret ? "password" : "text"}
-                defaultValue={f.secret ? "" : initialValues.config[f.key] ?? ""}
-                placeholder={
-                  f.secret && initialValues.config[f.key]
-                    ? "•••••••• (sin cambios)"
-                    : f.placeholder
-                }
-                autoComplete="off"
-                className={inputCls}
-              />
+              {f.options ? (
+                <select
+                  name={`config.${f.key}`}
+                  defaultValue={initialValues.config[f.key] ?? ""}
+                  className={inputCls}
+                >
+                  {f.options.map((o) => (
+                    <option key={o.value} value={o.value}>
+                      {o.label}
+                    </option>
+                  ))}
+                </select>
+              ) : (
+                <input
+                  name={`config.${f.key}`}
+                  type={f.secret ? "password" : "text"}
+                  defaultValue={f.secret ? "" : initialValues.config[f.key] ?? ""}
+                  placeholder={
+                    f.secret && initialValues.config[f.key]
+                      ? "•••••••• (sin cambios)"
+                      : f.placeholder
+                  }
+                  autoComplete="off"
+                  className={inputCls}
+                />
+              )}
               {f.help && <p className="mt-1 text-xs text-gray-400">{f.help}</p>}
             </Field>
           ))}

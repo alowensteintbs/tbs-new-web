@@ -65,6 +65,42 @@ function SeQura() {
   );
 }
 
+function Aplazame() {
+  return (
+    <svg viewBox="0 0 92 24" className="h-3.5 w-auto" role="img" aria-label="Aplazame">
+      <text
+        x="0"
+        y="19"
+        fontFamily={WORDMARK_FONT}
+        fontSize="21"
+        fontWeight="800"
+        letterSpacing="-0.8"
+        fill="#00C08B"
+      >
+        aplazame
+      </text>
+    </svg>
+  );
+}
+
+function DLocal() {
+  return (
+    <svg viewBox="0 0 66 24" className="h-3.5 w-auto" role="img" aria-label="dLocal">
+      <text
+        x="0"
+        y="19"
+        fontFamily={WORDMARK_FONT}
+        fontSize="22"
+        fontWeight="800"
+        letterSpacing="-0.8"
+      >
+        <tspan fill="#FF4E6A">d</tspan>
+        <tspan fill="#1B1B3A">Local</tspan>
+      </text>
+    </svg>
+  );
+}
+
 /** Manual / bank transfer: a neutral landmark (bank) glyph, no brand. */
 function Manual() {
   return (
@@ -90,6 +126,8 @@ const LOGOS: Record<string, () => ReactElement> = {
   stripe: Stripe,
   paypal: PayPal,
   sequra: SeQura,
+  aplazame: Aplazame,
+  dlocal: DLocal,
   manual: Manual,
 };
 

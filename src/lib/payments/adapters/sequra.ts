@@ -129,7 +129,7 @@ function buildOrderPayload(
       merchant: {
         id: config.merchantRef,
         notify_url: `${ctx.baseUrl}/api/payments/webhook/${ctx.gatewayId}`,
-        return_url: `${ctx.baseUrl}/orders/${order.number}?paid=1`,
+        return_url: `${ctx.baseUrl}/orders/${order.id}?paid=1`,
         // Echoed back on the IPN so we can resolve our order without the UUID.
         notification_parameters: { order_id: order.id },
       },

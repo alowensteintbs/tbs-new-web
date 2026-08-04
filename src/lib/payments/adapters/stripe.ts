@@ -63,7 +63,7 @@ export const stripeAdapter: PaymentAdapter = {
       // After the embedded form completes, Stripe redirects the buyer here
       // (required for embedded_page). The real state still comes from the
       // webhook, so this just routes back to our order status page.
-      return_url: `${ctx.baseUrl}/orders/${order.number}?paid=1`,
+      return_url: `${ctx.baseUrl}/orders/${order.id}?paid=1`,
     });
 
     if (!session.client_secret) {

@@ -66,6 +66,13 @@ export type WebhookResult = {
   status?: "PAID" | "FAILED" | "REFUNDED";
   /** Raw payload to persist for auditing. */
   raw?: string;
+  /**
+   * Provider-specific body to return in the webhook HTTP response. Aplazame
+   * confirms the sale in the response body (`{"status":"ok"}` to accept,
+   * `{"status":"ko"}` to reject) rather than in a follow-up API call. Omitted
+   * by providers whose ack is a plain "ok" (Stripe/PayPal/SeQura).
+   */
+  ack?: { body: string; contentType?: string; status?: number };
 };
 
 /**

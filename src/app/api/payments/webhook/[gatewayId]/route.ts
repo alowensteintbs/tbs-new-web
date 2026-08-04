@@ -59,5 +59,16 @@ export async function POST(
   const orderId = await applyWebhookResult(result);
   if (orderId) revalidatePath("/admin/orders");
 
+  // Some providers confirm the sale via the response body (Aplazame's
+  // `{"status":"ok"}` handshake). Return their ack verbatim when present.
+  if (result.ack) {
+    return new Response(result.ack.body, {
+      status: result.ack.status ?? 200,
+      headers: result.ack.contentType
+        ? { "content-type": result.ack.contentType }
+        : undefined,
+    });
+  }
+
   return new Response("ok", { status: 200 });
 }

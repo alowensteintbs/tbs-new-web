@@ -222,7 +222,12 @@ enum OrderStatus {
 /// future multi-item support. Price & currency are snapshotted at purchase.
 model Order {
   id         String      @id @default(cuid())
-  // Human-friendly sequential-ish reference shown to the buyer.
+  // Atomic autoincrement backing the human-facing number: guarantees the
+  // reference is unique and truly sequential (no random-collision risk).
+  seq        Int         @unique @default(autoincrement())
+  // Human-friendly sequential reference (TBS-000123) shown to the buyer. The
+  // PUBLIC status URL keys off `id` (an unguessable cuid), NOT this number, so
+  // orders can't be enumerated.
   number     String      @unique
   customerId String
   customer   Customer    @relation(fields: [customerId], references: [id])

@@ -49,11 +49,11 @@ const STATUS_COPY: Record<
 export default async function OrderStatusPage({
   params,
 }: {
-  params: Promise<{ number: string }>;
+  params: Promise<{ id: string }>;
 }) {
-  const { number } = await params;
+  const { id } = await params;
   const order = await db.order.findUnique({
-    where: { number },
+    where: { id },
     select: {
       number: true,
       total: true,
