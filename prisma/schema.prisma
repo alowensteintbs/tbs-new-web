@@ -105,6 +105,7 @@ model Currency {
   prices    ProductPrice[]
   gateways  GatewayCurrency[]
   orders    Order[]
+  coupons   Coupon[]
 
   @@index([name]) // search by name (code is already unique-indexed)
   @@index([enabled]) // filter by status
@@ -139,6 +140,7 @@ model Product {
   updatedAt   DateTime       @updatedAt
   prices      ProductPrice[]
   images      ProductImage[]
+  coupons     CouponProduct[]
 
   @@index([name]) // search by name
   @@index([updatedAt]) // default sort
@@ -259,6 +261,15 @@ model Order {
   customer   Customer    @relation(fields: [customerId], references: [id])
   currencyId String
   currency   Currency    @relation(fields: [currencyId], references: [id])
+  // Price before discount (sum of items). `total` is the final charged amount
+  // (subtotal - discountAmount) that goes to the gateway.
+  subtotal       Decimal @db.Decimal(12, 2) @default(0)
+  discountAmount Decimal @db.Decimal(12, 2) @default(0)
+  // Coupon applied, if any. SetNull so deleting a coupon keeps order history;
+  // `couponCode` snapshots the code even if the coupon row is later removed.
+  couponId   String?
+  coupon     Coupon?     @relation(fields: [couponId], references: [id], onDelete: SetNull)
+  couponCode String?
   total      Decimal     @db.Decimal(12, 2)
   status     OrderStatus @default(PENDING)
   // Which gateway is/was used. SetNull so deleting a gateway keeps order history.
@@ -277,6 +288,55 @@ model Order {
   @@index([status])
   @@index([createdAt]) // default sort
   @@index([gatewayId])
+  @@index([couponId])
+}
+
+enum CouponType {
+  PERCENTAGE // `percent` off (currency-agnostic unless a currency is set)
+  FIXED // `amount` off, in the coupon's currency
+}
+
+/// A discount coupon redeemed by code at checkout. Applies globally unless
+/// restricted to specific products (CouponProduct). Usage is derived from the
+/// Orders that reference it (no separate counter to drift).
+model Coupon {
+  id      String     @id @default(cuid())
+  code    String     @unique // normalized uppercase, e.g. "VERANO20"
+  type    CouponType
+  // PERCENTAGE: 0-100 in `percent`. FIXED: `amount` in `currency`.
+  percent Decimal?   @db.Decimal(5, 2)
+  amount  Decimal?   @db.Decimal(12, 2)
+  // Required for FIXED; optional for PERCENTAGE. When set, the coupon only
+  // applies when the checkout currency matches (and `minAmount` is in it).
+  currencyId String?
+  currency   Currency? @relation(fields: [currencyId], references: [id], onDelete: SetNull)
+  // Minimum order subtotal for the coupon to apply (in `currency`). Optional.
+  minAmount Decimal?  @db.Decimal(12, 2)
+  // Total redemption cap across all customers (null = unlimited).
+  maxUses   Int?
+  // If true, each customer (by email) can redeem it only once.
+  oncePerCustomer Boolean @default(false)
+  startsAt  DateTime?
+  endsAt    DateTime?
+  enabled   Boolean   @default(true)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  products  CouponProduct[]
+  orders    Order[]
+
+  @@index([enabled])
+  @@index([currencyId])
+}
+
+/// Join: restrict a coupon to specific products. No rows for a coupon = global.
+model CouponProduct {
+  couponId  String
+  productId String
+  coupon    Coupon  @relation(fields: [couponId], references: [id], onDelete: Cascade)
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@id([couponId, productId])
+  @@index([productId])
 }
 
 /// Line item with a snapshot of the product at purchase time (name/sku/price

@@ -1,11 +1,16 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState, useTransition } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import type { AvailableGateway } from "@/lib/payments/checkout";
 import type { CountryOption } from "@/lib/countries";
-import { placeOrder, type CheckoutState } from "../actions";
+import {
+  placeOrder,
+  previewCoupon,
+  type CheckoutState,
+  type CouponPreview,
+} from "../actions";
 import { StripeEmbeddedCheckout } from "./stripe-embedded-checkout";
 import { SequraCheckout } from "./sequra-checkout";
 
@@ -19,16 +24,30 @@ export function CheckoutForm({
   currencyId,
   gateways,
   countries,
+  amountLabel,
 }: {
   productId: string;
   currencyId: string;
   gateways: AvailableGateway[];
   countries: CountryOption[];
+  amountLabel: string;
 }) {
   const [state, formAction, isPending] = useActionState<CheckoutState, FormData>(
     placeOrder,
     {}
   );
+  const [couponCode, setCouponCode] = useState("");
+  const [coupon, setCoupon] = useState<CouponPreview | null>(null);
+  const [checking, startCheck] = useTransition();
+
+  function applyCoupon() {
+    if (!couponCode.trim()) return;
+    const fd = new FormData();
+    fd.set("productId", productId);
+    fd.set("currencyId", currencyId);
+    fd.set("couponCode", couponCode);
+    startCheck(async () => setCoupon(await previewCoupon(fd)));
+  }
 
   // Gateway needs an inline payment form (Stripe embedded): swap the details
   // form for it once the server has created the payment session.
@@ -135,6 +154,55 @@ export function CheckoutForm({
             ))}
           </select>
           <FieldError errors={state.fieldErrors?.country} />
+        </div>
+      </div>
+
+      {/* Coupon + order summary */}
+      <div className="space-y-3 rounded-xl border border-gray-200 p-4">
+        <div>
+          <label className="mb-1.5 block text-sm font-medium text-gray-700">
+            Código de descuento
+          </label>
+          <div className="flex gap-2">
+            <Input
+              name="couponCode"
+              placeholder="Introduce tu código"
+              value={couponCode}
+              onChange={(e) => {
+                setCouponCode(e.target.value);
+                setCoupon(null);
+              }}
+            />
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={applyCoupon}
+              disabled={checking || !couponCode.trim()}
+            >
+              {checking ? "…" : "Aplicar"}
+            </Button>
+          </div>
+          {coupon && !coupon.ok && (
+            <p className="mt-1 text-sm text-red-600">{coupon.error}</p>
+          )}
+          <FieldError errors={state.fieldErrors?.couponCode} />
+        </div>
+
+        <div className="space-y-1 border-t border-gray-100 pt-3 text-sm">
+          <div className="flex justify-between text-gray-600">
+            <span>Subtotal</span>
+            <span>{amountLabel}</span>
+          </div>
+          {coupon?.ok && (
+            <div className="flex justify-between text-green-700">
+              <span>Descuento ({coupon.code})</span>
+              <span>−{coupon.discountLabel}</span>
+            </div>
+          )}
+          <div className="flex justify-between text-base font-semibold text-gray-900">
+            <span>Total</span>
+            <span>{coupon?.ok ? coupon.totalLabel : amountLabel}</span>
+          </div>
         </div>
       </div>
 

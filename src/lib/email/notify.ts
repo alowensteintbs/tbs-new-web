@@ -28,6 +28,9 @@ export async function sendOrderStatusEmail(
       select: {
         number: true,
         total: true,
+        subtotal: true,
+        discountAmount: true,
+        couponCode: true,
         createdAt: true,
         currency: { select: { code: true } },
         customer: { select: { name: true, email: true } },

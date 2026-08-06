@@ -28,8 +28,11 @@ const ORDER_VARIABLES: EmailVariable[] = [
   { name: "orderNumber", description: "Número de pedido (TBS-000123)" },
   { name: "orderDate", description: "Fecha del pedido" },
   { name: "paymentMethod", description: "Método de pago (pasarela)" },
+  { name: "subtotal", description: "Importe antes del descuento" },
+  { name: "discount", description: "Importe del descuento aplicado" },
   { name: "total", description: "Importe total con moneda" },
   { name: "itemsList", description: "Detalle de productos con precios (HTML)" },
+  { name: "discountHtml", description: "Línea de descuento (vacía si no hay)" },
   { name: "orderUrl", description: "Enlace a la página del pedido" },
   { name: "siteName", description: "Nombre del sitio" },
 ];
@@ -61,8 +64,11 @@ function receiptShell(): string {
   </div>
   <div style="border:1px solid #e5e7eb;border-radius:12px;padding:16px;margin:0 0 16px">
     {{itemsList}}
-    <div style="display:flex;justify-content:space-between;border-top:1px solid #f3f4f6;margin-top:12px;padding-top:12px;font-weight:600">
-      <span>Total</span><span>{{total}}</span>
+    <div style="border-top:1px solid #f3f4f6;margin-top:12px;padding-top:12px">
+      {{discountHtml}}
+      <div style="display:flex;justify-content:space-between;font-weight:600">
+        <span>Total</span><span>{{total}}</span>
+      </div>
     </div>
   </div>
   <a href="{{orderUrl}}" style="display:inline-block;background:#2563EB;color:#fff;text-decoration:none;padding:10px 18px;border-radius:8px;font-size:14px">Ver mi pedido</a>

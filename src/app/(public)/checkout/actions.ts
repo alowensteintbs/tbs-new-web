@@ -4,7 +4,11 @@ import { randomUUID } from "node:crypto";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { db } from "@/lib/db";
+import { Prisma } from "@/generated/prisma/client";
 import { getSiteUrl } from "@/lib/env";
+import { formatPrice } from "@/lib/currency-resolver";
+import { validateCoupon, normalizeCode } from "@/lib/coupons";
+import { sendOrderStatusEmail } from "@/lib/email/notify";
 import { getAdapter } from "@/lib/payments";
 import {
   formatOrderNumber,
@@ -16,6 +20,7 @@ const checkoutSchema = z.object({
   productId: z.string().min(1),
   currencyId: z.string().min(1),
   gatewayId: z.string().min(1, "Elige un método de pago"),
+  couponCode: z.string().trim().max(60).optional(),
   email: z.email("Email inválido"),
   name: z.string().trim().min(1, "El nombre es requerido").max(120),
   surname: z.string().trim().min(1, "Los apellidos son requeridos").max(120),
@@ -26,6 +31,47 @@ const checkoutSchema = z.object({
   province: z.string().trim().min(1, "La provincia es requerida").max(120),
   country: z.string().trim().length(2, "El país es requerido"),
 });
+
+/** Result of the checkout's "apply coupon" preview (see previewCoupon). */
+export type CouponPreview =
+  | { ok: true; code: string; discountLabel: string; totalLabel: string }
+  | { ok: false; error: string };
+
+/**
+ * Validate a coupon code against the current product/currency and return the
+ * discount to show before the buyer confirms. Authoritative validation runs
+ * again in placeOrder — this is only for instant UI feedback.
+ */
+export async function previewCoupon(formData: FormData): Promise<CouponPreview> {
+  const productId = String(formData.get("productId") ?? "");
+  const currencyId = String(formData.get("currencyId") ?? "");
+  const codeRaw = String(formData.get("couponCode") ?? "");
+  if (!codeRaw.trim()) return { ok: false, error: "Introduce un código." };
+
+  const [product, currency] = await Promise.all([
+    db.product.findUnique({
+      where: { id: productId },
+      select: { prices: { where: { currencyId }, select: { amount: true } } },
+    }),
+    db.currency.findUnique({ where: { id: currencyId }, select: { code: true } }),
+  ]);
+  const price = product?.prices[0];
+  if (!price || !currency) {
+    return { ok: false, error: "El producto no está disponible." };
+  }
+
+  const subtotal = new Prisma.Decimal(price.amount);
+  const res = await validateCoupon({ codeRaw, productId, currencyId, subtotal });
+  if (!res.ok) return { ok: false, error: res.error };
+
+  const newTotal = subtotal.minus(res.discount);
+  return {
+    ok: true,
+    code: normalizeCode(codeRaw),
+    discountLabel: formatPrice(Number(res.discount), currency.code),
+    totalLabel: formatPrice(Number(newTotal), currency.code),
+  };
+}
 
 export type CheckoutState = {
   error?: string;
@@ -110,6 +156,28 @@ export async function placeOrder(
   const adapter = getAdapter(gateway.provider);
   if (!adapter) return { error: "El método de pago no está disponible." };
 
+  // Coupon (optional). Validated authoritatively here from the code — never
+  // trust a client-computed discount. On failure the buyer sees the reason.
+  const subtotal = new Prisma.Decimal(price.amount);
+  let discount = new Prisma.Decimal(0);
+  let couponId: string | null = null;
+  let couponCode: string | null = null;
+  if (input.couponCode) {
+    const res = await validateCoupon({
+      codeRaw: input.couponCode,
+      productId: product.id,
+      currencyId: input.currencyId,
+      subtotal,
+      customerEmail: input.email,
+    });
+    if (!res.ok) return { fieldErrors: { couponCode: [res.error] } };
+    discount = res.discount;
+    couponId = res.coupon.id;
+    couponCode = res.coupon.code;
+  }
+  const total = subtotal.minus(discount);
+  const isFree = total.lessThanOrEqualTo(0);
+
   // Reuse a customer by email, or create one.
   const customerData = {
     name: input.name,
@@ -150,8 +218,13 @@ export async function placeOrder(
         customerId: customer.id,
         currencyId: input.currencyId,
         gatewayId: gateway.id,
-        total: price.amount,
-        status: "PENDING",
+        subtotal,
+        discountAmount: discount,
+        couponId,
+        couponCode,
+        total,
+        status: isFree ? "PAID" : "PENDING",
+        paidAt: isFree ? new Date() : null,
         items: {
           create: {
             productId: product.id,
@@ -177,6 +250,13 @@ export async function placeOrder(
       },
     });
   });
+
+  // Fully-discounted order (100% / fixed ≥ price): nothing to charge. It was
+  // created PAID above — send the receipt and go straight to the status page.
+  if (isFree) {
+    await sendOrderStatusEmail(order.id, "PAID");
+    redirect(`/orders/${order.id}?paid=1`);
+  }
 
   const payable: PayableOrder = {
     id: order.id,

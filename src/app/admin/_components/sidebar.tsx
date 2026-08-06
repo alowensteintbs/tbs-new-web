@@ -119,6 +119,7 @@ const navItems: NavItem[] = [
   {
     href: "/admin/descuentos",
     label: "Descuentos",
+    ready: true,
     icon: (
       <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
         <path strokeLinecap="round" strokeLinejoin="round" d="M7 7h.01M17 17h.01M7 17h.01M17 7h.01M3 12a9 9 0 1118 0 9 9 0 01-18 0zM9 9l6 6" />

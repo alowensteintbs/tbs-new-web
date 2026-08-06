@@ -66,17 +66,12 @@ export default async function CheckoutPage({
           </p>
         ) : (
           <>
-            <div className="flex items-center justify-between rounded-xl border border-gray-200 bg-white p-5">
-              <span className="text-sm text-gray-600">Total</span>
-              <span className="text-xl font-semibold text-gray-900">
-                {formatPrice(Number(price.amount), currency.code)}
-              </span>
-            </div>
             <CheckoutForm
               productId={product.id}
               currencyId={currency.id}
               gateways={gateways}
               countries={countries}
+              amountLabel={formatPrice(Number(price.amount), currency.code)}
             />
           </>
         )}

@@ -60,6 +60,9 @@ export default async function OrderStatusPage({
     where: { id },
     select: {
       number: true,
+      subtotal: true,
+      discountAmount: true,
+      couponCode: true,
       total: true,
       status: true,
       currency: { select: { code: true } },
@@ -117,9 +120,27 @@ export default async function OrderStatusPage({
               </li>
             ))}
           </ul>
-          <div className="mt-4 flex justify-between border-t border-gray-100 pt-4 text-base font-semibold text-gray-900">
-            <span>Total</span>
-            <span>{formatPrice(Number(order.total), order.currency.code)}</span>
+          <div className="mt-4 space-y-1 border-t border-gray-100 pt-4">
+            {Number(order.discountAmount) > 0 && (
+              <>
+                <div className="flex justify-between text-sm text-gray-600">
+                  <span>Subtotal</span>
+                  <span>{formatPrice(Number(order.subtotal), order.currency.code)}</span>
+                </div>
+                <div className="flex justify-between text-sm text-green-700">
+                  <span>
+                    Descuento{order.couponCode ? ` (${order.couponCode})` : ""}
+                  </span>
+                  <span>
+                    −{formatPrice(Number(order.discountAmount), order.currency.code)}
+                  </span>
+                </div>
+              </>
+            )}
+            <div className="flex justify-between text-base font-semibold text-gray-900">
+              <span>Total</span>
+              <span>{formatPrice(Number(order.total), order.currency.code)}</span>
+            </div>
           </div>
         </div>
 

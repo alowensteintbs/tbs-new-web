@@ -16,9 +16,13 @@ const SAMPLE: Record<string, string> = {
   orderNumber: "TBS-000123",
   orderDate: "4 de agosto de 2026",
   paymentMethod: "Tarjeta (Stripe)",
-  total: "297,00 €",
+  subtotal: "297,00 €",
+  discount: "59,40 €",
+  total: "237,60 €",
   itemsList:
     '<div style="display:flex;justify-content:space-between;font-size:14px;padding:4px 0"><span>Curso de Trading Avanzado</span><span>297,00 €</span></div>',
+  discountHtml:
+    '<div style="display:flex;justify-content:space-between;font-size:14px;padding:4px 0"><span>Subtotal</span><span>297,00 €</span></div><div style="display:flex;justify-content:space-between;font-size:14px;padding:4px 0;color:#15803d"><span>Descuento (VERANO20)</span><span>−59,40 €</span></div>',
   orderUrl: "#",
   siteName: "Traders Business School",
 };
