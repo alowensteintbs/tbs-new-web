@@ -6,6 +6,35 @@ const linkColumns = [
   { title: "Avisos & otros", links: ["Opiniones de Traders Business School", "Aviso legal", "Privacidad", "Cookies", "Términos y condiciones", "Resolución de litigios en línea", "Aviso Legal de Criptomonedas"] },
 ];
 
+const footerSocialLinks = [
+  { name: "Instagram", icon: "instagram" },
+  { name: "TikTok", icon: "tiktok" },
+  { name: "YouTube", icon: "youtube" },
+  { name: "LinkedIn", icon: "linkedin" },
+  { name: "Telegram", icon: "telegram" },
+];
+
+function StoreBadge({ store }: { store: "app-store" | "google-play" }) {
+  const isAppStore = store === "app-store";
+
+  return (
+    <a
+      href="#"
+      aria-label={isAppStore ? "Descargar en App Store" : "Descargar en Google Play"}
+      className="inline-flex h-7 items-center gap-1.5 rounded-[4px] border border-[#f7f7f7] bg-[#f7f7f7]/20 px-2.5 font-space text-[11px] font-bold leading-none text-[#f7f7f7]"
+    >
+      <Image
+        src={isAppStore ? "/home/app-store.svg" : "/home/google-play-color.svg"}
+        alt=""
+        width={13}
+        height={isAppStore ? 13 : 15}
+        className={isAppStore ? "size-[13px]" : "h-[15px] w-[13px]"}
+      />
+      {isAppStore ? "Apple Store" : "Play Store"}
+    </a>
+  );
+}
+
 export function AppFooterSection() {
   return (
     <>
@@ -15,10 +44,10 @@ export function AppFooterSection() {
           <h2 className="mx-auto mt-9 max-w-[720px] font-space text-[45px] font-bold leading-[.92] tracking-[-1.2px] text-[#e6f0ff] xl:text-[66px] xl:leading-[56px]">
             Lo que necesitas para<br />entender cómo invertir,<br /><em className="font-playfair font-normal">en una sola app.</em>
           </h2>
-          <div className="mt-9 flex flex-wrap items-center justify-center gap-3 font-space text-white">
+          <div className="mt-9 flex flex-wrap items-center justify-center gap-2 font-space text-white">
             <strong className="text-xl">5,0</strong><span className="text-xl tracking-[2px] text-[#ffbe0a]">★★★★★</span>
-            <span className="rounded bg-white px-5 py-2 text-xs text-[#a7a7a7]"> Apple Store</span>
-            <span className="rounded bg-white px-5 py-2 text-xs text-[#a7a7a7]">▶ Play Store</span>
+            <StoreBadge store="app-store" />
+            <StoreBadge store="google-play" />
           </div>
           <div className="tbs-checkerboard mt-12 h-[300px] rounded-[40px] xl:h-[459px]" aria-label="Vista previa de la aplicación" />
         </div>
@@ -28,9 +57,15 @@ export function AppFooterSection() {
         <div className="mx-auto max-w-[1200px]">
           <div className="flex flex-col gap-7 border-b border-white pb-6 md:flex-row md:items-center md:justify-between">
             <Image src="/home/logo-traders.svg" alt="Traders Business School" width={153} height={40} className="h-10 w-[153px]" />
-            <div className="flex flex-wrap items-center gap-4 font-space font-bold text-[#ff0a54]">
-              <span className="rounded-full bg-[#ff0a54] px-5 py-2 text-sm text-white">Descarga nuestra app</span>
-              <span>◎</span><span>♪</span><span>▶</span><span>in</span><span>➤</span>
+            <div className="flex flex-wrap items-center gap-3">
+              <span className="inline-flex h-[29px] w-[162px] items-center justify-center gap-1 rounded-[8px] border border-[#ff0a54] bg-[#ff0a54]/20 px-2 py-1.5 font-space text-[11px] font-bold text-[#ff0a54]">Descarga nuestra app</span>
+              <nav aria-label="Redes sociales" className="flex items-center gap-3">
+                {footerSocialLinks.map((social) => (
+                  <a key={social.name} href="#" aria-label={social.name} className="grid size-4 place-items-center transition-opacity hover:opacity-75">
+                    <Image src={`/home/footer-social/${social.icon}.svg`} alt="" width={16} height={16} className="size-4 object-contain" />
+                  </a>
+                ))}
+              </nav>
             </div>
           </div>
           <div className="mt-6 grid gap-4 md:grid-cols-3">

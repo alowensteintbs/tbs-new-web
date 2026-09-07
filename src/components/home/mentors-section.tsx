@@ -1,7 +1,36 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
+
+const perfiles: Record<string, { activos: string[]; titulaciones: string[] }> = {
+  "miguel.png": {
+    activos: [
+      "Especializado en criptomonedas, acciones y derivados",
+      "Operativa de largo plazo en fondos indexados, ETFs y cartera de dividendos",
+      "Operativa activa en derivados para conservar capital y hacerlo crecer",
+    ],
+    titulaciones: [
+      "Grado en economía",
+      "Máster universitario en finanzas y banca",
+      "Máster oficial en Blockchain y Fintech",
+      "Doctorando en economía con tesis sobre mercados financieros",
+      "Acreditación CNMV para asesoramiento en materia de inversiones",
+    ],
+  },
+  "sergio.png": {
+    activos: [
+      "Cartera dinámica de acciones con operativa a medio y corto plazo",
+      "Opciones financieras, futuros y CFDs a corto plazo",
+      "Criptomonedas a medio-largo plazo",
+    ],
+    titulaciones: [
+      "Grado en Administración y dirección de empresas (ADE)",
+      "Máster en bolsa y mercados Financieros",
+      "Especialización en análisis técnico avanzado",
+    ],
+  },
+};
 
 const mentors = [
   { name: "Miguel Hernández", role: "Co-Fundador y Mentor", experience: "+12 años invirtiendo en activo.", image: "miguel.png" },
@@ -17,10 +46,12 @@ const mentors = [
 
 export function MentorsSection() {
   const carouselRef = useRef<HTMLDivElement>(null);
+  const [perfilesAbiertos, setPerfilesAbiertos] = useState<string[]>([]);
+  const hayPerfilAbierto = perfilesAbiertos.length > 0;
 
   useEffect(() => {
     const carousel = carouselRef.current;
-    if (!carousel) return;
+    if (!carousel || hayPerfilAbierto) return;
 
     const advance = () => {
       const step = 339;
@@ -30,7 +61,7 @@ export function MentorsSection() {
 
     const timer = window.setInterval(advance, 4000);
     return () => window.clearInterval(timer);
-  }, []);
+  }, [hayPerfilAbierto]);
 
   return (
     <section className="tbs-grid-light overflow-hidden rounded-[36px] px-4 py-20 xl:h-[986px] xl:px-10 xl:py-[120px]">
@@ -44,7 +75,12 @@ export function MentorsSection() {
         </p>
 
         <div ref={carouselRef} className="tbs-mentor-track mt-[32px] flex gap-2 overflow-x-auto pb-3 snap-x snap-mandatory scroll-smooth" role="region" aria-label="Carrusel de profesores" aria-roledescription="carousel">
-          {mentors.map((mentor) => (
+          {mentors.map((mentor) => {
+            const perfil = perfiles[mentor.image];
+            const abierto = perfilesAbiertos.includes(mentor.image);
+            const perfilId = `perfil-${mentor.image.replace(".png", "")}`;
+
+            return (
             <article key={mentor.name} className="h-[576px] w-[331px] shrink-0 snap-start rounded-[40px] bg-[#f1f1f1] p-2 shadow-[0_8px_20px_rgba(0,0,0,.25)]">
               <div className="group relative h-[560px] overflow-hidden rounded-[32px] bg-[#141417]">
                 <Image src={`/home/mentors/${mentor.image}`} alt={mentor.name} fill sizes="331px" unoptimized className="object-cover" />
@@ -54,14 +90,42 @@ export function MentorsSection() {
                   <h3 className="font-space text-[26px] font-bold leading-[22px] tracking-[-.5px]">{mentor.name}</h3>
                   <p className="mt-[22px] font-space text-lg font-bold uppercase leading-[13px]">{mentor.role}</p>
                   <p className="mt-[9px] font-raleway text-[15px] font-bold leading-[11px] text-white/70">{mentor.experience}</p>
-                  <div className="mt-[11px] flex h-8 items-center justify-between rounded-full bg-[#0066ff] px-3 font-space text-base font-bold">
-                    <span>Ver perfil</span>
-                    <span className="grid size-8 -mr-3 place-items-center rounded-full bg-[#f7f7f7] text-[#0066ff]" aria-hidden="true"><span className="text-[17px] font-normal leading-none">+</span></span>
+                  <div className={`mt-[11px] overflow-hidden rounded-[18px] ${abierto ? "bg-[#0066ff]/40" : ""}`}>
+                    <button
+                      type="button"
+                      aria-expanded={abierto}
+                      aria-controls={perfilId}
+                      aria-label={`${abierto ? "Ocultar" : "Ver"} perfil de ${mentor.name}`}
+                      onClick={() => setPerfilesAbiertos((actuales) => abierto
+                        ? actuales.filter((imagen) => imagen !== mentor.image)
+                        : [...actuales, mentor.image])}
+                      className="flex h-8 w-full cursor-pointer items-center justify-between rounded-full bg-[#0066ff] pl-3 text-left font-space text-base font-bold focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-white"
+                    >
+                      <span>{abierto ? "Ocultar perfil" : "Ver perfil"}</span>
+                      <span className="grid size-8 shrink-0 place-items-center rounded-full bg-[#f7f7f7] text-[#0066ff]" aria-hidden="true"><span className="text-[17px] font-normal leading-none">{abierto ? "−" : "+"}</span></span>
+                    </button>
+                      <div id={perfilId} hidden={!abierto} className="px-[10px] pb-[10px] pt-3">
+                        {perfil ? <>
+                        <h4 className="font-space text-sm font-bold leading-4">Activos en los que invierte</h4>
+                        <ul className="mt-[6px] space-y-[6px] font-raleway text-xs leading-[13px]">
+                          {perfil.activos.map((texto) => <li key={texto}>{texto}</li>)}
+                        </ul>
+                        <h4 className="mt-2 font-space text-sm font-bold leading-4">Titulaciones</h4>
+                        <ul className="mt-[6px] space-y-[6px] font-raleway text-xs leading-[13px]">
+                          {perfil.titulaciones.map((texto) => <li key={texto}>{texto}</li>)}
+                        </ul>
+                        </> : <>
+                          <h4 className="font-space text-sm font-bold leading-4">Perfil profesional</h4>
+                          <p className="mt-[6px] font-raleway text-xs leading-[13px]">{mentor.role}</p>
+                          <p className="mt-[6px] font-raleway text-xs leading-[13px]">{mentor.experience}</p>
+                        </>}
+                      </div>
                   </div>
                 </div>
               </div>
             </article>
-          ))}
+            );
+          })}
         </div>
       </div>
     </section>

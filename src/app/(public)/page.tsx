@@ -26,7 +26,7 @@ const navigationItems: SiteNavigationItem[] = [
 
 export default function HomePage() {
   return (
-    <main className="min-w-0 overflow-hidden bg-[#0d0d0f]">
+    <main className="min-w-0 overflow-clip bg-[#0d0d0f]">
       <div className="tbs-grid-light relative z-10 flex h-[1226px] flex-col rounded-b-[36px] pb-1 pt-10 shadow-[0_24px_9.2px_rgba(0,0,0,0.8)] xl:h-auto xl:min-h-[1753px] xl:gap-[60px] xl:pb-3 xl:pt-[60px]">
         <SiteHeader items={navigationItems} />
         <Hero />
@@ -37,7 +37,7 @@ export default function HomePage() {
         <SimulatorSection />
       </div>
 
-      <div className="overflow-hidden rounded-[36px] bg-[#0066ff]">
+      <div className="overflow-clip rounded-[36px] bg-[#0066ff]">
         <EcosystemSection />
         <LearningSection />
       </div>

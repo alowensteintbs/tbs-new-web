@@ -1,7 +1,10 @@
+"use client";
+
+import { useEffect, useRef } from "react";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
 
-type EcosystemCardProps = {
+type EcosystemCardData = {
   logo: string;
   logoAlt: string;
   logoWidth: number;
@@ -9,8 +12,57 @@ type EcosystemCardProps = {
   title: string;
   description: string;
   tall?: boolean;
-  titleClassName?: string;
 };
+
+const CARDS: EcosystemCardData[] = [
+  {
+    tall: true,
+    logo: "/home/ecosystem/renta4.svg",
+    logoAlt: "Renta 4 Banco",
+    logoWidth: 246,
+    logoHeight: 31,
+    title: "Socio estratégico",
+    description:
+      "Aporta su experiencia y visión como uno de los referentes en el sector financiero de España.",
+  },
+  {
+    tall: true,
+    logo: "/home/ecosystem/utamed.svg",
+    logoAlt: "Universidad UTAMED",
+    logoWidth: 173,
+    logoHeight: 40,
+    title: "Certificación universitaria",
+    description:
+      "Algunas formaciones cuentan con respaldo universitario, uniendo nuestro enfoque práctico con el reconocimiento.",
+  },
+  {
+    logo: "/home/ecosystem/zumitow.svg",
+    logoAlt: "Zumitow",
+    logoWidth: 127,
+    logoHeight: 26,
+    title: "Colaboración",
+    description:
+      "Acercamos conocimiento a su newsletter para seguir haciendo de las inversiones algo accesible.",
+  },
+  {
+    logo: "/home/ecosystem/tradingview.svg",
+    logoAlt: "TradingView",
+    logoWidth: 184,
+    logoHeight: 24,
+    title: "Partner Educativo",
+    description:
+      "Colaboramos con una de las plataformas de análisis financiero más utilizada en todo el mundo.",
+  },
+  {
+    logo: "/home/ecosystem/taxdown.svg",
+    logoAlt: "TaxDown",
+    logoWidth: 159,
+    logoHeight: 24,
+    title: "Colaboración",
+    description:
+      "Contamos con sus expertos para impartir los módulos de fiscalidad incluidos en nuestros cursos.",
+  },
+];
 
 function EcosystemCard({
   logo,
@@ -20,19 +72,16 @@ function EcosystemCard({
   title,
   description,
   tall = false,
-  titleClassName,
-}: EcosystemCardProps) {
+}: EcosystemCardData) {
   return (
     <article
       className={cn(
-        "flex min-h-[220px] flex-col justify-between rounded-[24px] border-0 border-b-[3px] border-b-[#0066ff] bg-[#f0f0f0] p-6",
+        "flex min-h-[220px] flex-col justify-between rounded-[24px] border-0 border-b-[3px] border-b-[#0066ff] bg-[#f0f0f0] p-6 max-xl:h-[380px]",
         tall ? "xl:h-[445px]" : "xl:min-h-0 xl:h-[143px] xl:flex-row",
       )}
     >
-      <div className={cn("order-2 mt-12 xl:mt-0", !tall && "xl:order-1 xl:max-w-[338px]")}> 
-        <h3 className={cn("font-space text-2xl font-bold leading-5 text-[#323436]", titleClassName)}>
-          {title}
-        </h3>
+      <div className={cn("order-2 mt-12 xl:mt-0", !tall && "xl:order-1 xl:max-w-[338px]")}>
+        <h3 className="font-space text-2xl font-bold leading-5 text-[#323436]">{title}</h3>
         <p
           className={cn(
             "mt-3 font-space text-xl leading-6 tracking-[-0.4px] text-[#323436]",
@@ -54,6 +103,88 @@ function EcosystemCard({
   );
 }
 
+// Stack mobile: la primera card queda en flujo; las demás se apilan tipo mazo
+// (solo asoman sus bordes inferiores) y la frontal se "despega" al scrollear.
+const STACK_CARDS = CARDS.slice(1);
+const CARD_HEIGHT = 380;
+const EDGE_PEEK = 13; // alto del borde que asoma por cada card en espera
+const MAX_DEPTH = 3; // bordes visibles a la vez en el mazo
+const STICKY_TOP = 64;
+const TRAVEL = 460; // scroll que consume cada card antes de despegarse
+const PEEL_DISTANCE = 440;
+const STACK_HEIGHT = CARD_HEIGHT + MAX_DEPTH * EDGE_PEEK;
+const RUNWAY_HEIGHT = STACK_HEIGHT + (STACK_CARDS.length - 1) * TRAVEL;
+
+function MobileCardStack() {
+  const runwayRef = useRef<HTMLDivElement>(null);
+  const cardRefs = useRef<(HTMLDivElement | null)[]>([]);
+
+  useEffect(() => {
+    const runway = runwayRef.current;
+    if (!runway) return;
+    let raf = 0;
+
+    const update = () => {
+      raf = 0;
+      const top = runway.getBoundingClientRect().top;
+      const progress = Math.min(
+        Math.max((STICKY_TOP - top) / TRAVEL, 0),
+        STACK_CARDS.length - 1,
+      );
+      cardRefs.current.forEach((el, i) => {
+        if (!el) return;
+        const depth = i - progress;
+        if (depth >= 0) {
+          el.style.transform = `translateY(${Math.min(depth, MAX_DEPTH) * EDGE_PEEK}px)`;
+          el.style.opacity = "1";
+        } else {
+          el.style.transform = `translateY(${depth * PEEL_DISTANCE}px)`;
+          el.style.opacity = String(Math.max(1 + depth, 0));
+        }
+      });
+    };
+
+    const onScroll = () => {
+      if (!raf) raf = requestAnimationFrame(update);
+    };
+
+    update();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll, { passive: true });
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+      if (raf) cancelAnimationFrame(raf);
+    };
+  }, []);
+
+  return (
+    <div className="mt-[60px] xl:hidden">
+      <EcosystemCard {...CARDS[0]} />
+
+      <div ref={runwayRef} className="relative mt-6" style={{ height: RUNWAY_HEIGHT }}>
+        <div className="sticky" style={{ top: STICKY_TOP, height: STACK_HEIGHT }}>
+          {STACK_CARDS.map((card, i) => (
+            <div
+              key={card.title + card.logoAlt}
+              ref={(el) => {
+                cardRefs.current[i] = el;
+              }}
+              className="absolute inset-x-0 top-0 will-change-transform"
+              style={{
+                zIndex: STACK_CARDS.length - i,
+                transform: `translateY(${Math.min(i, MAX_DEPTH) * EDGE_PEEK}px)`,
+              }}
+            >
+              <EcosystemCard {...card} />
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export function EcosystemSection() {
   return (
     <section className="tbs-grid-light relative z-10 rounded-[36px] px-4 py-20 xl:flex xl:h-[1132px] xl:items-center xl:px-10 xl:py-0">
@@ -70,53 +201,18 @@ export function EcosystemSection() {
           </p>
         </header>
 
-        <div className="mt-[60px] grid gap-2 xl:grid-cols-2">
+        <MobileCardStack />
+
+        <div className="mt-[60px] hidden gap-2 xl:grid xl:grid-cols-2">
           <div className="grid gap-2 xl:grid-cols-2">
-            <EcosystemCard
-              tall
-              logo="/home/ecosystem/renta4.svg"
-              logoAlt="Renta 4 Banco"
-              logoWidth={246}
-              logoHeight={31}
-              title="Socio estratégico"
-              description="Aporta su experiencia y visión como uno de los referentes en el sector financiero de España."
-            />
-            <EcosystemCard
-              tall
-              logo="/home/ecosystem/utamed.svg"
-              logoAlt="Universidad UTAMED"
-              logoWidth={173}
-              logoHeight={40}
-              title="Certificación universitaria"
-              description="Algunas formaciones cuentan con respaldo universitario, uniendo nuestro enfoque práctico con el reconocimiento."
-            />
+            <EcosystemCard {...CARDS[0]} />
+            <EcosystemCard {...CARDS[1]} />
           </div>
 
           <div className="grid gap-2">
-            <EcosystemCard
-              logo="/home/ecosystem/zumitow.svg"
-              logoAlt="Zumitow"
-              logoWidth={127}
-              logoHeight={26}
-              title="Colaboración"
-              description="Acercamos conocimiento a su newsletter para seguir haciendo de las inversiones algo accesible."
-            />
-            <EcosystemCard
-              logo="/home/ecosystem/tradingview.svg"
-              logoAlt="TradingView"
-              logoWidth={184}
-              logoHeight={24}
-              title="Partner Educativo"
-              description="Colaboramos con una de las plataformas de análisis financiero más utilizada en todo el mundo."
-            />
-            <EcosystemCard
-              logo="/home/ecosystem/taxdown.svg"
-              logoAlt="TaxDown"
-              logoWidth={159}
-              logoHeight={24}
-              title="Colaboración"
-              description="Contamos con sus expertos para impartir los módulos de fiscalidad incluidos en nuestros cursos."
-            />
+            <EcosystemCard {...CARDS[2]} />
+            <EcosystemCard {...CARDS[3]} />
+            <EcosystemCard {...CARDS[4]} />
           </div>
         </div>
 
