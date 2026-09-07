@@ -19,6 +19,20 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  --font-space: var(--font-space-grotesk);
+  --font-playfair: var(--font-playfair-display);
+  --font-raleway: var(--font-tbs-raleway);
+
+  --color-tbs-blue-100: #e6f0ff;
+  --color-tbs-blue-200: #b0d0ff;
+  --color-tbs-blue-600: #005de8;
+
+  --color-tbs-ink: #1f1e23;
+  --color-tbs-black: #121214;
+  --color-tbs-magenta: #ff0a54;
+  --color-tbs-green-200: #92f1c4;
+  --color-tbs-green-500: #11e07f;
+  --color-tbs-green-900: #075e35;
 }
 
 /*
