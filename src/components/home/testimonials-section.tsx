@@ -6,7 +6,7 @@ function TrustpilotRating() {
       <span>Excelente</span>
       <span className="flex gap-px" aria-label="Cinco estrellas en Trustpilot">
         {[0, 1, 2, 3, 4].map((star) => (
-          <span key={star} className="grid size-5 place-items-center bg-[#00b67a] text-[13px] leading-none text-white">★</span>
+          <span key={star} className={`grid size-5 place-items-center text-[13px] leading-none text-white ${star === 4 ? "bg-[linear-gradient(90deg,#00b67a_40%,#d9d9d9_40%)]" : "bg-[#00b67a]"}`}>★</span>
         ))}
       </span>
       <span>4.4 de 5</span>

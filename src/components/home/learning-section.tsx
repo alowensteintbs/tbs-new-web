@@ -1,4 +1,7 @@
+"use client";
+
 import Image from "next/image";
+import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { SectionBadge } from "./section-badge";
 
@@ -21,19 +24,31 @@ function LearningIcon({ src, alt = "" }: { src: string; alt?: string }) {
 }
 
 function LearningCard({ icon, iconAlt, title, description, className, children, textClassName }: LearningCardProps) {
+  const [expanded, setExpanded] = useState(false);
+
   return (
     <article
       className={cn(
-        "relative flex min-h-[265px] min-w-0 flex-col overflow-hidden rounded-[28px] bg-tbs-blue-600 p-5",
+        "relative flex min-h-[136px] min-w-0 flex-col overflow-hidden rounded-[28px] bg-tbs-blue-600 p-5 xl:min-h-[265px]",
+        expanded && "min-h-[265px]",
         className,
       )}
     >
       <LearningIcon src={icon} alt={iconAlt} />
-      <div className={cn(children ? "mt-6" : "mt-auto pt-6", textClassName)}>
-        <h3 className="font-space text-xl font-bold leading-5 tracking-[-0.4px] text-tbs-blue-100">{title}</h3>
-        <p className="mt-3 font-space text-xl leading-5 tracking-[-0.4px] text-tbs-blue-200">{description}</p>
+      <div className={cn(expanded ? "mt-6 xl:mt-auto xl:pt-6" : children ? "mt-auto pt-6 xl:mt-6 xl:pt-0" : "mt-auto pt-6", textClassName)}>
+        <h3 className="max-w-[235px] font-space text-base font-bold leading-4 tracking-[-0.32px] text-tbs-blue-100 xl:max-w-none xl:text-xl xl:leading-5 xl:tracking-[-0.4px]">{title}</h3>
+        <p className={cn("mt-3 font-space text-xl leading-5 tracking-[-0.4px] text-tbs-blue-200 xl:block", expanded ? "block" : "hidden")}>{description}</p>
       </div>
-      {children}
+      <button
+        type="button"
+        aria-expanded={expanded}
+        aria-label={`${expanded ? "Cerrar" : "Ver más sobre"} ${title}`}
+        onClick={() => setExpanded((value) => !value)}
+        className="absolute bottom-5 right-5 grid size-[18px] cursor-pointer place-items-center rounded-full bg-white font-sans text-[16px] font-bold leading-none text-[#0066ff] xl:hidden"
+      >
+        {expanded ? "−" : "+"}
+      </button>
+      {children && <div className={cn(expanded ? "block" : "hidden", "xl:block")}>{children}</div>}
     </article>
   );
 }
@@ -47,7 +62,7 @@ function PracticeCard() {
   ];
 
   return (
-    <article className="relative flex min-h-[538.667px] overflow-hidden rounded-[28px] p-5 xl:col-start-2 xl:row-span-2 xl:row-start-1">
+    <article className="order-1 relative flex min-h-[538.667px] overflow-hidden rounded-[28px] p-5 xl:col-start-2 xl:row-span-2 xl:row-start-1">
       <Image
         src="/home/learning/aprender-haciendo.jpg"
         alt="Profesor de Traders Business School"
@@ -94,10 +109,10 @@ export function LearningSection() {
 
         <div className="mt-[60px] grid gap-2 md:grid-cols-2 xl:h-[812px] xl:grid-cols-3 xl:grid-rows-[repeat(3,minmax(0,1fr))]">
           <LearningCard
-            icon="/home/learning/icon-clock.svg"
+            icon="/home/learning/icon-operativa.svg"
             title="Operativa en directo"
             description="Tenemos clases de operativa donde los profesores operan en tiempo real, explicar cada decisión y responder tus preguntas mientras lo hacen."
-            className="xl:col-start-1 xl:row-start-1"
+            className="order-2 xl:col-start-1 xl:row-start-1"
           />
 
           <LearningCard
@@ -105,7 +120,7 @@ export function LearningSection() {
             title="Asistente de IA 24HS"
             description="Dentro del aula virtual tienes disponible un asistente de IA para resolver dudas, explicarte conceptos y ayudarte con tus tareas cuando lo necesites."
             textClassName="max-w-[325px]"
-            className="xl:col-start-1 xl:row-span-2 xl:row-start-2"
+            className="order-4 xl:col-start-1 xl:row-span-2 xl:row-start-2"
           >
             <div className="tbs-mini-grid mt-6 h-[262.667px] w-full max-w-[344px] shrink-0 rounded-2xl bg-black" />
           </LearningCard>
@@ -116,21 +131,21 @@ export function LearningSection() {
             icon="/home/learning/icon-live.svg"
             title="Aprende a tu ritmo"
             description="Accedes a la formación cuando quieras, desde donde quieras y sin que el tiempo sea un obstáculo."
-            className="xl:col-start-2 xl:row-start-3"
+            className="order-6 xl:col-start-2 xl:row-start-3"
           />
 
           <LearningCard
             icon="/home/learning/icon-tutoring.svg"
             title="Tutorías ilimitadas"
             description="Durante los meses de tutorías incluidos en tu curso, puedes reservar sesiones individuales tantas veces como necesites."
-            className="xl:col-start-3 xl:row-start-1"
+            className="order-3 xl:col-start-3 xl:row-start-1"
           />
 
           <LearningCard
             icon="/home/learning/icon-preview.svg"
             title={"Te mostramos la formación\nantes de matricularte"}
             description="Te enseñamos la formación desde dentro para conocer qué incluye, cómo funciona y resolver tus dudas antes de tomar una decisión."
-            className="xl:col-start-3 xl:row-span-2 xl:row-start-2 [&_h3]:whitespace-pre-line"
+            className="order-5 xl:col-start-3 xl:row-span-2 xl:row-start-2 [&_h3]:whitespace-pre-line"
           >
             <Image
               src="/home/learning/illustration-desk.svg"

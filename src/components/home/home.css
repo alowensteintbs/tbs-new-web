@@ -13,6 +13,13 @@
   will-change: transform;
 }
 
+.tbs-recognitions-track {
+  display: flex;
+  width: max-content;
+  animation: tbs-recognitions-marquee 16s linear infinite;
+  will-change: transform;
+}
+
 @media (min-width: 80rem) {
   .tbs-partners-track {
     --partners-offset: -603px;
@@ -22,8 +29,12 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .tbs-partners-track {
+  .tbs-partners-track,
+  .tbs-recognitions-track {
     animation: none;
+  }
+
+  .tbs-partners-track {
     transform: translateX(var(--partners-offset));
   }
 }
@@ -38,13 +49,13 @@
   }
 }
 
-@keyframes tbs-audio-progress {
+@keyframes tbs-recognitions-marquee {
   from {
-    width: 25%;
+    transform: translateX(0);
   }
 
   to {
-    width: 100%;
+    transform: translateX(-700px);
   }
 }
 

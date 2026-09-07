@@ -120,7 +120,23 @@ export function EcosystemSection() {
           </div>
         </div>
 
-        <div className="mt-[60px] flex items-start gap-6 overflow-hidden xl:items-center">
+        <div className="mt-[60px] w-full overflow-hidden xl:hidden" aria-label="Reconocimientos de Expansión, Investing.com, Emprendedores y elEconomista">
+          <div className="tbs-recognitions-track">
+            {[0, 1, 2].map((copy) => (
+              <Image
+                key={copy}
+                src="/home/ecosystem/reconocimientos.svg"
+                alt={copy === 0 ? "Reconocimientos de Expansión, Investing.com, Emprendedores y elEconomista" : ""}
+                aria-hidden={copy !== 0}
+                width={1005}
+                height={58}
+                className="h-auto w-[700px] shrink-0 grayscale brightness-[0.35]"
+              />
+            ))}
+          </div>
+        </div>
+
+        <div className="mt-[60px] hidden items-start gap-6 overflow-hidden xl:flex xl:items-center">
           <p className="shrink-0 font-playfair text-2xl italic leading-[18px] tracking-[-0.96px] text-tbs-ink">
             Reconocimientos:
           </p>
