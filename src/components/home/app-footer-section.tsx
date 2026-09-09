@@ -7,11 +7,11 @@ const linkColumns = [
 ];
 
 const footerSocialLinks = [
-  { name: "Instagram", icon: "instagram" },
-  { name: "TikTok", icon: "tiktok" },
-  { name: "YouTube", icon: "youtube" },
-  { name: "LinkedIn", icon: "linkedin" },
-  { name: "Telegram", icon: "telegram" },
+  { name: "Instagram", icon: "instagram", href: "https://www.instagram.com/traders_business_school" },
+  { name: "TikTok", icon: "tiktok", href: "https://www.tiktok.com/@tradersbs" },
+  { name: "YouTube", icon: "youtube", href: "https://www.youtube.com/@tradersbusinessschool7149" },
+  { name: "LinkedIn", icon: "linkedin", href: "https://www.linkedin.com/company/traders-business-school" },
+  { name: "Telegram", icon: "telegram", href: "#" },
 ];
 
 function StoreBadge({ store }: { store: "app-store" | "google-play" }) {
@@ -19,7 +19,13 @@ function StoreBadge({ store }: { store: "app-store" | "google-play" }) {
 
   return (
     <a
-      href="#"
+      href={
+        isAppStore
+          ? "https://apps.apple.com/il/app/traders-business-school/id6785884608"
+          : "https://play.google.com/store/apps/details?id=es.tbsweb.tbs_mobile_app&hl=es_AR"
+      }
+      target="_blank"
+      rel="noreferrer"
       aria-label={isAppStore ? "Descargar en App Store" : "Descargar en Google Play"}
       className="inline-flex h-7 items-center gap-1.5 rounded-[4px] border border-[#f7f7f7] bg-[#f7f7f7]/20 px-2.5 font-space text-[11px] font-bold leading-none text-[#f7f7f7]"
     >
@@ -35,23 +41,31 @@ function StoreBadge({ store }: { store: "app-store" | "google-play" }) {
   );
 }
 
-export function AppFooterSection() {
+type AppFooterSectionProps = {
+  showAppPromo?: boolean;
+};
+
+export function AppFooterSection({ showAppPromo = true }: AppFooterSectionProps) {
   return (
     <>
-      <section className="px-4 pt-20 xl:h-[965px] xl:px-10 xl:pt-[60px]">
+      {showAppPromo && <section className="px-4 pt-20 xl:h-[965px] xl:px-10 xl:pt-[60px]">
         <div className="mx-auto max-w-[1200px] text-center">
           <span className="inline-flex h-7 items-center rounded-full bg-[#e1ff3b] px-3 font-mono text-xs font-bold uppercase text-[#101012]">App gratis</span>
-          <h2 className="mx-auto mt-9 max-w-[720px] font-space text-[45px] font-bold leading-[.92] tracking-[-1.2px] text-[#e6f0ff] xl:text-[66px] xl:leading-[56px]">
+          <h2 className="mx-auto mt-9 max-w-[720px] font-space text-[32px] font-bold leading-[.92] tracking-[-1.2px] text-[#e6f0ff] xl:text-[66px] xl:leading-[56px]">
             Lo que necesitas para<br />entender cómo invertir,<br /><em className="font-playfair font-normal">en una sola app.</em>
           </h2>
-          <div className="mt-9 flex flex-wrap items-center justify-center gap-2 font-space text-white">
-            <strong className="text-xl">5,0</strong><span className="text-xl tracking-[2px] text-[#ffbe0a]">★★★★★</span>
-            <StoreBadge store="app-store" />
-            <StoreBadge store="google-play" />
+          <div className="mt-9 flex flex-col items-center gap-4 font-space text-white xl:flex-row xl:justify-center xl:gap-2">
+            <div className="order-2 flex items-center gap-2 xl:order-1">
+              <strong className="text-xl">5,0</strong><span className="text-xl tracking-[2px] text-[#ffbe0a]">★★★★★</span>
+            </div>
+            <div className="order-1 flex items-center gap-2 xl:order-2">
+              <StoreBadge store="app-store" />
+              <StoreBadge store="google-play" />
+            </div>
           </div>
           <div className="tbs-checkerboard mt-12 h-[300px] rounded-[40px] xl:h-[459px]" aria-label="Vista previa de la aplicación" />
         </div>
-      </section>
+      </section>}
 
       <footer className="px-4 pb-[100px] pt-[100px] xl:h-[666px] xl:px-10">
         <div className="mx-auto max-w-[1200px]">
@@ -61,7 +75,14 @@ export function AppFooterSection() {
               <span className="inline-flex h-[29px] w-[162px] items-center justify-center gap-1 rounded-[8px] border border-[#ff0a54] bg-[#ff0a54]/20 px-2 py-1.5 font-space text-[11px] font-bold text-[#ff0a54]">Descarga nuestra app</span>
               <nav aria-label="Redes sociales" className="flex items-center gap-3">
                 {footerSocialLinks.map((social) => (
-                  <a key={social.name} href="#" aria-label={social.name} className="grid size-4 place-items-center transition-opacity hover:opacity-75">
+                  <a
+                    key={social.name}
+                    href={social.href}
+                    target="_blank"
+                    rel="noreferrer"
+                    aria-label={social.name}
+                    className="grid size-4 place-items-center transition-opacity hover:opacity-75"
+                  >
                     <Image src={`/home/footer-social/${social.icon}.svg`} alt="" width={16} height={16} className="size-4 object-contain" />
                   </a>
                 ))}

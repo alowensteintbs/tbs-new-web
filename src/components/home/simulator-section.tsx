@@ -11,16 +11,16 @@ const options = [
 
 export function SimulatorSection() {
   return (
-    <section id="formacion" className="tbs-grid-dark relative flex h-[714px] w-full justify-center overflow-hidden px-4 py-[120px] xl:h-[844px] xl:px-10 xl:py-40">
+    <section id="formacion" className="tbs-grid-dark relative flex min-h-[714px] w-full justify-center overflow-hidden px-4 py-[120px] xl:min-h-[844px] xl:px-10 xl:py-40">
       <div
-        className="pointer-events-none absolute inset-0"
+        className="simulator-glow pointer-events-none absolute inset-0"
         style={{
           background:
             "radial-gradient(ellipse 48% 58% at 50% 100%, rgba(17,224,127,0.4) 0%, rgba(17,224,127,0) 80%)",
         }}
       />
 
-      <div className="relative z-10 flex h-[474px] w-full max-w-[361px] flex-col gap-7 xl:h-[524px] xl:max-w-[726px]">
+      <div className="relative z-10 flex w-full max-w-[361px] flex-col gap-7 xl:max-w-[726px]">
         <div className="flex flex-col items-start gap-[18px]">
           <div>
             <SectionBadge tone="green">Formación personalizada</SectionBadge>
@@ -30,14 +30,12 @@ export function SimulatorSection() {
           </div>
           <p className="font-raleway text-base leading-4 text-white">
             Vamos a establecer tu situación
-            <span className="hidden xl:inline"> actual</span>
           </p>
         </div>
 
         <SimulatorCard
           title="Objetivo principal"
           options={options}
-          selectedIndex={0}
           step={1}
           totalSteps={4}
         />

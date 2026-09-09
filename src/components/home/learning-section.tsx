@@ -1,7 +1,4 @@
-"use client";
-
 import Image from "next/image";
-import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { SectionBadge } from "./section-badge";
 
@@ -24,32 +21,26 @@ function LearningIcon({ src, alt = "" }: { src: string; alt?: string }) {
 }
 
 function LearningCard({ icon, iconAlt, title, description, className, children, textClassName }: LearningCardProps) {
-  const [expanded, setExpanded] = useState(false);
-
   return (
-    <article
+    <details
       className={cn(
-        "relative flex min-h-[136px] min-w-0 flex-col overflow-hidden rounded-[28px] bg-tbs-blue-600 p-5 xl:min-h-[265px]",
-        expanded && "min-h-[265px]",
+        "group relative flex min-h-[136px] min-w-0 flex-col overflow-hidden rounded-[28px] bg-tbs-blue-600 p-5 open:min-h-[265px] xl:min-h-[265px]",
         className,
       )}
     >
-      <LearningIcon src={icon} alt={iconAlt} />
-      <div className={cn(expanded ? "mt-6 xl:mt-auto xl:pt-6" : children ? "mt-auto pt-6 xl:mt-6 xl:pt-0" : "mt-auto pt-6", textClassName)}>
-        <h3 className="max-w-[235px] font-space text-base font-bold leading-4 tracking-[-0.32px] text-tbs-blue-100 xl:max-w-none xl:text-xl xl:leading-5 xl:tracking-[-0.4px]">{title}</h3>
-        <p className={cn("mt-3 font-space text-xl leading-5 tracking-[-0.4px] text-tbs-blue-200 xl:block", expanded ? "block" : "hidden")}>{description}</p>
-      </div>
-      <button
-        type="button"
-        aria-expanded={expanded}
-        aria-label={`${expanded ? "Cerrar" : "Ver más sobre"} ${title}`}
-        onClick={() => setExpanded((value) => !value)}
-        className="absolute bottom-5 right-5 grid size-[18px] cursor-pointer place-items-center rounded-full bg-white font-sans text-[16px] font-bold leading-none text-[#0066ff] xl:hidden"
-      >
-        {expanded ? "−" : "+"}
-      </button>
-      {children && <div className={cn(expanded ? "block" : "hidden", "xl:block")}>{children}</div>}
-    </article>
+      <summary aria-label={`Ver más sobre ${title}`} className="flex flex-1 cursor-pointer list-none flex-col [&::-webkit-details-marker]:hidden xl:pointer-events-none">
+        <LearningIcon src={icon} alt={iconAlt} />
+        <div className={cn(children ? "mt-auto pt-6 xl:mt-6 xl:pt-0" : "mt-auto pt-6", textClassName)}>
+          <h3 className="max-w-[235px] font-space text-base font-bold leading-4 tracking-[-0.32px] text-tbs-blue-100 xl:max-w-none xl:text-xl xl:leading-5 xl:tracking-[-0.4px]">{title}</h3>
+          <p className="mt-3 hidden font-space text-sm font-normal leading-4 tracking-[-0.28px] text-tbs-blue-200 group-open:block xl:block xl:text-xl xl:leading-5 xl:tracking-[-0.4px]">{description}</p>
+        </div>
+        <span className="absolute bottom-5 right-5 grid size-[18px] place-items-center rounded-full bg-white font-sans text-[16px] font-bold leading-none text-[#0066ff] xl:hidden">
+          <span className="group-open:hidden">+</span>
+          <span className="hidden group-open:block">−</span>
+        </span>
+      </summary>
+      {children && <div className="hidden group-open:block xl:block">{children}</div>}
+    </details>
   );
 }
 

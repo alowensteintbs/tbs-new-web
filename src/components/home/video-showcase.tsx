@@ -27,11 +27,15 @@ export function PartnersStrip() {
   );
 }
 
-export function VideoShowcase() {
+export function VideoShowcase({
+  showPartners = true,
+  poster = "https://i.ytimg.com/vi/4nfPF4XUc7M/sddefault.jpg",
+  className = "",
+}: { showPartners?: boolean; poster?: string; className?: string }) {
   const [isPlaying, setIsPlaying] = useState(false);
 
   return (
-    <section className="flex h-[521px] w-full flex-col gap-[10px] rounded-[40px] bg-white/10 p-2 backdrop-blur-sm xl:h-auto xl:gap-5">
+    <section className={`flex h-[521px] w-full flex-col gap-[10px] rounded-[40px] bg-white/10 p-2 backdrop-blur-sm xl:h-auto xl:gap-5 ${className}`}>
       <div className="relative h-[477px] w-full shrink-0 overflow-hidden rounded-[32px] xl:h-auto xl:aspect-[1424/801]">
         {isPlaying ? (
           <iframe
@@ -44,7 +48,7 @@ export function VideoShowcase() {
         ) : (
           <button type="button" onClick={() => setIsPlaying(true)} className="group absolute inset-0 block size-full" aria-label="Reproducir presentación de Traders Business School">
             <Image
-              src="https://i.ytimg.com/vi/4nfPF4XUc7M/sddefault.jpg"
+              src={poster}
               alt="Presentación de Traders Business School"
               fill
               priority
@@ -58,7 +62,7 @@ export function VideoShowcase() {
           </button>
         )}
       </div>
-      <PartnersStrip />
+      {showPartners && <PartnersStrip />}
     </section>
   );
 }

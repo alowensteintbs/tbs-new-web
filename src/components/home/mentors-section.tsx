@@ -44,9 +44,11 @@ const mentors = [
   { name: "Javier Perez", role: "Mentor", experience: "+10 años invirtiendo en activo.", image: "javier.png" },
 ];
 
-export function MentorsSection() {
+export function MentorsCarousel({ variant = "home" }: { variant?: "home" | "product" }) {
   const carouselRef = useRef<HTMLDivElement>(null);
+  const dragStart = useRef<{ pointerId: number; x: number; scrollLeft: number } | null>(null);
   const [perfilesAbiertos, setPerfilesAbiertos] = useState<string[]>([]);
+  const [arrastrando, setArrastrando] = useState(false);
   const hayPerfilAbierto = perfilesAbiertos.length > 0;
 
   useEffect(() => {
@@ -63,18 +65,52 @@ export function MentorsSection() {
     return () => window.clearInterval(timer);
   }, [hayPerfilAbierto]);
 
+  const iniciarArrastre = (event: React.PointerEvent<HTMLDivElement>) => {
+    if (event.button !== 0 || (event.target as HTMLElement).closest("button")) return;
+    dragStart.current = {
+      pointerId: event.pointerId,
+      x: event.clientX,
+      scrollLeft: event.currentTarget.scrollLeft,
+    };
+    event.currentTarget.setPointerCapture(event.pointerId);
+    setArrastrando(true);
+  };
+
+  const arrastrar = (event: React.PointerEvent<HTMLDivElement>) => {
+    const inicio = dragStart.current;
+    if (!inicio || inicio.pointerId !== event.pointerId) return;
+    event.currentTarget.scrollLeft = inicio.scrollLeft - (event.clientX - inicio.x);
+  };
+
+  const terminarArrastre = (event: React.PointerEvent<HTMLDivElement>) => {
+    if (dragStart.current?.pointerId !== event.pointerId) return;
+    dragStart.current = null;
+    setArrastrando(false);
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId);
+  };
+
   return (
-    <section className="tbs-grid-light overflow-hidden rounded-[36px] px-4 py-20 xl:h-[986px] xl:px-10 xl:py-[120px]">
+    <section className={`tbs-grid-light overflow-hidden rounded-[36px] px-4 py-20 xl:px-10 xl:py-[120px] ${variant === "home" ? "xl:h-[986px]" : ""}`}>
       <div className="mx-auto max-w-[1200px]">
         <div className="flex flex-col-reverse gap-5 xl:flex-row xl:items-start xl:justify-between">
-          <h2 className="font-raleway text-4xl font-extrabold leading-none tracking-[-1px] text-[#1f1e23] xl:text-[46px]">Inversores con <span className="font-playfair font-medium italic">perfil activo</span></h2>
-          <span className="inline-flex h-7 w-fit items-center rounded-full border border-[#0066ff] bg-[#0066ff]/10 px-3 font-mono text-xs font-bold uppercase tracking-[0.06em] text-[#0066ff]">El equipo que hay detrás</span>
+          <h2 className="font-raleway text-4xl font-extrabold leading-none tracking-[-1px] text-[#1f1e23] xl:text-[46px]">{variant === "home" ? <>Inversores con <span className="font-playfair font-medium italic">perfil activo</span></> : <>El equipo que te va a <span className="font-playfair font-medium italic">acompañar</span></>}</h2>
+          <span className="inline-flex h-7 w-fit items-center rounded-full border border-[#0066ff] bg-[#0066ff]/10 px-3 font-mono text-xs font-bold uppercase tracking-[0.06em] text-[#0066ff]">{variant === "home" ? "El equipo que hay detrás" : "Método + consistencia = criterio"}</span>
         </div>
-        <p className="mt-8 max-w-[643px] font-raleway text-lg leading-5 text-[#1f1e23] xl:text-xl">
+        {variant === "home" && <p className="mt-8 max-w-[643px] font-raleway text-lg leading-5 text-[#1f1e23] xl:text-xl">
           Si quieres aprender a invertir, lo mejor es hacerlo con profesionales en activo. Por eso, nuestros profesores unen experiencia profesional, visión práctica y vocación por enseñar.
-        </p>
+        </p>}
 
-        <div ref={carouselRef} className="tbs-mentor-track mt-[32px] flex gap-2 overflow-x-auto pb-3 snap-x snap-mandatory scroll-smooth" role="region" aria-label="Carrusel de profesores" aria-roledescription="carousel">
+        <div
+          ref={carouselRef}
+          className={`tbs-mentor-track mt-[32px] flex gap-2 overflow-x-auto pb-3 snap-x snap-mandatory scroll-smooth touch-pan-y select-none ${arrastrando ? "cursor-grabbing" : "cursor-grab"}`}
+          role="region"
+          aria-label="Carrusel de profesores"
+          aria-roledescription="carousel"
+          onPointerDown={iniciarArrastre}
+          onPointerMove={arrastrar}
+          onPointerUp={terminarArrastre}
+          onPointerCancel={terminarArrastre}
+        >
           {mentors.map((mentor) => {
             const perfil = perfiles[mentor.image];
             const abierto = perfilesAbiertos.includes(mentor.image);
