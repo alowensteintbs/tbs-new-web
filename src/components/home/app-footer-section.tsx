@@ -63,7 +63,17 @@ export function AppFooterSection({ showAppPromo = true }: AppFooterSectionProps)
               <StoreBadge store="google-play" />
             </div>
           </div>
-          <div className="tbs-checkerboard mt-12 h-[300px] rounded-[40px] xl:h-[459px]" aria-label="Vista previa de la aplicación" />
+          <video
+            className="tbs-checkerboard mt-12 h-[300px] w-full rounded-[40px] object-cover xl:h-[459px]"
+            controls
+            playsInline
+            preload="metadata"
+            poster="/home/teaser_1-poster.jpg"
+            aria-label="Vista previa de la aplicación Traders Business School"
+          >
+            <source src="/home/teaser_1-web.mp4" type="video/mp4" />
+            Tu navegador no admite la reproducción de vídeo.
+          </video>
         </div>
       </section>}
 

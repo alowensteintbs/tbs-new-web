@@ -563,15 +563,9 @@
   scroll-snap-type: x mandatory;
   scroll-behavior: smooth;
   scrollbar-width: none;
-  touch-action: pan-y;
-  user-select: none;
-  cursor: grab;
 }
 .carruselBeneficios::-webkit-scrollbar {
   display: none;
-}
-.arrastrando {
-  cursor: grabbing;
 }
 .tarjetaBeneficio {
   width: 376px;

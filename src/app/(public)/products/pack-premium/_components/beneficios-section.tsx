@@ -1,7 +1,4 @@
-"use client";
-
 import Image from "next/image";
-import { useEffect, useRef, useState } from "react";
 import { beneficios } from "./contenido";
 import { Etiqueta } from "./elementos";
 import styles from "./pack-premium.module.css";
@@ -106,62 +103,6 @@ function VisualBeneficio({
 }
 
 export function BeneficiosSection() {
-  const carrusel = useRef<HTMLDivElement>(null);
-  const inicioArrastre = useRef<{
-    pointerId: number;
-    x: number;
-    scrollLeft: number;
-  } | null>(null);
-  const [arrastrando, setArrastrando] = useState(false);
-
-  useEffect(() => {
-    const elemento = carrusel.current;
-    if (!elemento || arrastrando) return;
-
-    const avanzar = () => {
-      const tarjeta = elemento.firstElementChild;
-      const paso = tarjeta?.getBoundingClientRect().width ?? 376;
-      const llegaAlFinal =
-        elemento.scrollLeft + elemento.clientWidth >=
-        elemento.scrollWidth - paso;
-
-      elemento.scrollTo({
-        left: llegaAlFinal ? 0 : elemento.scrollLeft + paso + 12,
-        behavior: "smooth",
-      });
-    };
-
-    const temporizador = window.setInterval(avanzar, 4000);
-    return () => window.clearInterval(temporizador);
-  }, [arrastrando]);
-
-  const iniciarArrastre = (event: React.PointerEvent<HTMLDivElement>) => {
-    if (event.button !== 0) return;
-    inicioArrastre.current = {
-      pointerId: event.pointerId,
-      x: event.clientX,
-      scrollLeft: event.currentTarget.scrollLeft,
-    };
-    event.currentTarget.setPointerCapture(event.pointerId);
-    setArrastrando(true);
-  };
-
-  const arrastrar = (event: React.PointerEvent<HTMLDivElement>) => {
-    const inicio = inicioArrastre.current;
-    if (!inicio || inicio.pointerId !== event.pointerId) return;
-    event.currentTarget.scrollLeft =
-      inicio.scrollLeft - (event.clientX - inicio.x);
-  };
-
-  const terminarArrastre = (event: React.PointerEvent<HTMLDivElement>) => {
-    if (inicioArrastre.current?.pointerId !== event.pointerId) return;
-    inicioArrastre.current = null;
-    setArrastrando(false);
-    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
-      event.currentTarget.releasePointerCapture(event.pointerId);
-    }
-  };
-
   return (
     <section className={styles.beneficios} aria-labelledby="titulo-beneficios">
       <Etiqueta>Puntos vitales</Etiqueta>
@@ -171,18 +112,10 @@ export function BeneficiosSection() {
         </h2>
       </div>
       <div
-        ref={carrusel}
-        className={`${styles.carruselBeneficios} ${
-          arrastrando ? styles.arrastrando : ""
-        }`}
+        className={styles.carruselBeneficios}
         tabIndex={0}
         role="region"
         aria-label="Beneficios del Pack Premium"
-        aria-roledescription="carousel"
-        onPointerDown={iniciarArrastre}
-        onPointerMove={arrastrar}
-        onPointerUp={terminarArrastre}
-        onPointerCancel={terminarArrastre}
       >
         {beneficios.map((beneficio) => (
           <article key={beneficio.tipo} className={styles.tarjetaBeneficio}>
