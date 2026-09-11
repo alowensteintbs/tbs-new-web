@@ -19,6 +19,43 @@ const pestanas = [
   { id: "lograr", etiqueta: "Qué vas a lograr", titulo: "¿Qué vas a lograr?" },
 ];
 
+const filasRazones = [[0, 1], [3, 2], [4, 5]];
+const iconosRazones = ["directions", "zoom-in-outline", "combine-columns-outline", "process-chart-rounded", "eye-tracking-outline", "gesture-select-outline-rounded"];
+
+function RazonesMobile() {
+  const [abiertas, setAbiertas] = useState([0, 1, 0]);
+
+  return (
+    <div className={styles.razonesMobile}>
+      {filasRazones.map((fila, indiceFila) => (
+        <div className={styles.filaRazones} key={indiceFila} data-abierta={abiertas[indiceFila]}>
+          {fila.map((indiceRazon, columna) => {
+            const razon = razones[indiceRazon];
+            const abierta = abiertas[indiceFila] === columna;
+            return (
+              <button
+                className={styles.razonMobile}
+                key={indiceRazon}
+                type="button"
+                aria-label={razon.titulo}
+                aria-expanded={abierta}
+                aria-controls={`razon-mobile-${indiceRazon}`}
+                onClick={() => setAbiertas((actuales) => actuales.map((actual, indice) => indice === indiceFila ? columna : actual))}
+              >
+                <Image src={`/products/pack-premium/programa/${iconosRazones[indiceRazon]}.svg`} width={24} height={24} alt="" />
+                <span className={styles.contenidoRazon} id={`razon-mobile-${indiceRazon}`} aria-hidden={!abierta}>
+                  <span className={styles.tituloRazon}>{razon.titulo}</span>
+                  <span className={styles.textoRazon}>{razon.texto}</span>
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export function ProgramaTabs() {
   const [activa, setActiva] = useState(0);
   const botones = useRef<(HTMLButtonElement | null)[]>([]);
@@ -76,6 +113,7 @@ export function ProgramaTabs() {
         >
           <h2>{indice === 0 ? pestana.titulo : <>¿Qué vas<br />{indice === 1 ? "a aprender?" : "a lograr?"}</>}</h2>
           {indice === 0 ? (
+            <>
             <div className={styles.razones}>
               {razones.map((razon) => (
                 <article key={razon.titulo}>
@@ -90,6 +128,8 @@ export function ProgramaTabs() {
                 </article>
               ))}
             </div>
+            <RazonesMobile />
+            </>
           ) : indice === 1 ? (
             <div className={styles.aprendizajes}>
               {aprendizajes.map((aprendizaje) => (

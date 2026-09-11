@@ -442,6 +442,9 @@
   grid-template-columns: repeat(3, 1fr);
   gap: 8px;
 }
+.razonesMobile {
+  display: none;
+}
 .razones article {
   padding: 18px 16px;
   background: #1768fc;
@@ -1420,8 +1423,8 @@
   .programa {
     margin-top: 60px;
     min-width: 0;
-    padding: 16px;
-    border-radius: 24px;
+    padding: 18px;
+    border-radius: 28px;
   }
   .programaCabecera {
     min-width: 0;
@@ -1434,7 +1437,7 @@
     min-width: 0;
     flex-wrap: nowrap;
     gap: 6px;
-    padding: 4px;
+    padding: 0;
     overflow-x: auto;
     overscroll-behavior-x: contain;
     scrollbar-width: none;
@@ -1445,9 +1448,9 @@
   .pestanas button {
     flex: 0 0 auto;
     white-space: nowrap;
-    min-height: 40px;
-    font-size: 12px;
-    padding: 6px 10px;
+    min-height: 28px;
+    font-size: 14px;
+    padding: 4px 12px;
   }
   .programa h2 {
     margin-block: 28px;
@@ -1463,9 +1466,92 @@
   .programa[data-pestana="aprender"] h2,
   .programa[data-pestana="lograr"] h2 { margin-block: 28px; }
   .programa[data-pestana="aprender"] .pestanas button,
-  .programa[data-pestana="lograr"] .pestanas button { min-height: 40px; }
+  .programa[data-pestana="lograr"] .pestanas button { min-height: 28px; }
   .razones article {
     padding: 20px;
+  }
+  .razones {
+    display: none;
+  }
+  .programa[data-pestana="por-que"] h2 {
+    margin-block: 32px;
+    font-size: clamp(44px, 14.25vw, 64px);
+    line-height: .86;
+  }
+  .razonesMobile {
+    display: grid;
+    gap: 6px;
+  }
+  .filaRazones {
+    container-type: inline-size;
+    display: grid;
+    grid-template-columns: calc(100% - 62px) 56px;
+    gap: 6px;
+    transition: grid-template-columns 400ms cubic-bezier(.22, .61, .36, 1);
+  }
+  .filaRazones[data-abierta="1"] {
+    grid-template-columns: 56px calc(100% - 62px);
+  }
+  .razonMobile {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    min-height: 154px;
+    min-width: 0;
+    overflow: hidden;
+    padding: 16px;
+    border: 0;
+    border-radius: 24px 24px 0 24px;
+    background: #0066ff;
+    color: #fff;
+    text-align: left;
+    cursor: pointer;
+    transition: background-color 400ms ease;
+  }
+  .razonMobile + .razonMobile {
+    border-radius: 24px 24px 24px 0;
+  }
+  .razonMobile[aria-expanded="false"] {
+    background: #599aff;
+  }
+  .razonMobile:focus-visible {
+    outline: 2px solid #1f1e23;
+    outline-offset: -3px;
+  }
+  .razonMobile img {
+    display: block;
+    width: 24px;
+    height: 24px;
+    max-width: none;
+  }
+  .contenidoRazon {
+    display: block;
+    width: calc(100cqw - 94px);
+    margin-top: 12px;
+    transition: opacity 160ms ease;
+  }
+  .razonMobile[aria-expanded="false"] .contenidoRazon {
+    visibility: hidden;
+    opacity: 0;
+  }
+  .tituloRazon {
+    display: block;
+    font-size: 16px;
+    font-weight: 600;
+    line-height: 1;
+    letter-spacing: -.03em;
+  }
+  .textoRazon {
+    display: block;
+    margin-top: 12px;
+    font-size: 12px;
+    font-weight: 300;
+    line-height: 1.15;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .filaRazones, .razonMobile, .contenidoRazon {
+      transition: none;
+    }
   }
   .razones h3 {
     font-size: 17px;
