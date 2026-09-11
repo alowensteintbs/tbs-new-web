@@ -131,6 +131,7 @@ export function ProgramaTabs() {
             <RazonesMobile />
             </>
           ) : indice === 1 ? (
+            <>
             <div className={styles.aprendizajes}>
               {aprendizajes.map((aprendizaje) => (
                 <article key={aprendizaje.titulo}>
@@ -139,6 +140,18 @@ export function ProgramaTabs() {
                 </article>
               ))}
             </div>
+            <div className={styles.aprendizajesMobile}>
+              {aprendizajes.map((aprendizaje) => (
+                <details key={aprendizaje.titulo}>
+                  <summary>
+                    <span>{aprendizaje.titulo}</span>
+                    <span className={styles.indicadorAprendizaje} aria-hidden="true" />
+                  </summary>
+                  <p>{aprendizaje.texto}</p>
+                </details>
+              ))}
+            </div>
+            </>
           ) : (
             <ul className={styles.objetivos}>
               {objetivos.map((objetivo) => (

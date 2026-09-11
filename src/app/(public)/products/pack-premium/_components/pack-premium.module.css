@@ -494,6 +494,9 @@
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 8px;
 }
+.aprendizajesMobile {
+  display: none;
+}
 .aprendizajes article {
   min-height: 146px;
   padding: 22px 12px;
@@ -1461,10 +1464,85 @@
     grid-template-columns: 1fr;
   }
   .aprendizajes article { min-height: 0; }
+  .aprendizajes {
+    display: none;
+  }
+  .aprendizajesMobile {
+    display: grid;
+    gap: 6px;
+  }
+  .aprendizajesMobile details {
+    overflow: hidden;
+    border-radius: 24px 24px 0 24px;
+    background: #fff;
+  }
+  .aprendizajesMobile details:nth-child(even) {
+    border-radius: 24px 24px 24px 0;
+  }
+  .aprendizajesMobile summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    min-height: 64px;
+    padding: 16px;
+    list-style: none;
+    color: #0066ff;
+    font-family: var(--font-space-grotesk), sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    line-height: 16px;
+    letter-spacing: -.02em;
+    cursor: pointer;
+  }
+  .aprendizajesMobile summary::-webkit-details-marker {
+    display: none;
+  }
+  .aprendizajesMobile summary:focus-visible {
+    outline: 2px solid #0066ff;
+    outline-offset: -4px;
+    border-radius: inherit;
+  }
+  .indicadorAprendizaje {
+    position: relative;
+    flex: 0 0 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: #0066ff;
+  }
+  .indicadorAprendizaje::before,
+  .indicadorAprendizaje::after {
+    content: "";
+    position: absolute;
+    top: 8px;
+    left: 6px;
+    width: 6px;
+    height: 2px;
+    border-radius: 1px;
+    background: #fff;
+  }
+  .indicadorAprendizaje::after {
+    transform: rotate(90deg);
+  }
+  .aprendizajesMobile details[open] .indicadorAprendizaje::after {
+    display: none;
+  }
+  .aprendizajesMobile p {
+    padding: 0 16px 16px;
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 14px;
+    color: #1f1e23;
+  }
   .programa[data-pestana="aprender"],
   .programa[data-pestana="lograr"] { min-height: 0; }
   .programa[data-pestana="aprender"] h2,
   .programa[data-pestana="lograr"] h2 { margin-block: 28px; }
+  .programa[data-pestana="aprender"] h2 {
+    margin-block: 32px;
+    font-size: clamp(44px, 14.25vw, 64px);
+    line-height: .86;
+  }
   .programa[data-pestana="aprender"] .pestanas button,
   .programa[data-pestana="lograr"] .pestanas button { min-height: 28px; }
   .razones article {
