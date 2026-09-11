@@ -13,7 +13,7 @@ export function ColaboracionesSection() {
         <article className={styles.colaborador}>
           <div className={styles.fotoColaborador}>
             <Image
-              src="/products/pack-premium/renta4.png"
+              src="/products/pack-premium/renta4-original.png"
               alt="Oficina de Renta 4 Banco"
               fill
               sizes="(min-width: 1024px) 440px, 100vw"
@@ -48,7 +48,7 @@ export function ColaboracionesSection() {
         >
           <div className={styles.fotoColaborador}>
             <Image
-              src="/products/pack-premium/taxdown.png"
+              src="/products/pack-premium/taxdown-original.png"
               alt="Equipo de TaxDown"
               fill
               sizes="(min-width: 1024px) 520px, 100vw"
