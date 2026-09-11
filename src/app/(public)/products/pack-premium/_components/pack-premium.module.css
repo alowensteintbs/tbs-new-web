@@ -1270,7 +1270,7 @@
     width: calc(100% - 32px);
   }
   .presentacion {
-    padding-top: 142px;
+    padding-top: 160px;
   }
   .tituloPrincipal {
     font-size: clamp(58px, 17.5vw, 88px);
@@ -1279,10 +1279,10 @@
     font-size: clamp(56px, 17vw, 76px);
   }
   .hero {
-    gap: 24px;
+    gap: 42px;
   }
   .formato {
-    margin-top: 28px;
+    margin-top: 42px;
     gap: 8px;
   }
   .formato > span {
@@ -1295,7 +1295,7 @@
     height: 22px;
   }
   .resumen {
-    padding: 20px 16px;
+    padding: 24px 22px;
     border-width: 4px;
     border-radius: 28px;
   }
@@ -1310,17 +1310,18 @@
     gap: 12px;
   }
   .precioResumen {
-    margin-top: 8px;
-    border-left: 0;
-    border-top: 1px solid #dfff0050;
-    padding: 16px 0 0;
+    order: -1;
+    margin-top: 0;
+    border-left: 1px solid var(--pack-lima);
+    border-top: 0;
+    padding: 0 0 0 12px;
   }
   .precioResumen > div {
-    align-items: center;
+    align-items: start;
   }
   .precioResumen span {
-    margin-top: 0;
-    font-size: 14px;
+    margin-top: 9px;
+    font-size: 11px;
   }
   .accionesResumen {
     grid-template-columns: 1fr;
@@ -1353,17 +1354,45 @@
     border-top-right-radius: 28px;
   }
   .certificacionCabecera > div > p {
-    font-size: 18px;
-    line-height: 1.2;
+    font-size: 16px;
+    line-height: 1.05;
+  }
+  .certificacion {
+    padding-block: 30px 40px;
+  }
+  .certificacionCabecera {
+    flex-direction: column-reverse;
+    gap: 10px;
+  }
+  .certificacionCabecera h2 {
+    max-width: 330px;
+    font-size: clamp(38px, 11.7vw, 46px);
+    line-height: 1;
+  }
+  .certificacionCabecera h2 em {
+    display: block;
   }
   .universidad {
-    gap: 18px;
+    align-self: flex-end;
   }
   .universidad img {
-    width: 140px;
+    width: 125px;
   }
   .certificacionCabecera .universidad p {
-    font-size: 13px;
+    display: none;
+  }
+  .titulaciones li {
+    padding: 6px 8px;
+    border-radius: 8px;
+    font-size: 14px;
+    line-height: 1.15;
+  }
+  .titulaciones article > div {
+    flex-direction: column-reverse;
+    gap: 8px;
+  }
+  .formacion {
+    padding-top: 42px;
   }
   .cursos {
     grid-template-columns: 1fr;
@@ -1371,8 +1400,11 @@
     margin-top: 28px;
   }
   .cursos article {
-    min-height: 245px;
-    padding: 24px;
+    min-height: 210px;
+    padding: 20px;
+  }
+  .cursos article > div > p {
+    font-size: 16px;
   }
   .cursos h3 {
     font-size: 26px;
@@ -1382,17 +1414,37 @@
     height: 190px;
   }
   .cursos article > p {
-    font-size: 16px;
+    margin-top: 60px;
+    font-size: 14px;
   }
   .programa {
-    margin-top: 48px;
-    padding: 20px;
+    margin-top: 60px;
+    min-width: 0;
+    padding: 16px;
     border-radius: 24px;
   }
+  .programaCabecera {
+    min-width: 0;
+  }
+  .programaCabecera > span {
+    display: none;
+  }
   .pestanas {
+    width: 100%;
+    min-width: 0;
+    flex-wrap: nowrap;
     gap: 6px;
+    padding: 4px;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scrollbar-width: none;
+  }
+  .pestanas::-webkit-scrollbar {
+    display: none;
   }
   .pestanas button {
+    flex: 0 0 auto;
+    white-space: nowrap;
     min-height: 40px;
     font-size: 12px;
     padding: 6px 10px;
