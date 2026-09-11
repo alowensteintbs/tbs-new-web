@@ -469,62 +469,103 @@
   line-height: 1.15;
   color: #e6f0ff;
 }
-.listaPrograma {
+.programa[data-pestana="aprender"],
+.programa[data-pestana="lograr"] {
+  background: #f0f0f0;
+  min-height: 624px;
+}
+.programa[data-pestana="aprender"] .pestanas button,
+.programa[data-pestana="lograr"] .pestanas button {
+  min-height: 28px;
+  line-height: 18px;
+  padding: 4px 12px;
+}
+.programa[data-pestana="aprender"] h2,
+.programa[data-pestana="lograr"] h2 {
+  margin-block: 28px 52px;
+  max-width: none;
+  line-height: 0.9;
+}
+.aprendizajes {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px 32px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
 }
-.listaPrograma li {
+.aprendizajes article {
+  min-height: 146px;
+  padding: 22px 12px;
+  border-radius: 24px 24px 0 0;
+  background: #fff;
+  color: #1f1e23;
+}
+.aprendizajes article:first-child { border-bottom-left-radius: 24px; }
+.aprendizajes article:nth-child(4) { border-bottom-right-radius: 24px; }
+.aprendizajes article:nth-child(n + 5) { border-radius: 0 0 24px 24px; }
+.aprendizajes article:nth-child(5) { border-top-left-radius: 24px; }
+.aprendizajes article:last-child { border-top-right-radius: 24px; }
+.aprendizajes h3 {
+  color: #0066ff;
+  font-family: var(--font-space-grotesk), sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 16px;
+  letter-spacing: -0.02em;
+}
+.aprendizajes p {
+  margin-top: 12px;
+  font-size: 12px;
+  line-height: 14px;
+  font-weight: 500;
+}
+.objetivos {
+  display: grid;
+  gap: 16px;
+  padding-left: 160px;
+  list-style: none;
+}
+.objetivos li {
   display: flex;
-  gap: 12px;
-  padding-block: 10px;
-  border-bottom: 1px solid #1f1e2322;
-  font-size: 18px;
-  line-height: 1.3;
+  align-items: center;
+  gap: 16px;
+  color: #1f1e23;
+  font-size: 16px;
+  line-height: 1;
+  font-weight: 700;
 }
-.listaPrograma li span {
-  color: #0666ff;
+.iconoObjetivo {
+  width: 20px;
+  height: 20px;
+  flex: 0 0 20px;
+  background: #0066ff;
+  mask: var(--icono) center / contain no-repeat;
+  -webkit-mask: var(--icono) center / contain no-repeat;
 }
 .beneficios {
   margin-top: 80px;
 }
 .tituloCarrusel {
-  display: flex;
-  align-items: center;
-  gap: 24px;
-  justify-content: space-between;
   margin-block: 32px;
 }
 .tituloCarrusel h2 {
   font-size: clamp(30px, 3vw, 42px);
 }
-.flechas {
-  display: flex;
-  gap: 8px;
-}
-.flechas button {
-  display: grid;
-  place-items: center;
-  width: 38px;
-  height: 38px;
-  border: 1px solid #1f1e2330;
-  border-radius: 50%;
-  font-size: 23px;
-  cursor: pointer;
-}
-.flechas button:hover {
-  background: #1f1e23;
-  color: white;
-}
 .carruselBeneficios {
   display: flex;
   gap: 12px;
-  margin-right: calc((1200px - 100vw) / 2);
-  padding: 0 24px 32px 0;
+  padding-bottom: 32px;
   overflow-x: auto;
   scroll-snap-type: x mandatory;
-  scrollbar-width: thin;
-  scrollbar-color: #1f1e2340 transparent;
+  scroll-behavior: smooth;
+  scrollbar-width: none;
+  touch-action: pan-y;
+  user-select: none;
+  cursor: grab;
+}
+.carruselBeneficios::-webkit-scrollbar {
+  display: none;
+}
+.arrastrando {
+  cursor: grabbing;
 }
 .tarjetaBeneficio {
   width: 376px;
@@ -1106,9 +1147,6 @@
   .formato {
     flex-wrap: wrap;
   }
-  .carruselBeneficios {
-    margin-right: -24px;
-  }
   .colaborador,
   .colaboradorTaxdown {
     grid-template-columns: 1fr 1.3fr;
@@ -1178,9 +1216,13 @@
   .titulaciones article {
     padding-block: 14px;
   }
+  .aprendizajes,
   .razones {
     grid-template-columns: 1fr 1fr;
   }
+  .aprendizajes article:nth-child(n) { border-radius: 24px; }
+  .objetivos { padding-left: 0; }
+  .objetivos li { line-height: 1.3; }
   .razones article,
   .razones article:nth-child(n + 4) {
     border-radius: 20px;
@@ -1360,9 +1402,16 @@
     font-size: clamp(44px, 12vw, 64px);
   }
   .razones,
-  .listaPrograma {
+  .aprendizajes {
     grid-template-columns: 1fr;
   }
+  .aprendizajes article { min-height: 0; }
+  .programa[data-pestana="aprender"],
+  .programa[data-pestana="lograr"] { min-height: 0; }
+  .programa[data-pestana="aprender"] h2,
+  .programa[data-pestana="lograr"] h2 { margin-block: 28px; }
+  .programa[data-pestana="aprender"] .pestanas button,
+  .programa[data-pestana="lograr"] .pestanas button { min-height: 40px; }
   .razones article {
     padding: 20px;
   }
@@ -1374,30 +1423,17 @@
     font-size: 14px;
     line-height: 1.3;
   }
-  .listaPrograma li {
+  .objetivos li {
     font-size: 16px;
   }
   .beneficios {
     margin-top: 56px;
   }
   .tituloCarrusel {
-    align-items: end;
-    gap: 10px;
     margin-top: 24px;
   }
   .tituloCarrusel h2 {
     font-size: 30px;
-  }
-  .flechas {
-    flex-direction: column;
-  }
-  .flechas button {
-    width: 34px;
-    height: 34px;
-  }
-  .carruselBeneficios {
-    margin-right: -16px;
-    padding-right: 16px;
   }
   .tarjetaBeneficio {
     flex-basis: min(316px, calc(100vw - 48px));

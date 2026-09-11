@@ -93,27 +93,48 @@ export const razones = [
 ];
 
 export const aprendizajes = [
-  "Leer gráficos e identificar tendencias, patrones, volumen y zonas relevantes para tomar decisiones.",
-  "Analizar una inversión desde su precio y desde los factores económicos que pueden afectarla.",
-  "Invertir en acciones, construir una cartera, valorarla y repartir el capital.",
-  "Invertir a largo plazo con dividendos, ETFs, fondos indexados, carteras automatizadas y renta fija.",
-  "Entender blockchain, wallets, stablecoins, tokens, minería y otras aplicaciones de las criptomonedas.",
-  "Gestionar el riesgo y decidir cuánto capital destinar a cada operación o inversión.",
-  "Aplicar diferentes estrategias según lo que esté ocurriendo en el mercado.",
-  "Medir los resultados de una estrategia y corregirla cuando sea necesario.",
-  "Crear un plan de trading con reglas, objetivos y límites claros.",
-  "Elegir un bróker teniendo en cuenta su regulación, seguridad, comisiones y condiciones.",
-  "Planificar y gestionar tu patrimonio combinando inversiones según tus objetivos.",
-  "Tener en cuenta la fiscalidad dentro de tu planificación financiera.",
+  {
+    titulo: "Analizar gráficos y entender los movimientos del precio",
+    texto: "Identificando tendencias, patrones, volumen, soportes, resistencias y zonas relevantes.",
+  },
+  {
+    titulo: "Diseñar y ejecutar tus operaciones con criterio",
+    texto: "Preparando entradas, escenarios, niveles clave y condiciones antes de operar.",
+  },
+  {
+    titulo: "Adaptar tu estrategia a los entornos de mercado",
+    texto: "Sabiendo cómo actuar en tendencia, lateralidad, roturas de rango y fases de mayor volatilidad.",
+  },
+  {
+    titulo: "Gestionar el riesgo y crear un plan sólido",
+    texto: "Definiendo cuánto capital destinar a cada operación, objetivos, límites y reglas de actuación.",
+  },
+  {
+    titulo: "Evaluar y mejorar tu operativa con datos concretos",
+    texto: "Analizando resultados, comportamientos y ratios de las estrategias para detectar errores y optimizar decisiones.",
+  },
+  {
+    titulo: "Construir y gestionar una cartera diversificada",
+    texto: "Combinando análisis fundamental, análisis técnico, asignación de capital y planificación según tus objetivos.",
+  },
+  {
+    titulo: "Invertir a medio y largo plazo en distintos activos",
+    texto: "Comprendiendo acciones, dividendos, ETFs, fondos indexados, renta fija y soluciones de inversión automatizada.",
+  },
+  {
+    titulo: "Planificar tu patrimonio con fiscalidad y activos digitales",
+    texto: "Entendiendo cómo afectan los impuestos a tus inversiones y cómo desenvolverte en el ecosistema cripto: blockchain, wallets, stablecoins y tokens.",
+  },
 ];
 export const objetivos = [
-  "Decidir dónde y cómo invertir según tus objetivos.",
-  "Elegir y aplicar diferentes estrategias según la situación.",
-  "Gestionar el riesgo de tus operaciones de forma más estructurada.",
-  "Construir y gestionar una cartera diversificada.",
-  "Moverte con autonomía entre plataformas, brókers y herramientas de inversión.",
-  "Crear tus propios planes para invertir a corto o largo plazo.",
-  "Gestionar tu dinero con una visión de conjunto.",
+  { icono: "chart-no-axes-column-increasing", texto: "La capacidad de analizar inversiones desde diferentes perspectivas." },
+  { icono: "circle-x", texto: "La capacidad de elegir entre distintas formas de invertir según tus objetivos." },
+  { icono: "list-checks", texto: "La capacidad de preparar y ejecutar operaciones con un proceso definido." },
+  { icono: "trending-up", texto: "La capacidad de adaptar tus estrategias a diferentes movimientos del precio." },
+  { icono: "shield", texto: "La capacidad de gestionar el riesgo y medir tus resultados." },
+  { icono: "folder-open", texto: "La capacidad de construir y gestionar una cartera diversificada." },
+  { icono: "calendar", texto: "La capacidad de combinar inversión a corto y largo plazo dentro de una estrategia." },
+  { icono: "globe", texto: "La capacidad de gestionar tus inversiones con una visión global del patrimonio." },
 ];
 
 export const beneficios = [

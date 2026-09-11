@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useRef, useState } from "react";
+import { useRef, useState, type CSSProperties } from "react";
 import { aprendizajes, objetivos, razones } from "./contenido";
 import styles from "./pack-premium.module.css";
 
@@ -37,7 +37,7 @@ export function ProgramaTabs() {
   }
 
   return (
-    <div className={styles.programa} id="programa">
+    <div className={styles.programa} id="programa" data-pestana={pestanas[activa].id}>
       <div className={styles.programaCabecera}>
         <div
           className={styles.pestanas}
@@ -74,7 +74,7 @@ export function ProgramaTabs() {
           hidden={activa !== indice}
           tabIndex={0}
         >
-          <h2>{pestana.titulo}</h2>
+          <h2>{indice === 0 ? pestana.titulo : <>¿Qué vas<br />{indice === 1 ? "a aprender?" : "a lograr?"}</>}</h2>
           {indice === 0 ? (
             <div className={styles.razones}>
               {razones.map((razon) => (
@@ -90,12 +90,25 @@ export function ProgramaTabs() {
                 </article>
               ))}
             </div>
+          ) : indice === 1 ? (
+            <div className={styles.aprendizajes}>
+              {aprendizajes.map((aprendizaje) => (
+                <article key={aprendizaje.titulo}>
+                  <h3>{aprendizaje.titulo}</h3>
+                  <p>{aprendizaje.texto}</p>
+                </article>
+              ))}
+            </div>
           ) : (
-            <ul className={styles.listaPrograma}>
-              {(indice === 1 ? aprendizajes : objetivos).map((texto) => (
-                <li key={texto}>
-                  <span aria-hidden="true">↗</span>
-                  {texto}
+            <ul className={styles.objetivos}>
+              {objetivos.map((objetivo) => (
+                <li key={objetivo.texto}>
+                  <span
+                    className={styles.iconoObjetivo}
+                    aria-hidden="true"
+                    style={{ "--icono": `url("/products/pack-premium/programa/${objetivo.icono}.svg")` } as CSSProperties}
+                  />
+                  <span>{objetivo.texto}</span>
                 </li>
               ))}
             </ul>
