@@ -45,7 +45,7 @@ function HeroTitle() {
 
 export function Hero() {
   return (
-    <section className="mx-auto flex h-[661px] w-full flex-col items-start px-4 pb-3 pt-[110px] xl:h-[757px] xl:max-w-[1440px] xl:items-center xl:px-10 xl:pb-[60px] xl:pt-[140px]">
+    <section className="mx-auto flex min-h-[661px] w-full shrink-0 flex-col items-start px-4 pb-3 pt-[110px] xl:h-[757px] xl:max-w-[1440px] xl:items-center xl:px-10 xl:pb-[60px] xl:pt-[140px]">
       <SectionBadge className="self-center">Escuela de inversión más elegida de España</SectionBadge>
 
       <div className="mt-8 flex w-full max-w-[361px] flex-col items-start gap-5 xl:mt-12 xl:max-w-none xl:items-center xl:gap-9">
