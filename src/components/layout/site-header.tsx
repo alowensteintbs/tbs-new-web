@@ -100,6 +100,7 @@ function IconoClase({ nombre }: { nombre: IconoClaseGratis }) {
 // estén publicados todos los productos de esta navegación.
 function catalogo(nombre: string) {
   if (nombre === "Pack Inversión Premium") return "/products/pack-premium";
+  if (nombre === "Trading avanzado") return "/products/trading";
   return `/products?q=${encodeURIComponent(nombre)}`;
 }
 

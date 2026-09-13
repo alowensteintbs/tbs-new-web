@@ -3,10 +3,17 @@ import { beneficios } from "./contenido";
 import { Etiqueta } from "./elementos";
 import styles from "./pack-premium.module.css";
 
+export type Beneficio = {
+  titulo: string;
+  imagen: string;
+  tipo: string;
+  puntos: readonly string[];
+};
+
 function VisualBeneficio({
   beneficio,
 }: {
-  beneficio: (typeof beneficios)[number];
+  beneficio: Beneficio;
 }) {
   return (
     <div
@@ -69,6 +76,13 @@ function VisualBeneficio({
           height={40}
         />
       )}
+      {beneficio.tipo === "impuestos" && (
+        <div className={styles.bancoImpuestos}>
+          <span />
+          <div><i /><i /><i /><i /></div>
+          <b />
+        </div>
+      )}
       {beneficio.tipo === "aula" && (
         <>
           <Image
@@ -102,7 +116,13 @@ function VisualBeneficio({
   );
 }
 
-export function BeneficiosSection() {
+export function BeneficiosSection({
+  producto = "Pack Premium",
+  beneficiosLista = beneficios,
+}: {
+  producto?: string;
+  beneficiosLista?: readonly Beneficio[];
+}) {
   return (
     <section className={styles.beneficios} aria-labelledby="titulo-beneficios">
       <Etiqueta>Puntos vitales</Etiqueta>
@@ -115,9 +135,9 @@ export function BeneficiosSection() {
         className={styles.carruselBeneficios}
         tabIndex={0}
         role="region"
-        aria-label="Beneficios del Pack Premium"
+        aria-label={`Beneficios de ${producto}`}
       >
-        {beneficios.map((beneficio) => (
+        {beneficiosLista.map((beneficio) => (
           <article key={beneficio.tipo} className={styles.tarjetaBeneficio}>
             <VisualBeneficio beneficio={beneficio} />
             <h3>{beneficio.titulo}</h3>

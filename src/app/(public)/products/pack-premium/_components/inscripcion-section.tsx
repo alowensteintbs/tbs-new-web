@@ -3,7 +3,13 @@ import { FormularioContacto } from "./formulario-contacto";
 import { pack } from "./contenido";
 import styles from "./pack-premium.module.css";
 
-export function LlamadaSection({ fechaInicial }: { fechaInicial: string }) {
+export function LlamadaSection({
+  fechaInicial,
+  producto = "Pack Premium",
+}: {
+  fechaInicial: string;
+  producto?: string;
+}) {
   return (
     <section className={`tbs-grid-dark ${styles.llamada}`} id="llamada">
       <div className={styles.contenedor}>
@@ -14,10 +20,10 @@ export function LlamadaSection({ fechaInicial }: { fechaInicial: string }) {
           </h2>
           <p>
             Te mostramos la formación por dentro, resolvemos tus dudas y te
-            ayudamos a descubrir si el Pack Premium encaja contigo.
+            ayudamos a descubrir si {producto} encaja contigo.
           </p>
         </div>
-        <FormularioContacto agenda fechaInicial={fechaInicial} />
+        <FormularioContacto agenda fechaInicial={fechaInicial} producto={producto} />
       </div>
     </section>
   );

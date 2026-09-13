@@ -30,9 +30,11 @@ function observarFecha(actualizar: () => void) {
 export function FormularioContacto({
   agenda = false,
   fechaInicial,
+  producto = "Pack Premium",
 }: {
   agenda?: boolean;
   fechaInicial: string;
+  producto?: string;
 }) {
   const id = useId();
   // Actualiza la fecha al hidratar incluso si la página se generó días antes.
@@ -69,15 +71,15 @@ export function FormularioContacto({
     }
     const datos = new FormData(event.currentTarget);
     const asunto = agenda
-      ? "Solicitud de llamada · Pack Premium"
-      : "Información · Pack Premium";
+      ? `Solicitud de llamada · ${producto}`
+      : `Información · ${producto}`;
     const cuerpo = [
       `Nombre: ${datos.get("nombre")}`,
       `Correo: ${datos.get("correo")}`,
       `Teléfono: ${datos.get("telefono")}`,
       agenda
         ? `Horario preferido: ${fecha} a las ${hora} (hora de España).`
-        : "Quiero recibir más información sobre el Pack de inversión premium.",
+        : `Quiero recibir más información sobre ${producto}.`,
     ].join("\n");
     window.location.href = `mailto:${pack.contacto}?subject=${encodeURIComponent(asunto)}&body=${encodeURIComponent(cuerpo)}`;
     setMensaje(

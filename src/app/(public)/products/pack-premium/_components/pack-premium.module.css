@@ -683,6 +683,42 @@
   background: #00cf83;
   padding: 28px;
 }
+.impuestos {
+  background: #13b693;
+}
+.bancoImpuestos {
+  width: 72%;
+  color: #f7f7f7;
+  filter: drop-shadow(0 8px 0 #16423c);
+}
+.bancoImpuestos > span {
+  display: block;
+  width: 0;
+  height: 0;
+  margin-inline: auto;
+  border-right: 112px solid transparent;
+  border-bottom: 66px solid currentColor;
+  border-left: 112px solid transparent;
+}
+.bancoImpuestos > div {
+  display: flex;
+  justify-content: space-around;
+  border-top: 18px solid currentColor;
+  border-bottom: 18px solid currentColor;
+  padding: 10px 14px;
+}
+.bancoImpuestos i {
+  width: 24px;
+  height: 112px;
+  border-radius: 3px;
+  background: currentColor;
+}
+.bancoImpuestos > b {
+  display: block;
+  height: 20px;
+  margin-top: 8px;
+  background: currentColor;
+}
 .aula {
   flex-direction: column;
   padding: 20px;

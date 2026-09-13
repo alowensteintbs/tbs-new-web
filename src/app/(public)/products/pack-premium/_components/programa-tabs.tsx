@@ -22,7 +22,11 @@ const pestanas = [
 const filasRazones = [[0, 1], [3, 2], [4, 5]];
 const iconosRazones = ["directions", "zoom-in-outline", "combine-columns-outline", "process-chart-rounded", "eye-tracking-outline", "gesture-select-outline-rounded"];
 
-function RazonesMobile() {
+type RazonPrograma = (typeof razones)[number];
+type AprendizajePrograma = (typeof aprendizajes)[number];
+type ObjetivoPrograma = (typeof objetivos)[number];
+
+function RazonesMobile({ items }: { items: readonly RazonPrograma[] }) {
   const [abiertas, setAbiertas] = useState([0, 1, 0]);
 
   return (
@@ -30,7 +34,7 @@ function RazonesMobile() {
       {filasRazones.map((fila, indiceFila) => (
         <div className={styles.filaRazones} key={indiceFila} data-abierta={abiertas[indiceFila]}>
           {fila.map((indiceRazon, columna) => {
-            const razon = razones[indiceRazon];
+            const razon = items[indiceRazon];
             const abierta = abiertas[indiceFila] === columna;
             return (
               <button
@@ -56,7 +60,17 @@ function RazonesMobile() {
   );
 }
 
-export function ProgramaTabs() {
+export function ProgramaTabs({
+  etiquetaProducto = "Pack de inversión premium",
+  razonesPrograma = razones,
+  aprendizajesPrograma = aprendizajes,
+  objetivosPrograma = objetivos,
+}: {
+  etiquetaProducto?: string;
+  razonesPrograma?: readonly RazonPrograma[];
+  aprendizajesPrograma?: readonly AprendizajePrograma[];
+  objetivosPrograma?: readonly ObjetivoPrograma[];
+}) {
   const [activa, setActiva] = useState(0);
   const botones = useRef<(HTMLButtonElement | null)[]>([]);
 
@@ -79,7 +93,7 @@ export function ProgramaTabs() {
         <div
           className={styles.pestanas}
           role="tablist"
-          aria-label="Contenido del Pack Premium"
+          aria-label={`Contenido de ${etiquetaProducto}`}
         >
           {pestanas.map((pestana, indice) => (
             <button
@@ -100,7 +114,7 @@ export function ProgramaTabs() {
             </button>
           ))}
         </div>
-        <span>Pack de inversión premium</span>
+        <span>{etiquetaProducto}</span>
       </div>
       {pestanas.map((pestana, indice) => (
         <div
@@ -115,7 +129,7 @@ export function ProgramaTabs() {
           {indice === 0 ? (
             <>
             <div className={styles.razones}>
-              {razones.map((razon) => (
+              {razonesPrograma.map((razon) => (
                 <article key={razon.titulo}>
                   <Image
                     src={`/home/learning/${razon.icono}`}
@@ -128,12 +142,12 @@ export function ProgramaTabs() {
                 </article>
               ))}
             </div>
-            <RazonesMobile />
+            <RazonesMobile items={razonesPrograma} />
             </>
           ) : indice === 1 ? (
             <>
             <div className={styles.aprendizajes}>
-              {aprendizajes.map((aprendizaje) => (
+              {aprendizajesPrograma.map((aprendizaje) => (
                 <article key={aprendizaje.titulo}>
                   <h3>{aprendizaje.titulo}</h3>
                   <p>{aprendizaje.texto}</p>
@@ -141,7 +155,7 @@ export function ProgramaTabs() {
               ))}
             </div>
             <div className={styles.aprendizajesMobile}>
-              {aprendizajes.map((aprendizaje) => (
+              {aprendizajesPrograma.map((aprendizaje) => (
                 <details key={aprendizaje.titulo}>
                   <summary>
                     <span>{aprendizaje.titulo}</span>
@@ -154,7 +168,7 @@ export function ProgramaTabs() {
             </>
           ) : (
             <ul className={styles.objetivos}>
-              {objetivos.map((objetivo) => (
+              {objetivosPrograma.map((objetivo) => (
                 <li key={objetivo.texto}>
                   <span
                     className={styles.iconoObjetivo}
