@@ -1,9 +1,40 @@
 import Image from "next/image";
+import Link from "next/link";
 
 const linkColumns = [
-  { title: "Escuela de finanzas 360º", links: ["Curso de Acciones Avanzado", "Curso de Criptomonedas Avanzado", "Curso Trading Avanzado", "Máster en trading algorítmico con IA", "Pack de Inversión Premium", "Ver todos los cursos"] },
-  { title: "Nuestras clases gratuitas", links: ["Curso de Finanzas Personales", "Curso de Trading gratis", "Curso de Trading Algorítmico gratis", "Curso de Bolsa gratis", "Curso de Criptomonedas gratis"] },
-  { title: "Avisos & otros", links: ["Opiniones de Traders Business School", "Aviso legal", "Privacidad", "Cookies", "Términos y condiciones", "Resolución de litigios en línea", "Aviso Legal de Criptomonedas"] },
+  {
+    title: "Escuela de finanzas 360º",
+    links: [
+      { label: "Curso de Acciones Avanzado" },
+      { label: "Curso de Criptomonedas Avanzado", href: "/products/cripto" },
+      { label: "Curso Trading Avanzado", href: "/products/trading" },
+      { label: "Máster en trading algorítmico con IA", href: "/products/trading-algoritmico" },
+      { label: "Pack de Inversión Premium" },
+      { label: "Ver todos los cursos" },
+    ],
+  },
+  {
+    title: "Nuestras clases gratuitas",
+    links: [
+      { label: "Curso de Finanzas Personales" },
+      { label: "Curso de Trading gratis" },
+      { label: "Curso de Trading Algorítmico gratis" },
+      { label: "Curso de Bolsa gratis" },
+      { label: "Curso de Criptomonedas gratis" },
+    ],
+  },
+  {
+    title: "Avisos & otros",
+    links: [
+      { label: "Opiniones de Traders Business School" },
+      { label: "Aviso legal" },
+      { label: "Privacidad" },
+      { label: "Cookies" },
+      { label: "Términos y condiciones" },
+      { label: "Resolución de litigios en línea" },
+      { label: "Aviso Legal de Criptomonedas" },
+    ],
+  },
 ];
 
 const footerSocialLinks = [
@@ -77,10 +108,10 @@ export function AppFooterSection({ showAppPromo = true }: AppFooterSectionProps)
         </div>
       </section>}
 
-      <footer className="px-4 pb-[100px] pt-[100px] xl:h-[666px] xl:px-10">
-        <div className="mx-auto max-w-[1200px]">
-          <div className="flex flex-col gap-7 border-b border-white pb-6 md:flex-row md:items-center md:justify-between">
-            <Image src="/home/logo-traders.svg" alt="Traders Business School" width={153} height={40} className="h-10 w-[153px]" />
+      <footer className="px-4 pb-[100px] pt-[100px] xl:h-[666.39px] xl:px-10">
+        <div className="mx-auto max-w-[1200px] xl:flex xl:h-[466.39px] xl:flex-col xl:gap-7">
+          <div className="flex flex-col gap-7 border-b border-white pb-6 md:flex-row md:items-center md:justify-between xl:h-[39.6px] xl:shrink-0 xl:border-0 xl:pb-0">
+            <Image src="/home/logo-traders.svg" alt="Traders Business School" width={153} height={40} className="h-10 w-[153px] xl:h-[39.6px]" />
             <div className="flex flex-wrap items-center gap-3">
               <span className="inline-flex h-[29px] w-[162px] items-center justify-center gap-1 rounded-[8px] border border-[#ff0a54] bg-[#ff0a54]/20 px-2 py-1.5 font-space text-[11px] font-bold text-[#ff0a54]">Descarga nuestra app</span>
               <nav aria-label="Redes sociales" className="flex items-center gap-3">
@@ -99,20 +130,29 @@ export function AppFooterSection({ showAppPromo = true }: AppFooterSectionProps)
               </nav>
             </div>
           </div>
-          <div className="mt-6 grid gap-4 md:grid-cols-3">
+          <div aria-hidden="true" className="relative hidden h-0 shrink-0 xl:block after:absolute after:inset-x-0 after:top-0 after:border-t after:border-white" />
+          <div className="mt-6 grid gap-4 md:grid-cols-3 xl:mt-0 xl:h-[284px] xl:shrink-0">
             {linkColumns.map((column) => (
               <section
                 key={column.title}
-                className="min-h-[284px] rounded-[20px] bg-black/40 p-5"
+                className="min-h-[284px] rounded-[20px] bg-black/40 p-5 backdrop-blur-[4px] xl:p-[26px]"
               >
                 <h3 className="font-raleway text-base font-semibold text-white">{column.title}</h3>
-                <ul className="mt-5 space-y-2">
-                  {column.links.map((link) => <li key={link} className="font-raleway text-sm font-semibold leading-4 text-white">{link}</li>)}
+                <ul className="mt-5 space-y-2 xl:mt-[26px]">
+                  {column.links.map((link) => (
+                    <li key={link.label} className="font-raleway text-sm font-semibold leading-4 text-white">
+                      {link.href ? (
+                        <Link href={link.href} className="transition-opacity hover:opacity-75">
+                          {link.label}
+                        </Link>
+                      ) : link.label}
+                    </li>
+                  ))}
                 </ul>
               </section>
             ))}
           </div>
-          <div className="mt-7 flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
+          <div className="mt-7 flex flex-col gap-6 md:flex-row md:items-end md:justify-between xl:mt-0 xl:h-[58.78px] xl:shrink-0 xl:gap-5">
             <p className="max-w-[892px] font-raleway text-xs leading-3 text-white">
               La inversión en criptoactivos no está regulada, puede no ser adecuada para inversores minoristas y perderse la totalidad del importe invertido.<br />Es importante leer y comprender los riesgos de esta inversión que se explican detalladamente en <span className="text-[#ff0a54]">esta ubicación.</span>
             </p>
