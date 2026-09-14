@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { PartnersStrip } from "@/components/home/video-showcase";
+import { PartnersStrip, VideoShowcase } from "@/components/home/video-showcase";
 import { BeneficiosSection } from "../../pack-premium/_components/beneficios-section";
 import { Etiqueta, BotonPack, FormatoCurso } from "../../pack-premium/_components/elementos";
 import { FormularioContacto } from "../../pack-premium/_components/formulario-contacto";
@@ -67,20 +67,16 @@ export function HeroTrading() {
         <div className={styles.alianzas}>
           <PartnersStrip />
         </div>
-        <div className={styles.presentacionVisual}>
-          <Image
-            src="/products/pack-premium/presentacion.png"
-            alt="Presentación del Curso de Trading"
-            fill
-            priority
-            sizes="(min-width: 1280px) 1200px, calc(100vw - 32px)"
-          />
-        </div>
-        <div className={styles.descargarPrograma}>
-          <BotonPack href="#programa" tono="rosa">
-            Descargar programa <span aria-hidden="true">↓</span>
-          </BotonPack>
-        </div>
+      </div>
+      <VideoShowcase
+        showPartners={false}
+        poster="/products/pack-premium/presentacion.png"
+        className={`${packStyles.video} ${styles.videoTrading}`}
+      />
+      <div className={styles.descargarPrograma}>
+        <BotonPack href="#programa" tono="rosa">
+          Descargar programa <span aria-hidden="true">↓</span>
+        </BotonPack>
       </div>
     </section>
   );

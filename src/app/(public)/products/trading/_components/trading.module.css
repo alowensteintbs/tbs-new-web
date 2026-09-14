@@ -45,17 +45,8 @@
   filter: brightness(0) invert(1);
 }
 
-.presentacionVisual {
-  position: relative;
-  aspect-ratio: 16 / 9;
+.videoTrading {
   margin-top: 100px;
-  overflow: hidden;
-  border-radius: 32px;
-  box-shadow: 0 18px 32px #0008;
-}
-
-.presentacionVisual img {
-  object-fit: cover;
 }
 
 .descargarPrograma {
@@ -240,13 +231,8 @@
     margin-top: 42px;
   }
 
-  .presentacionVisual {
-    aspect-ratio: 4 / 5;
+  .videoTrading {
     margin-top: 60px;
-  }
-
-  .presentacionVisual img {
-    object-position: center;
   }
 
   .programaSeccion {
