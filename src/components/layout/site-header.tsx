@@ -104,6 +104,7 @@ function catalogo(nombre: string) {
   if (nombre === "Trading algorítmico con IA") {
     return "/products/trading-algoritmico";
   }
+  if (nombre === "Criptomonedas avanzado") return "/products/cripto";
   return `/products?q=${encodeURIComponent(nombre)}`;
 }
 
@@ -117,9 +118,9 @@ function Cursos({ close, mobile = false }: { close: () => void; mobile?: boolean
             <ul className={mobile ? "space-y-0" : "mt-1 space-y-1"}>
               {grupo.courses.map((course) => (
                 <li key={course.name}>
-                  <a href={catalogo(course.name)} onClick={close} className={cn("block rounded-sm font-raleway text-sm text-[#f7f7f7] transition-colors hover:text-[#e1ff3b] focus-visible:outline-2 focus-visible:outline-[#e1ff3b]", mobile ? "leading-[18px]" : "leading-[22px]")}>
+                  <Link href={catalogo(course.name)} onClick={close} className={cn("block rounded-sm font-raleway text-sm text-[#f7f7f7] transition-colors hover:text-[#e1ff3b] focus-visible:outline-2 focus-visible:outline-[#e1ff3b]", mobile ? "leading-[18px]" : "leading-[22px]")}>
                     {course.prefix}{course.prefix ? <strong className="font-bold">{course.name}</strong> : course.name}
-                  </a>
+                  </Link>
                 </li>
               ))}
             </ul>
@@ -182,7 +183,36 @@ export function SiteHeader({ items, className }: { items: SiteNavigationItem[]; 
   const coursesButtonRef = useRef<HTMLButtonElement>(null);
   const freeClassesButtonRef = useRef<HTMLButtonElement>(null);
   const mobileButtonRef = useRef<HTMLButtonElement>(null);
-  const close = () => { setCoursesOpen(false); setFreeClassesOpen(false); setMobileOpen(false); };
+  const desktopCloseTimerRef = useRef<number | null>(null);
+
+  function cancelDesktopClose() {
+    if (desktopCloseTimerRef.current === null) return;
+    window.clearTimeout(desktopCloseTimerRef.current);
+    desktopCloseTimerRef.current = null;
+  }
+
+  function scheduleDesktopClose() {
+    if (!window.matchMedia("(min-width: 1280px)").matches) return;
+    cancelDesktopClose();
+    desktopCloseTimerRef.current = window.setTimeout(() => {
+      setCoursesOpen(false);
+      setFreeClassesOpen(false);
+      desktopCloseTimerRef.current = null;
+    }, 180);
+  }
+
+  const close = () => {
+    cancelDesktopClose();
+    setCoursesOpen(false);
+    setFreeClassesOpen(false);
+    setMobileOpen(false);
+  };
+
+  useEffect(() => () => {
+    if (desktopCloseTimerRef.current !== null) {
+      window.clearTimeout(desktopCloseTimerRef.current);
+    }
+  }, []);
 
   useEffect(() => {
     if (!coursesOpen && !freeClassesOpen && !mobileOpen) return;
@@ -213,12 +243,8 @@ export function SiteHeader({ items, className }: { items: SiteNavigationItem[]; 
       {(coursesOpen || freeClassesOpen || mobileOpen) && <div className="fixed inset-0 z-40 bg-black/60" aria-hidden="true" onClick={close} />}
       <header ref={headerRef}
         onBlur={(event) => { if (!event.currentTarget.contains(event.relatedTarget as Node | null)) close(); }}
-        onMouseLeave={() => {
-          if (window.matchMedia("(min-width: 1280px)").matches) {
-            setCoursesOpen(false);
-            setFreeClassesOpen(false);
-          }
-        }}
+        onMouseEnter={cancelDesktopClose}
+        onMouseLeave={scheduleDesktopClose}
         className={cn("fixed left-4 right-4 top-10 z-50 xl:left-1/2 xl:right-auto xl:top-16 xl:w-[calc(100%-80px)] xl:max-w-[1199px] xl:-translate-x-1/2", className)}>
         <div className="flex h-[62px] items-center justify-between rounded-[20px] bg-tbs-black px-5 shadow-[0_8px_4px_rgba(18,18,20,0.5)] xl:h-[54px] xl:rounded-[26px] xl:pl-6 xl:pr-3">
           <Link href="/" aria-label="Traders Business School, inicio" onClick={close}>
@@ -250,7 +276,7 @@ export function SiteHeader({ items, className }: { items: SiteNavigationItem[]; 
                 {item.label}
               </button>
             ) : (
-              <a key={item.label} href={itemHref(item)} onClick={close} className="inline-flex h-[30px] items-center rounded-full px-5 font-space text-sm font-medium text-[#f7f7f7] hover:text-[#e1ff3b]">{item.label}</a>
+              <Link key={item.label} href={itemHref(item)} onClick={close} className="inline-flex h-[30px] items-center rounded-full px-5 font-space text-sm font-medium text-[#f7f7f7] hover:text-[#e1ff3b]">{item.label}</Link>
             ))}
           </nav>
           <a href="https://academia.tradersbusinessschool.com" target="_blank" rel="noopener noreferrer" onClick={close} className="hidden h-[30px] items-center rounded-full border-2 border-[#f7f7f7] px-3 font-raleway text-base font-extrabold leading-4 text-[#f7f7f7] xl:inline-flex">Aula Virtual</a>
@@ -265,8 +291,8 @@ export function SiteHeader({ items, className }: { items: SiteNavigationItem[]; 
           </button>
           </div>
         </div>
-        {coursesOpen && <div id="menu-cursos" className="absolute left-1/2 top-[60px] hidden max-h-[calc(100dvh-140px)] w-[793.37px] -translate-x-1/2 overflow-y-auto rounded-[30px] border-[6px] border-white/10 bg-black/60 p-[14px] shadow-[0_11px_12px_rgb(0_0_0/25%)] backdrop-blur-[16px] xl:block"><Cursos close={close} /></div>}
-        {freeClassesOpen && <div id="menu-clases-gratis" className="absolute left-1/2 top-[60px] hidden w-[793.37px] -translate-x-1/2 rounded-[30px] border-[6px] border-white/10 bg-black/60 p-[14px] shadow-[0_11px_12px_rgb(0_0_0/25%)] backdrop-blur-[16px] xl:block"><ClasesGratis close={close} /></div>}
+        {coursesOpen && <div id="menu-cursos" className="absolute left-1/2 top-[54px] hidden w-[793.37px] -translate-x-1/2 pt-[6px] xl:block"><div className="max-h-[calc(100dvh-140px)] overflow-y-auto rounded-[30px] border-[6px] border-white/10 bg-black/60 p-[14px] shadow-[0_11px_12px_rgb(0_0_0/25%)] backdrop-blur-[16px]"><Cursos close={close} /></div></div>}
+        {freeClassesOpen && <div id="menu-clases-gratis" className="absolute left-1/2 top-[54px] hidden w-[793.37px] -translate-x-1/2 pt-[6px] xl:block"><div className="rounded-[30px] border-[6px] border-white/10 bg-black/60 p-[14px] shadow-[0_11px_12px_rgb(0_0_0/25%)] backdrop-blur-[16px]"><ClasesGratis close={close} /></div></div>}
         {mobileOpen && <nav id="menu-mobile" aria-label="Navegación móvil" className="mt-1 max-h-[calc(100dvh-122px)] overflow-y-auto overscroll-contain rounded-[22px] border-[6px] border-[#292a28] bg-black p-1 text-white shadow-[0_11px_12px_rgb(0_0_0/25%)] xl:hidden">
           {coursesOpen ? <div id="cursos-mobile"><Cursos close={close} mobile /></div> : freeClassesOpen ? <div id="clases-gratis-mobile"><ClasesGratis close={close} mobile /></div> : <div className="flex flex-col gap-1">
             <button type="button" onClick={() => { setCoursesOpen(true); mobileButtonRef.current?.focus(); }} className="flex min-h-10 w-full cursor-pointer items-center justify-between rounded-xl bg-[#111113] px-3 py-2 font-space text-base font-bold">Nuestros cursos<span aria-hidden="true" className="font-sans text-[25px] leading-none">↗</span></button>

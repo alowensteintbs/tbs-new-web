@@ -1,0 +1,26 @@
+.pagina {
+  background: #121214;
+}
+
+.tituloCripto {
+  letter-spacing: -0.055em;
+}
+
+.tituloCripto em {
+  letter-spacing: -0.07em;
+}
+
+.claseFormularioCripto {
+  border: 0;
+  background:
+    radial-gradient(circle at 22% 32%, rgb(157 190 19 / 13%), transparent 42%),
+    radial-gradient(circle at 78% 72%, rgb(157 190 19 / 10%), transparent 46%),
+    #182006;
+}
+
+@media (max-width: 900px) {
+  .tituloCripto,
+  .tituloCripto em {
+    letter-spacing: -0.06em;
+  }
+}
