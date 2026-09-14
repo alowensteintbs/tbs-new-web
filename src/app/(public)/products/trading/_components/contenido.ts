@@ -64,54 +64,57 @@ export const razonesTrading = [
 
 export const aprendizajesTrading = [
   {
-    titulo: "Leer gráficos y movimientos del precio",
+    titulo: "Entender los mercados de corto plazo y elegir bien dónde operar",
+    texto:
+      "Comprende cómo funcionan los mercados de corto plazo y qué debes valorar antes de elegir dónde operar.",
+  },
+  {
+    titulo: "Leer gráficos e interpretar el comportamiento del precio",
     texto:
       "Identifica tendencias, soportes, resistencias, volumen y zonas relevantes del mercado.",
   },
   {
-    titulo: "Preparar una operación antes de entrar",
+    titulo: "Detectar oportunidades de entrada y salida",
     texto:
       "Define escenarios, niveles clave, objetivos y condiciones de invalidación con antelación.",
   },
   {
-    titulo: "Elegir una estrategia según el mercado",
+    titulo: "Preparar cada sesión de trading antes de operar",
+    texto:
+      "Organiza el contexto, los escenarios y los niveles importantes antes de empezar cada sesión.",
+  },
+  {
+    titulo: "Adaptar la estrategia al tipo de mercado",
     texto:
       "Adapta tu operativa a tendencias, rangos, roturas y momentos de mayor volatilidad.",
   },
   {
-    titulo: "Gestionar el riesgo de forma consistente",
+    titulo: "Gestionar el riesgo de cada operación",
     texto:
       "Decide cuánto capital arriesgar y protege cada operación con reglas claras.",
   },
   {
-    titulo: "Operar con indicadores y herramientas",
+    titulo: "Construir un plan de trading y evaluar tu operativa con datos",
     texto:
-      "Usa recursos técnicos para validar decisiones sin depender de señales externas.",
+      "Registra tus operaciones y analiza resultados para detectar errores y oportunidades de mejora.",
   },
   {
-    titulo: "Medir tus resultados",
+    titulo: "Gestionar la parte psicológica y fiscal del trading",
     texto:
-      "Registra operaciones y analiza ratios para detectar errores y oportunidades de mejora.",
-  },
-  {
-    titulo: "Controlar la parte emocional",
-    texto:
-      "Construye rutinas que te ayuden a respetar el plan incluso en momentos de presión.",
-  },
-  {
-    titulo: "Crear tu propio plan de trading",
-    texto:
-      "Reúne estrategia, riesgo, horarios y revisión en un proceso que puedas repetir.",
+      "Construye rutinas para respetar tu plan y comprende cómo afecta la fiscalidad a tu operativa.",
   },
 ] as const;
 
 export const objetivosTrading = [
-  { icono: "chart-no-axes-column-increasing", texto: "Analizar gráficos con criterio y reconocer contextos de mercado." },
-  { icono: "list-checks", texto: "Preparar y ejecutar operaciones con un proceso definido." },
-  { icono: "shield", texto: "Gestionar el riesgo antes de buscar rentabilidad." },
-  { icono: "trending-up", texto: "Adaptar tu estrategia a distintos movimientos del precio." },
-  { icono: "folder-open", texto: "Registrar, revisar y mejorar tu operativa con datos." },
-  { icono: "calendar", texto: "Construir una rutina sostenible y un plan propio de trading." },
+  { icono: "chart-no-axes-column-increasing", texto: "La capacidad de leer gráficos e interpretar movimientos del precio." },
+  { icono: "circle-x", texto: "La capacidad de detectar posibles zonas de entrada y salida." },
+  { icono: "list-checks", texto: "La capacidad de preparar una sesión antes de operar." },
+  { icono: "trending-up", texto: "La capacidad de adaptar una estrategia a diferentes escenarios." },
+  { icono: "shield", texto: "La capacidad de decidir cuánto arriesgar en cada operación." },
+  { icono: "folder-open", texto: "La capacidad de medir con datos si tu forma de operar funciona." },
+  { icono: "circle-x", texto: "La capacidad de gestionar las emociones dentro de tu operativa." },
+  { icono: "calendar", texto: "La capacidad de construir y seguir tu propio plan de trading." },
+  { icono: "globe", texto: "La capacidad de tomar decisiones de trading con criterio propio." },
 ] as const;
 
 export const beneficiosTrading = [
