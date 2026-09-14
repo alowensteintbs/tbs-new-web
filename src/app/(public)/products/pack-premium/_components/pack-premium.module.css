@@ -1,7 +1,7 @@
 .pagina {
-  --pack-lima: #dfff00;
-  --pack-azul: #0666ff;
-  --pack-rosa: #ff0054;
+  --pack-lima: #daff0a;
+  --pack-azul: #0066ff;
+  --pack-rosa: #ff0a54;
   min-width: 0;
   overflow: clip;
   padding-bottom: 76px;
@@ -251,7 +251,7 @@
 }
 .certificacion {
   padding-block: 120px;
-  background-color: #ffbe26;
+  background-color: #ffbf00;
   border-radius: 36px 36px 0 0;
   color: #141414;
 }
@@ -267,8 +267,9 @@
 }
 .certificacionCabecera > div > p {
   margin-top: 12px;
-  font-size: 25px;
-  line-height: 1.05;
+  font-family: var(--font-space-grotesk), sans-serif;
+  font-size: 24px;
+  line-height: 24px;
 }
 .universidad {
   flex: 0 0 173px;
@@ -339,6 +340,10 @@
 }
 .formacion > div > h2 {
   margin-top: 32px;
+  font-family: var(--font-space-grotesk), sans-serif;
+  font-size: 42px;
+  line-height: 38px;
+  letter-spacing: -0.02em;
 }
 .cursos {
   display: grid;
@@ -378,11 +383,11 @@
 }
 .cursos h3 {
   font-family: var(--font-space-grotesk), sans-serif;
-  font-size: 30px;
+  font-size: 32px;
   line-height: 1.1;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: -0.04em;
+  letter-spacing: -0.02em;
 }
 .cursos article > p {
   max-width: 425px;
@@ -406,8 +411,8 @@
 .programaCabecera > span {
   font-family: var(--font-space-grotesk), sans-serif;
   text-transform: uppercase;
-  color: #0666dd;
-  font-size: 11px;
+  color: #0066ff;
+  font-size: 12px;
   font-weight: 700;
 }
 .pestanas {
@@ -416,11 +421,13 @@
   gap: 12px;
 }
 .pestanas button {
-  min-height: 32px;
+  min-height: 28px;
   border: 1px solid #1f1e23;
   border-radius: 999px;
   padding: 4px 12px;
-  font-size: 14px;
+  font-family: var(--font-space-grotesk), sans-serif;
+  font-size: 15px;
+  line-height: 18px;
   font-weight: 700;
   cursor: pointer;
 }
@@ -429,12 +436,12 @@
   background: #1f1e23;
 }
 .programa h2 {
-  max-width: 510px;
-  margin-block: 24px 50px;
+  max-width: 462px;
+  margin-block: 28px 52px;
   font-family: var(--font-space-grotesk), sans-serif;
-  font-size: 80px;
-  line-height: 0.91;
-  letter-spacing: -0.04em;
+  font-size: 82px;
+  line-height: 72px;
+  letter-spacing: -0.02em;
   font-weight: 700;
 }
 .razones {
@@ -446,31 +453,38 @@
   display: none;
 }
 .razones article {
-  padding: 18px 16px;
-  background: #1768fc;
-  color: #fff;
-  border-radius: 26px 26px 0 0;
+  padding: 16px;
+  min-height: 146px;
+  background: #0066ff;
+  color: #f0f0f0;
+  border-radius: 24px 24px 0 0;
 }
+.razones article:first-child { border-bottom-left-radius: 24px; }
+.razones article:nth-child(3) { border-bottom-right-radius: 24px; }
 .razones article:nth-child(n + 4) {
-  border-radius: 0 0 26px 26px;
+  border-radius: 0 0 24px 24px;
 }
+.razones article:nth-child(4) { border-top-left-radius: 24px; }
+.razones article:nth-child(6) { border-top-right-radius: 24px; }
 .razones img {
   width: 24px;
   height: 24px;
   object-fit: contain;
 }
 .razones h3 {
-  max-width: 280px;
-  margin-top: 16px;
-  font-size: 15px;
-  line-height: 1.1;
+  max-width: none;
+  margin-top: 12px;
+  font-size: 16px;
+  line-height: 16px;
+  letter-spacing: -0.02em;
   font-weight: 700;
 }
 .razones p {
-  margin-top: 10px;
-  font-size: 13px;
-  line-height: 1.15;
-  color: #e6f0ff;
+  margin-top: 12px;
+  font-size: 12px;
+  line-height: 14px;
+  font-weight: 500;
+  color: #b0d0ff;
 }
 .programa[data-pestana="aprender"],
 .programa[data-pestana="lograr"] {
@@ -750,19 +764,29 @@
   border-radius: 20px 20px 0 20px;
 }
 .colaboraciones {
-  padding-block: 150px;
+  padding-block: 160px;
+}
+.colaboraciones .etiqueta {
+  font-family: var(--font-geist-mono), monospace;
+  font-weight: 800;
+  letter-spacing: 1px;
+  padding: 5px 11px;
 }
 .colaboraciones h2 {
-  margin-block: 18px 40px;
+  margin-block: 16px 42px;
+  letter-spacing: 0;
+}
+.colaboraciones h2 em {
+  letter-spacing: -0.06em;
 }
 .colaborador {
   display: grid;
-  grid-template-columns: 440px 1fr;
+  grid-template-columns: 437px 1fr;
   gap: 28px;
   padding: 16px;
-  border: 6px solid #ff005426;
-  border-radius: 42px;
-  background: #0003;
+  border: 6px solid #ff0a5433;
+  border-radius: 38px;
+  background: #12121429;
   backdrop-filter: blur(3px);
 }
 .fotoColaborador {
@@ -786,7 +810,8 @@
   font-family: var(--font-space-grotesk), sans-serif;
   text-transform: uppercase;
   font-weight: 700;
-  line-height: 1.2;
+  font-size: 16px;
+  line-height: 20px;
 }
 .logoColaborador {
   margin-block: 18px 14px;
@@ -795,8 +820,11 @@
   filter: brightness(0) invert(1);
 }
 .colaboradorContenido > p {
+  font-family: var(--font-tbs-raleway), sans-serif;
   font-size: 16px;
-  line-height: 1.2;
+  font-weight: 400;
+  line-height: 18px;
+  letter-spacing: 0;
 }
 .alianza {
   margin-top: 16px;
@@ -805,13 +833,19 @@
   border-radius: 28px;
 }
 .alianza h3 {
+  font-family: var(--font-space-grotesk), sans-serif;
   font-size: 20px;
-  font-weight: 800;
+  font-weight: 700;
+  line-height: 26px;
+  letter-spacing: 0;
 }
 .alianza ul {
   margin-top: 12px;
+  font-family: var(--font-space-grotesk), sans-serif;
   font-size: 16px;
-  font-weight: 600;
+  font-weight: 700;
+  line-height: 24px;
+  letter-spacing: 0;
 }
 .alianza li:before {
   content: "› ";
@@ -820,9 +854,9 @@
   margin-top: 12px;
 }
 .colaboradorTaxdown {
-  grid-template-columns: 1fr 520px;
+  grid-template-columns: 1fr 518px;
   margin-top: 16px;
-  border-color: #00df8033;
+  border-color: #11e07f33;
 }
 .colaboradorTaxdown .fotoColaborador {
   order: 2;
@@ -831,60 +865,75 @@
   padding-left: 12px;
 }
 .colaboradorTaxdown .socio {
-  border-color: #00df80;
-  color: #00df80;
+  border-color: #11e07f;
+  color: #11e07f;
 }
 .colaboradorTaxdown .alianza {
-  background: #00df80;
+  background: #11e07f;
   color: #075e35;
+  padding: 28px;
+  margin-left: -12px;
+}
+.colaboradorTaxdown .alianza h3 {
+  border-left: 3px solid currentColor;
+  padding-left: 12px;
+  padding-block: 4.5px;
+  font-size: 26px;
+  line-height: 26px;
 }
 .llamada {
   padding-block: 160px;
 }
 .llamada > div {
   display: grid;
-  grid-template-columns: 340px 1fr;
-  gap: 58px;
+  grid-template-columns: 330px minmax(0, 1fr);
+  gap: 68px;
   align-items: start;
 }
 .llamada h2 {
   margin-top: 16px;
+  font-size: 46px;
+  line-height: 46px;
+  letter-spacing: -0.02em;
 }
 .llamada > div > div > p {
   margin-top: 24px;
   font-size: 18px;
-  line-height: 1.25;
+  line-height: 22px;
 }
 .formulario {
   min-width: 0;
 }
 .formularioAgenda {
   padding: 20px;
-  background: #ff005429;
+  background: #ff0a5433;
   border-radius: 32px;
+  backdrop-filter: blur(2px);
 }
 .campos {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 12px;
+  gap: 8px 0;
 }
 .campos label {
   display: flex;
   flex-direction: column;
   gap: 4px;
   min-width: 0;
-  color: #ffa3c2;
-  font-size: 13px;
+  color: #ff0a54;
+  font-family: var(--font-space-grotesk), sans-serif;
+  font-size: 12px;
   font-weight: 700;
+  letter-spacing: 0.7px;
 }
 .campos input {
   width: 100%;
   min-height: 42px;
-  border: 1px solid #ff005488;
-  border-radius: 9px;
+  border: 1px solid #e8094c;
+  border-radius: 8px;
   padding: 8px 12px;
   color: #fff;
-  background: #ff005414;
+  background: #e8094c1a;
   font-size: 16px;
 }
 .campos input::placeholder {
@@ -895,16 +944,17 @@
 }
 .selectorCita {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 220px;
-  gap: 32px;
+  grid-template-columns: minmax(0, 1fr) 240px;
+  gap: 40px;
   margin-top: 20px;
   padding-block: 20px;
   border-block: 1px solid #ffffff1a;
 }
 .calendario {
   padding: 20px 12px;
-  border-radius: 16px;
-  background: #ff005422;
+  border-radius: 14px;
+  background: #ff0a5433;
+  min-height: 432px;
 }
 .mes {
   display: flex;
@@ -914,7 +964,9 @@
   margin-bottom: 32px;
 }
 .mes strong {
-  font-size: 22px;
+  font-family: var(--font-space-grotesk), sans-serif;
+  font-size: 24px;
+  letter-spacing: -0.02em;
   text-transform: capitalize;
   text-align: center;
 }
@@ -936,7 +988,7 @@
 }
 .dias > span {
   padding-bottom: 16px;
-  font-size: 12px;
+  font-size: 14px;
   color: #f7f7f799;
 }
 .dias button {
@@ -945,6 +997,8 @@
   height: 40px;
   border-radius: 50%;
   font-size: 16px;
+  font-family: var(--font-space-grotesk), sans-serif;
+  font-weight: 500;
   cursor: pointer;
 }
 .dias button:hover:not(:disabled),
@@ -977,10 +1031,12 @@
 .horarios span {
   display: grid;
   place-items: center;
-  min-height: 50px;
-  border-radius: 13px;
-  background: #ff005422;
+  min-height: 51.4286px;
+  border-radius: 12px;
+  background: #ff0a5433;
   font-size: 16px;
+  font-family: var(--font-space-grotesk), sans-serif;
+  font-weight: 500;
   cursor: pointer;
 }
 .horarios input:checked + span {
@@ -1000,8 +1056,9 @@
   margin-top: 20px;
 }
 .enviar p {
-  max-width: 380px;
-  font-size: 12px;
+  max-width: 482px;
+  font-family: var(--font-space-grotesk), sans-serif;
+  font-size: 14px;
   line-height: 1.4;
 }
 .enviarBoton {
@@ -1036,7 +1093,7 @@
 .precios article {
   padding: 28px;
   border-radius: 28px;
-  background: #0055d666;
+  background: #005ce6;
   text-align: center;
 }
 .precios article > div {
@@ -1046,40 +1103,100 @@
   gap: 6px;
 }
 .precios article span {
-  border: 1px solid #fff9;
+  border: 1px solid #b0d0ff;
   border-radius: 7px;
   padding: 3px 7px;
   font-family: var(--font-space-grotesk), sans-serif;
   text-transform: uppercase;
-  font-size: 12px;
+  font-size: 14px;
+  font-weight: 700;
+  color: #b0d0ff;
 }
 .precios strong {
   display: block;
   margin-block: 22px;
-  font-size: 76px;
+  font-size: 82px;
+  font-weight: 700;
   line-height: 1;
-  letter-spacing: -0.05em;
+  letter-spacing: -0.5px;
 }
 .precios .boton {
   width: 100%;
-  font-size: 18px;
+  font-size: 20px;
 }
 .masInformacion {
   display: grid;
-  grid-template-columns: 1.25fr 1fr;
-  gap: 48px;
+  grid-template-columns: minmax(0, 1.32fr) minmax(0, 1fr);
+  grid-template-areas: "texto ventajas" "boton ventajas";
+  gap: 28px 32px;
   margin-top: 40px;
   padding: 28px;
   border-radius: 28px;
-  background: #0055d655;
+  background: #005ce6;
 }
 .masInformacion h2 {
   font-size: clamp(30px, 3.6vw, 52px);
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -0.02em;
 }
 .masInformacion > div > p {
   margin-top: 24px;
   font-size: 16px;
-  line-height: 1.3;
+  line-height: 18px;
+}
+.informacionTexto { grid-area: texto; }
+.informacionVentajas {
+  grid-area: ventajas;
+  display: grid;
+  align-content: center;
+  gap: 12px;
+}
+.informacionVentajas span {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 49px;
+  padding: 12px;
+  border-radius: 14px;
+  background: #0066ff;
+  color: #e6f0ff;
+  font-size: 16px;
+  font-weight: 700;
+}
+.informacionVentajas img { flex-shrink: 0; }
+.masInformacion .informacionBoton {
+  grid-area: boton;
+  justify-self: start;
+  background: #002d70;
+  color: #f4f4f5;
+  font-size: 16px;
+  padding: 14px 24px;
+  min-height: 48px;
+}
+.telefonoCampo { display: flex; }
+.telefonoCampo select {
+  width: 84px;
+  flex-shrink: 0;
+  color: #f7f7f7;
+  background: #e8094c1a;
+  border: 1px solid #e8094c;
+  border-radius: 8px 0 0 8px;
+  font-family: var(--font-tbs-raleway), sans-serif;
+  font-size: 14px;
+  letter-spacing: 0;
+  padding: 8px;
+}
+.telefonoCampo option { color: #121214; background: white; }
+.telefonoCampo input { border-radius: 0 8px 8px 0; border-left: 0; }
+.formularioAgenda .enviarBoton {
+  width: 240px;
+  font-family: var(--font-space-grotesk), sans-serif;
+  font-size: 22px;
+  font-weight: 700;
+  color: #6b0423;
+  background: #ff0a54;
+  border-radius: 8px;
 }
 .formularioInformacion {
   margin-top: 28px;
@@ -1832,3 +1949,81 @@
     padding: 8px;
   }
 }
+
+/* Medidas de las referencias de producto: escritorio 1440px / móvil 393px. */
+.llamada .etiqueta {
+  font-family: var(--font-geist-mono), monospace;
+  color: #ff0a54;
+  border-color: #ff0a54;
+  background: #ff0a5433;
+  font-weight: 700;
+}
+.precios .boton { background: #11e07f; color: #075e35; }
+.certificacion .tituloSeccion { letter-spacing: -0.02em; }
+.certificacion .tituloSeccion em { letter-spacing: -0.04em; font-weight: 500; }
+
+@media (min-width: 1200px) {
+  .colaboraciones h2 { font-size: 46px; line-height: 42px; }
+  .masInformacion h2 { font-size: 52px; }
+  .inscripcion .tituloPack { font-size: 82px; line-height: 72px; letter-spacing: 0; }
+  .inscripcion .tituloPack em { letter-spacing: -0.06em; }
+  .tituloPrincipal { letter-spacing: 0; }
+  .tituloPrincipal em { letter-spacing: -0.06em; }
+}
+
+@media (max-width: 900px) {
+  .masInformacion {
+    grid-template-columns: 1fr;
+    grid-template-areas: "texto" "ventajas" "boton";
+  }
+}
+
+@media (max-width: 600px) {
+  /* Conserva el layout mobile que ya tenía la landing. */
+  .formacion > div > h2,
+  .llamada h2 {
+    font-family: var(--font-tbs-raleway), sans-serif;
+    font-size: clamp(30px, 3.2vw, 46px);
+    line-height: 1.06;
+    letter-spacing: -0.035em;
+  }
+  .cursos h3 { letter-spacing: -0.04em; }
+  .pestanas button { font-family: inherit; line-height: normal; }
+  .programa h2 { max-width: 510px; letter-spacing: -0.04em; }
+  .colaboraciones h2 { margin-block: 18px 40px; }
+  .socio { line-height: 1.2; }
+  .alianza h3 { font-weight: 800; }
+  .alianza ul { font-weight: 600; }
+  .colaboradorTaxdown .alianza h3 { font-size: 18px; line-height: normal; }
+  .campos { gap: 12px; }
+  .calendario { min-height: 0; border-radius: 16px; }
+  .dias > span { font-size: 12px; }
+  .dias button { font-family: inherit; font-weight: 400; }
+  .horarios span { font-family: inherit; font-weight: 400; }
+  .enviar p { max-width: 380px; font-family: inherit; font-size: 12px; }
+  .formularioAgenda .enviarBoton {
+    width: auto;
+    font-family: var(--font-tbs-raleway), sans-serif;
+    font-size: 16px;
+  }
+}
+
+.pagina :global(.tbs-grid-dark) { background-color: #121214; }
+@media (min-width: 601px) {
+  .tituloCarrusel h2 { font-family: var(--font-space-grotesk), sans-serif; font-size: 42px; line-height: 38px; letter-spacing: -0.02em; }
+  .tarjetaBeneficio { border-radius: 28px; }
+  .tarjetaBeneficio ul { font-family: var(--font-space-grotesk), sans-serif; line-height: 22px; letter-spacing: -0.02em; }
+  .pagina [data-product-mentors] article { height: 576px; }
+  .pagina [data-product-mentors] article p { text-transform: none; }
+  .pagina [data-product-mentors] article p + p { font-family: var(--font-space-grotesk), sans-serif; font-weight: 400; color: #f7f7f7; }
+  .pagina [data-product-mentors] h2 { max-width: 740px; }
+}
+
+.formularioClaseGratis .campos { grid-template-columns: 1fr; gap: 16px; }
+.formularioClaseGratis .campos label { color: #daff0a; font-family: var(--font-tbs-raleway), sans-serif; }
+.formularioClaseGratis .campos label:nth-child(2) { order: 3; }
+.formularioClaseGratis .campos input, .formularioClaseGratis .telefonoCampo select { border-color: #daff0a; background: #daff0a1a; color: #daff0a; }
+.formularioClaseGratis .enviar { margin-top: 12px; }
+.formularioClaseGratis .enviarBoton { background: #daff0a; color: #5c6b04; width: 100%; font-size: 18px; }
+.consentimiento { display: flex; align-items: start; gap: 8px; font-size: 11px; line-height: 14px; margin-top: 12px; }
+.consentimiento input { accent-color: #daff0a; margin-top: 2px; }

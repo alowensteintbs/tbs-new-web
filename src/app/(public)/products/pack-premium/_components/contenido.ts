@@ -183,19 +183,19 @@ export const beneficios = [
     imagen: "operativa.png",
     tipo: "indicadores",
     puntos: [
-      "Pack de indicadores.",
-      "Herramientas de análisis.",
-      "Recursos para tu operativa.",
+      "Pack de indicadores incluido.",
+      "Recursos para analizar.",
+      "Apoyo para tu operativa.",
     ],
   },
   {
     titulo: "Entiende también tus impuestos",
     imagen: "",
-    tipo: "fiscalidad",
+    tipo: "impuestos",
     puntos: [
-      "Fiscalidad con TaxDown.",
-      "Especialistas en inversión.",
-      "Planificación financiera.",
+      "Fiscalidad aplicada a inversiones.",
+      "Contenido especial de TaxDown.",
+      "Impuestos llevados a la práctica.",
     ],
   },
   {
@@ -204,8 +204,8 @@ export const beneficios = [
     tipo: "aula",
     puntos: [
       "Aula virtual de por vida.",
-      "Clases y grabaciones.",
-      "Desde cualquier dispositivo.",
+      "Accede cuando quieras.",
+      "Repasa cualquier formación.",
     ],
   },
   {
@@ -214,8 +214,8 @@ export const beneficios = [
     tipo: "soporte",
     puntos: [
       "Soporte por WhatsApp y email.",
-      "Resolución de dudas.",
-      "Acompañamiento continuo.",
+      "Dudas durante la formación.",
+      "Asistente de IA 24/7.",
     ],
   },
 ];

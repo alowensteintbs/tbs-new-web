@@ -90,7 +90,7 @@ export function MentorsCarousel({ variant = "home" }: { variant?: "home" | "prod
   };
 
   return (
-    <section className={`tbs-grid-light overflow-hidden rounded-[36px] px-4 py-20 xl:px-10 xl:py-[120px] ${variant === "home" ? "xl:h-[986px]" : ""}`}>
+    <section data-product-mentors={variant === "product" || undefined} className={`tbs-grid-light overflow-hidden rounded-[36px] px-4 py-20 xl:px-10 xl:py-[120px] ${variant === "home" ? "xl:h-[986px]" : ""}`}>
       <div className="mx-auto max-w-[1200px]">
         <div className="flex flex-col-reverse gap-5 xl:flex-row xl:items-start xl:justify-between">
           <h2 className="font-raleway text-4xl font-extrabold leading-none tracking-[-1px] text-[#1f1e23] xl:text-[46px]">{variant === "home" ? <>Inversores con <span className="font-playfair font-medium italic">perfil activo</span></> : <>El equipo que te va a <span className="font-playfair font-medium italic">acompañar</span></>}</h2>

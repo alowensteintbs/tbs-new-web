@@ -7,13 +7,13 @@ const courses = [
   { title: "Acciones y Bolsa", image: "stocks-symbol.png" },
 ];
 
-export function FreeCoursesSection({ className = "" }: { className?: string }) {
+export function FreeCoursesSection({ className = "", showIntro = true }: { className?: string; showIntro?: boolean }) {
   return (
     <section id="clases-gratis" className={`px-4 pt-20 xl:h-[812px] xl:px-10 xl:pt-[160px] ${className}`}>
       <div className="mx-auto max-w-[1200px]">
         <span className="inline-flex h-7 items-center rounded-full border border-white bg-white/10 px-3 font-mono text-xs font-bold uppercase text-white">Clases gratuitas</span>
         <h2 className="mt-3 font-raleway text-4xl font-extrabold leading-none tracking-[-1px] text-[#f4f4f5] xl:text-[46px]">¿Quieres ver cómo enseñamos?</h2>
-        <p className="mt-3 font-raleway text-xl leading-6 text-white">Empieza con una clase gratis.</p>
+        {showIntro && <p className="mt-3 font-raleway text-xl leading-6 text-white">Empieza con una clase gratis.</p>}
         <div className="tbs-course-track mt-[42px] flex flex-col gap-2 xl:flex-row xl:overflow-x-auto xl:pb-3 xl:snap-x xl:snap-mandatory">
           {courses.map((course) => (
             <article

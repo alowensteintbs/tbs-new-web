@@ -14,7 +14,7 @@ const horarios = [
   "10:15",
   "10:30",
 ];
-const diasSemana = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"];
+const diasSemana = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"];
 const fechaLocal = (fecha: Date) =>
   `${fecha.getFullYear()}-${String(fecha.getMonth() + 1).padStart(2, "0")}-${String(fecha.getDate()).padStart(2, "0")}`;
 
@@ -31,10 +31,12 @@ export function FormularioContacto({
   agenda = false,
   fechaInicial,
   producto = "Pack Premium",
+  claseGratis = false,
 }: {
   agenda?: boolean;
   fechaInicial: string;
   producto?: string;
+  claseGratis?: boolean;
 }) {
   const id = useId();
   // Actualiza la fecha al hidratar incluso si la página se generó días antes.
@@ -48,8 +50,9 @@ export function FormularioContacto({
   const [fecha, setFecha] = useState("");
   const [hora, setHora] = useState("10:00");
   const [mensaje, setMensaje] = useState("");
+  const [prefijo, setPrefijo] = useState("+34");
   const primerDia =
-    (new Date(mes.getFullYear(), mes.getMonth(), 1).getDay() + 6) % 7;
+    new Date(mes.getFullYear(), mes.getMonth(), 1).getDay();
   const cantidadDias = new Date(
     mes.getFullYear(),
     mes.getMonth() + 1,
@@ -57,8 +60,8 @@ export function FormularioContacto({
   ).getDate();
   const nombreMes = mes.toLocaleDateString("es-ES", {
     month: "long",
-    year: "numeric",
   });
+  const tituloMes = `${nombreMes} ${mes.getFullYear()}`;
   const esMesInicial =
     fechaLocal(new Date(mes.getFullYear(), mes.getMonth(), 1)).slice(0, 7) <=
     hoy.slice(0, 7);
@@ -76,7 +79,7 @@ export function FormularioContacto({
     const cuerpo = [
       `Nombre: ${datos.get("nombre")}`,
       `Correo: ${datos.get("correo")}`,
-      `Teléfono: ${datos.get("telefono")}`,
+      `Teléfono: ${prefijo} ${datos.get("telefono")}`,
       agenda
         ? `Horario preferido: ${fecha} a las ${hora} (hora de España).`
         : `Quiero recibir más información sobre ${producto}.`,
@@ -89,7 +92,7 @@ export function FormularioContacto({
 
   return (
     <form
-      className={`${styles.formulario} ${agenda ? styles.formularioAgenda : styles.formularioInformacion}`}
+      className={`${styles.formulario} ${agenda ? styles.formularioAgenda : styles.formularioInformacion} ${claseGratis ? styles.formularioClaseGratis : ""}`}
       onSubmit={enviar}
     >
       <div className={styles.campos}>
@@ -105,15 +108,27 @@ export function FormularioContacto({
         </label>
         <label htmlFor={`${id}-telefono`}>
           Número de teléfono*
+          <div className={styles.telefonoCampo}>
+          <select aria-label="País del teléfono" value={prefijo} onChange={(event) => setPrefijo(event.target.value)}>
+            <option value="+34">España</option>
+            <option value="+54">Argentina</option>
+            <option value="+52">México</option>
+            <option value="+57">Colombia</option>
+            <option value="+56">Chile</option>
+            <option value="+51">Perú</option>
+            <option value="+1">EE. UU.</option>
+            <option value="">Otro</option>
+          </select>
           <input
             id={`${id}-telefono`}
             name="telefono"
             type="tel"
             autoComplete="tel"
-            placeholder="+34"
+            placeholder={prefijo || "Prefijo y número"}
             required
             maxLength={30}
           />
+          </div>
         </label>
         <label className={styles.correo} htmlFor={`${id}-correo`}>
           Correo*
@@ -141,7 +156,7 @@ export function FormularioContacto({
               >
                 ‹
               </button>
-              <strong aria-live="polite">{nombreMes}</strong>
+              <strong aria-live="polite">{tituloMes}</strong>
               <button
                 type="button"
                 aria-label="Mes siguiente"
@@ -201,24 +216,32 @@ export function FormularioContacto({
                   checked={hora === valor}
                   onChange={() => setHora(valor)}
                 />
-                <span>{valor}</span>
+                <span>{valor} AM</span>
               </label>
             ))}
           </fieldset>
         </div>
       )}
+      {claseGratis && (
+        <label className={styles.consentimiento}>
+          <input type="checkbox" required name="consentimiento" />
+          He leído y acepto los Términos y condiciones y la Política de privacidad.
+        </label>
+      )}
       <div className={styles.enviar}>
-        <p>
+        {!claseGratis && <p>
           {agenda
-            ? "Elige tu horario preferido (hora de España). Te confirmaremos la disponibilidad por correo."
+            ? fecha
+              ? `Horario seleccionado: ${fecha.split("-").reverse().join("/")} a las ${hora} AM (hora de España).`
+              : "Elige una fecha y un horario para tu llamada (hora de España)."
             : "Se abrirá tu aplicación de email con la solicitud preparada."}
-        </p>
+        </p>}
         <HomeButton
           type="submit"
           variant={agenda ? "magenta" : "green"}
           className={styles.enviarBoton}
         >
-          {agenda ? "Solicitar llamada" : "Solicitar información"}
+          {agenda ? "Continuar" : claseGratis ? "Apuntarme" : "Solicitar información"}
         </HomeButton>
       </div>
       <p className={styles.estadoFormulario} role="status">

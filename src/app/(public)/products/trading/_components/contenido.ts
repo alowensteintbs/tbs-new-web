@@ -17,48 +17,48 @@ export const cursoTrading = {
 export const incluyeTrading = [
   "Aula virtual de por vida",
   "Clases grupales en directo",
-  "12 meses de tutorías",
-  "Asistente de IA 24/7",
-  "Indicadores de operativa",
+  "3 meses de tutorías",
+  "Fiscalidad con TaxDown",
+  "Asistente de IA",
   "Acompañamiento y soporte",
 ];
 
 export const razonesTrading = [
   {
-    titulo: "Porque construyes buenas bases desde el principio.",
+    titulo: "Porque construye las bases antes de pedirte que operes.",
     texto:
-      "Comprendes cómo se mueve el precio, qué información importa y cómo leer el mercado antes de operar.",
-    icono: "icon-tutoring.svg",
+      "Qué estás haciendo, qué puedes operar, cómo funciona un bróker y qué debes mirar antes de abrir una posición.",
+    icono: "/products/trading/programa/layers-figma.svg",
   },
   {
-    titulo: "Porque aprendes con práctica real.",
+    titulo: "Porque el precio no siempre se comporta igual.",
     texto:
-      "Cada concepto se trabaja con gráficos, ejercicios y operaciones explicadas paso a paso.",
-    icono: "icon-preview.svg",
+      "Aprendes a adaptar tu operativa a tendencias, movimientos laterales y momentos de mayor volatilidad.",
+    icono: "/products/trading/programa/trending-up-figma.svg",
   },
   {
-    titulo: "Porque tienes un método para decidir.",
+    titulo: "Porque aprendes a tener en cuenta lo que ocurre antes de operar.",
     texto:
-      "Analizas, preparas escenarios y defines entradas, salidas y condiciones antes de arriesgar capital.",
-    icono: "icon-operativa.svg",
+      "Noticias, volatilidad y condiciones del día también forman parte de la decisión.",
+    icono: "/products/trading/programa/newspaper-figma.svg",
   },
   {
-    titulo: "Porque entiendes el proceso completo.",
+    titulo: "Porque aprendes un proceso completo.",
     texto:
-      "Desde detectar una oportunidad hasta medir el resultado y corregir los errores de tu operativa.",
-    icono: "icon-practice.svg",
+      "Analizar el precio, preparar la sesión, elegir una estrategia, controlar el riesgo, ejecutar y revisar los resultados.",
+    icono: "/products/trading/programa/check-circle-figma.svg",
   },
   {
-    titulo: "Porque aprendes a gestionar el riesgo.",
+    titulo: "Porque no se trata de confiar en que la estrategia funciona",
     texto:
-      "Defines cuánto arriesgar, dónde protegerte y cómo mantener una estrategia sostenible en el tiempo.",
-    icono: "icon-preview.svg",
+      "Aprendes a medir sus resultados y comprobarla antes de plantearte utilizar dinero real.",
+    icono: "/products/trading/programa/bar-chart-3-figma.svg",
   },
   {
-    titulo: "Porque no avanzas solo.",
+    titulo: "Porque el objetivo final es construir tu propia forma de operar.",
     texto:
-      "Cuentas con profesores en activo, tutorías ilimitadas y soporte durante todo el aprendizaje.",
-    icono: "icon-live.svg",
+      "Con reglas, objetivos y gestión del riesgo que puedas aplicar por tu cuenta.",
+    icono: "/products/trading/programa/user-cog-figma.svg",
   },
 ] as const;
 

@@ -31,7 +31,7 @@ function RazonesMobile({ items }: { items: readonly RazonPrograma[] }) {
 
   return (
     <div className={styles.razonesMobile}>
-      {filasRazones.map((fila, indiceFila) => (
+      {(items === razones ? filasRazones : [[0, 1], [3, 4], [2, 5]]).map((fila, indiceFila) => (
         <div className={styles.filaRazones} key={indiceFila} data-abierta={abiertas[indiceFila]}>
           {fila.map((indiceRazon, columna) => {
             const razon = items[indiceRazon];
@@ -46,7 +46,7 @@ function RazonesMobile({ items }: { items: readonly RazonPrograma[] }) {
                 aria-controls={`razon-mobile-${indiceRazon}`}
                 onClick={() => setAbiertas((actuales) => actuales.map((actual, indice) => indice === indiceFila ? columna : actual))}
               >
-                <Image src={`/products/pack-premium/programa/${iconosRazones[indiceRazon]}.svg`} width={24} height={24} alt="" />
+                <Image src={razon.icono.startsWith("/") ? razon.icono : `/products/pack-premium/programa/${iconosRazones[indiceRazon]}${items === razones ? "-figma" : ""}.svg`} width={24} height={24} alt="" />
                 <span className={styles.contenidoRazon} id={`razon-mobile-${indiceRazon}`} aria-hidden={!abierta}>
                   <span className={styles.tituloRazon}>{razon.titulo}</span>
                   <span className={styles.textoRazon}>{razon.texto}</span>
@@ -129,10 +129,12 @@ export function ProgramaTabs({
           {indice === 0 ? (
             <>
             <div className={styles.razones}>
-              {razonesPrograma.map((razon) => (
+              {razonesPrograma.map((razon, indiceRazon) => (
                 <article key={razon.titulo}>
                   <Image
-                    src={`/home/learning/${razon.icono}`}
+                    src={razonesPrograma === razones
+                      ? `/products/pack-premium/programa/${iconosRazones[indiceRazon]}-figma.svg`
+                      : razon.icono.startsWith("/") ? razon.icono : `/home/learning/${razon.icono}`}
                     width={24}
                     height={24}
                     alt=""

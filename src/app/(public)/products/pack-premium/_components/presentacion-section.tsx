@@ -53,7 +53,7 @@ export function PresentacionSection() {
       />
       <div className={styles.verPrograma}>
         <BotonPack href="#programa" tono="rosa">
-          Ver el programa <span aria-hidden="true">↓</span>
+          Descargar programa <span aria-hidden="true">↓</span>
         </BotonPack>
       </div>
     </section>

@@ -10,111 +10,6 @@ export type Beneficio = {
   puntos: readonly string[];
 };
 
-function VisualBeneficio({
-  beneficio,
-}: {
-  beneficio: Beneficio;
-}) {
-  return (
-    <div
-      className={`${styles.visualBeneficio} ${styles[beneficio.tipo]}`}
-      aria-hidden="true"
-    >
-      {beneficio.imagen && (
-        <Image
-          src={`/products/pack-premium/${beneficio.imagen}`}
-          alt=""
-          fill
-          sizes="(max-width: 600px) 280px, 344px"
-          className={styles.imagenBeneficio}
-        />
-      )}
-      {beneficio.tipo === "tutorias" && (
-        <span className={styles.enDirecto}>● Videollamada en curso</span>
-      )}
-      {(beneficio.tipo === "operativa" || beneficio.tipo === "indicadores") && (
-        <div className={styles.grafico}>
-          {[25, 38, 32, 46, 55, 42, 59, 65, 72, 67, 83, 94].map(
-            (valor, indice) => (
-              <i
-                key={indice}
-                style={{
-                  bottom: `${valor * 0.7}%`,
-                  height: `${14 + (indice % 3) * 4}%`,
-                  left: `${5 + indice * 7.5}%`,
-                }}
-              />
-            ),
-          )}
-        </div>
-      )}
-      {beneficio.tipo === "asistente" && (
-        <div className={styles.asistenteTexto}>
-          <div>
-            <Image
-              src="/home/learning/icon-ai.svg"
-              alt=""
-              width={30}
-              height={30}
-            />
-            Asistente
-          </div>
-          <p>
-            ¡Hola! Soy tu asistente virtual. Pregunta lo que quieras. Estoy aquí
-            para ayudarte.
-          </p>
-          <span>
-            Quiero saber… <b>→</b>
-          </span>
-        </div>
-      )}
-      {beneficio.tipo === "fiscalidad" && (
-        <Image
-          src="/home/ecosystem/taxdown.svg"
-          alt=""
-          width={240}
-          height={40}
-        />
-      )}
-      {beneficio.tipo === "impuestos" && (
-        <div className={styles.bancoImpuestos}>
-          <span />
-          <div><i /><i /><i /><i /></div>
-          <b />
-        </div>
-      )}
-      {beneficio.tipo === "aula" && (
-        <>
-          <Image
-            src="/home/learning/illustration-desk.svg"
-            alt=""
-            width={280}
-            height={220}
-          />
-          <strong>
-            Aula virtual
-            <br />
-            de por vida
-          </strong>
-        </>
-      )}
-      {beneficio.tipo === "soporte" && (
-        <>
-          <span className={styles.mensajeSoporte}>Hola, tengo una duda…</span>
-          <span className={styles.respuestaSoporte}>
-            ¡Estamos para ayudarte!
-          </span>
-          <Image
-            src="/home/learning/icon-tutoring.svg"
-            alt=""
-            width={60}
-            height={60}
-          />
-        </>
-      )}
-    </div>
-  );
-}
 
 export function BeneficiosSection({
   producto = "Pack Premium",
@@ -139,7 +34,15 @@ export function BeneficiosSection({
       >
         {beneficiosLista.map((beneficio) => (
           <article key={beneficio.tipo} className={styles.tarjetaBeneficio}>
-            <VisualBeneficio beneficio={beneficio} />
+            <div className={styles.visualBeneficio} aria-hidden="true">
+              <Image
+                src={`/products/${beneficiosLista === beneficios ? "pack-premium" : "trading"}/beneficios/${beneficio.tipo}.png`}
+                alt=""
+                fill
+                sizes="344px"
+                className={styles.imagenBeneficio}
+              />
+            </div>
             <h3>{beneficio.titulo}</h3>
             <ul>
               {beneficio.puntos.map((punto) => (

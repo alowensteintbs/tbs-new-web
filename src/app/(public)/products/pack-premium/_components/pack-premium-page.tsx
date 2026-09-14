@@ -24,8 +24,8 @@ export function PackPremiumPage() {
         <ColaboracionesSection />
         <MentorsCarousel variant="product" />
         <LlamadaSection fechaInicial={fechaInicial} />
-        <InscripcionSection fechaInicial={fechaInicial} />
-        <FreeCoursesSection className="tbs-grid-dark" />
+        <InscripcionSection />
+        <FreeCoursesSection className="tbs-grid-dark" showIntro={false} />
       </main>
       <div className="tbs-grid-dark">
         <AppFooterSection showAppPromo={false} />

@@ -5,6 +5,7 @@ import { Etiqueta, BotonPack, FormatoCurso } from "../../pack-premium/_component
 import { FormularioContacto } from "../../pack-premium/_components/formulario-contacto";
 import packStyles from "../../pack-premium/_components/pack-premium.module.css";
 import { ProgramaTabs } from "../../pack-premium/_components/programa-tabs";
+import { MasInformacion } from "../../pack-premium/_components/mas-informacion";
 import {
   aprendizajesTrading,
   beneficiosTrading,
@@ -104,7 +105,7 @@ export function ProgramaTrading() {
   );
 }
 
-export function InscripcionTrading({ fechaInicial }: { fechaInicial: string }) {
+export function InscripcionTrading() {
   return (
     <section className={`tbs-grid-blue ${styles.inscripcion}`} id="inscripcion">
       <div className={styles.contenedor}>
@@ -128,13 +129,7 @@ export function InscripcionTrading({ fechaInicial }: { fechaInicial: string }) {
             </article>
           </div>
         </div>
-        <div className={styles.informacion} id="informacion">
-          <div>
-            <h2>Solicita más información</h2>
-            <p>Cuéntanos tus objetivos y te ayudamos a descubrir si el Curso de Trading encaja contigo.</p>
-          </div>
-          <FormularioContacto fechaInicial={fechaInicial} producto="Curso de Trading" />
-        </div>
+        <MasInformacion />
       </div>
     </section>
   );
@@ -144,22 +139,23 @@ export function ClaseGratisTrading({ fechaInicial }: { fechaInicial: string }) {
   return (
     <section className={`tbs-grid-dark ${styles.claseGratis}`} id="clase-gratis">
       <div className={styles.contenedor}>
-        <Etiqueta tono="lima">Clase gratuita</Etiqueta>
-        <h2>¿Quieres ver una<br />clase <em>totalmente gratis?</em></h2>
+        <h2>¿Quieres ver<br />una clase<br /><em>totalmente gratis?</em></h2>
         <div className={styles.claseGratisGrid}>
           <div className={styles.claseImagen}>
             <Image
-              src="/home/video-portada.png"
+              src="/products/trading/clase-gratis.png"
               alt="Clase gratuita de Trading desde cero"
               fill
               sizes="(min-width: 900px) 50vw, calc(100vw - 48px)"
             />
           </div>
           <article className={styles.claseFormulario}>
-            <Etiqueta tono="lima">Acceso inmediato</Etiqueta>
+            <Etiqueta tono="lima">Plazas disponibles</Etiqueta>
             <h3>Aprende Trading<br />desde cero</h3>
-            <p>Aprende las bases del mercado y descubre cómo empezar a construir tu propio método.</p>
+            <p>Aprende una forma estructurada de analizar oportunidades, gestionar el riesgo y empezar a invertir, incluso con poco.</p>
+            <div className={styles.formatoClase}><span>50 minutos</span><span>Formato online</span></div>
             <FormularioContacto
+              claseGratis
               fechaInicial={fechaInicial}
               producto="Clase gratuita de Trading desde cero"
             />

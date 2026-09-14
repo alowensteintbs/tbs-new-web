@@ -309,3 +309,11 @@
     min-height: 300px;
   }
 }
+
+.formatoClase { display: flex; gap: 12px; color: #daff0a; font-size: 14px; font-weight: 700; }
+.formatoClase span { flex: 1; background: #daff0a1a; border-radius: 12px; padding: 12px 8px; text-align: center; }
+@media (min-width: 901px) {
+  .inscripcion { padding-block: 120px; }
+  .tituloTrading { letter-spacing: 0; }
+  .tituloTrading em { letter-spacing: -0.06em; }
+}

@@ -1,4 +1,5 @@
-import { BotonPack, Etiqueta, FormatoCurso, TituloPack } from "./elementos";
+import { BotonPack, Etiqueta, TituloPack } from "./elementos";
+import { MasInformacion } from "./mas-informacion";
 import { FormularioContacto } from "./formulario-contacto";
 import { pack } from "./contenido";
 import styles from "./pack-premium.module.css";
@@ -19,8 +20,8 @@ export function LlamadaSection({
             Te mostramos la formación en vivo y antes de comprarla.
           </h2>
           <p>
-            Te mostramos la formación por dentro, resolvemos tus dudas y te
-            ayudamos a descubrir si {producto} encaja contigo.
+            Cuéntanos qué quieres conseguir, resuelve tus dudas y descubre qué
+            formación encaja mejor contigo.
           </p>
         </div>
         <FormularioContacto agenda fechaInicial={fechaInicial} producto={producto} />
@@ -29,7 +30,7 @@ export function LlamadaSection({
   );
 }
 
-export function InscripcionSection({ fechaInicial }: { fechaInicial: string }) {
+export function InscripcionSection() {
   return (
     <section className={`tbs-grid-blue ${styles.inscripcion}`} id="inscripcion">
       <div className={styles.contenedor}>
@@ -60,25 +61,7 @@ export function InscripcionSection({ fechaInicial }: { fechaInicial: string }) {
             ))}
           </div>
         </div>
-        <div className={styles.masInformacion} id="informacion">
-          <div>
-            <h2 className={styles.tituloSeccion}>Solicita más información</h2>
-            <p>
-              Cuéntanos tus objetivos y te ayudamos a descubrir si el Pack de
-              inversión premium encaja contigo.
-            </p>
-            <FormularioContacto fechaInicial={fechaInicial} />
-          </div>
-          <div>
-            <FormatoCurso claro />
-            <p className={styles.ayudaInscripcion}>
-              ¿Prefieres conocer la formación por dentro?
-            </p>
-            <BotonPack href="#llamada" tono="blanco">
-              Reserva una llamada <span aria-hidden="true">↗</span>
-            </BotonPack>
-          </div>
-        </div>
+        <MasInformacion />
       </div>
     </section>
   );

@@ -68,11 +68,9 @@ export function ColaboracionesSection() {
               de nuestras formaciones para sumar conocimiento especializado.
             </p>
             <div className={styles.alianza}>
-              <h3>La fiscalidad también forma parte del método.</h3>
-              <p>
-                Aprende cómo afectan los impuestos a tus inversiones de la mano
-                de especialistas.
-              </p>
+              <h3>
+                Descuento del 50 % en sus servicios fiscales a todos los estudiantes.
+              </h3>
             </div>
           </div>
         </article>

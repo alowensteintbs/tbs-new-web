@@ -31,7 +31,7 @@ export function TradingPage() {
           fechaInicial={fechaInicial}
           producto="Curso de Trading"
         />
-        <InscripcionTrading fechaInicial={fechaInicial} />
+        <InscripcionTrading />
         <ClaseGratisTrading fechaInicial={fechaInicial} />
       </main>
       <div className="tbs-grid-dark">
