@@ -101,6 +101,9 @@ function IconoClase({ nombre }: { nombre: IconoClaseGratis }) {
 function catalogo(nombre: string) {
   if (nombre === "Pack Inversión Premium") return "/products/pack-premium";
   if (nombre === "Trading avanzado") return "/products/trading";
+  if (nombre === "Trading algorítmico con IA") {
+    return "/products/trading-algoritmico";
+  }
   return `/products?q=${encodeURIComponent(nombre)}`;
 }
 

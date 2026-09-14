@@ -1,0 +1,244 @@
+.pagina {
+  background: #121214;
+}
+
+/* Sólo los iconos de las tarjetas azules de Algorítmico. */
+.pagina :global(#programa[data-pestana="por-que"]) img {
+  filter: brightness(0) invert(1);
+}
+
+.tituloAlgoritmico {
+  max-width: 560px;
+  font-size: 78px;
+}
+
+.tituloAlgoritmico em {
+  display: inline-block;
+  line-height: 0.83;
+}
+
+.comparacion {
+  margin-top: 84px;
+}
+
+.comparacion > h2 {
+  margin-top: 18px;
+  font-size: clamp(40px, 4.3vw, 60px);
+  font-weight: 800;
+  line-height: 0.95;
+  letter-spacing: -0.05em;
+}
+
+.introduccionComparacion {
+  max-width: 830px;
+  margin-top: 14px;
+  font-size: 21px;
+  line-height: 1.12;
+}
+
+.planes {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 34px;
+}
+
+.plan {
+  min-width: 0;
+  padding: 34px;
+  border-radius: 30px;
+  background: #ececec;
+}
+
+.planMaster {
+  border: 2px solid #0870ff;
+  box-shadow: 0 12px 24px #0870ff1a;
+}
+
+.plan h3 {
+  font-size: clamp(42px, 4vw, 58px);
+  font-weight: 800;
+  line-height: 0.82;
+  letter-spacing: -0.055em;
+}
+
+.plan h3 em {
+  color: #0870ff;
+  font-family: var(--font-playfair-display), serif;
+  font-weight: 400;
+}
+
+.plan > p {
+  margin-top: 26px;
+  font-size: 17px;
+  line-height: 1.25;
+}
+
+.plan > ul {
+  margin-top: 18px;
+  font-size: 16px;
+  font-weight: 750;
+  line-height: 1.5;
+  list-style: none;
+}
+
+.plan > ul li::before {
+  content: "→ ";
+}
+
+.caracteristicasPlan {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 24px;
+}
+
+.caracteristicasPlan span {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 105px;
+  padding: 12px;
+  border-radius: 11px;
+  background: #dadbdd;
+  font-size: 12px;
+  line-height: 1.08;
+}
+
+.caracteristicasPlan img {
+  margin-bottom: 8px;
+  object-fit: contain;
+  object-position: left bottom;
+}
+
+.caracteristicasPlan .iconoOrganizacion {
+  width: 34px;
+  height: 37px;
+}
+
+.caracteristicasPlan .iconoPanel {
+  width: 44px;
+  height: 36px;
+}
+
+.caracteristicasPlan .iconoTeacher {
+  width: 40px;
+  height: 32px;
+}
+
+.certificacion {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  margin-top: 24px;
+  padding: 12px 16px;
+  border-radius: 11px;
+  background: #ffc400;
+}
+
+.certificacion strong {
+  font-size: 18px;
+}
+
+.certificacion strong em {
+  font-family: var(--font-playfair-display), serif;
+  font-weight: 400;
+}
+
+.certificacion span {
+  font-size: 19px;
+}
+
+.bonus {
+  display: flex;
+  align-items: center;
+  gap: 26px;
+  margin: 22px 0 12px;
+  color: #0870ff;
+  font-size: 18px;
+  font-weight: 800;
+}
+
+.bonus::before,
+.bonus::after {
+  width: 100%;
+  height: 2px;
+  content: "";
+  background: #0870ff;
+}
+
+.bonusItems {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.bonusItems strong {
+  padding: 12px;
+  border-radius: 11px;
+  background: #dadbdd;
+  color: #0870ff;
+  font-size: 18px;
+  line-height: 1.05;
+  text-align: center;
+}
+
+@media (max-width: 900px) {
+  .tituloAlgoritmico {
+    font-size: clamp(58px, 18vw, 84px);
+  }
+
+  .comparacion {
+    margin-top: 62px;
+  }
+
+  .introduccionComparacion {
+    font-size: 17px;
+  }
+
+  .planes {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 520px) {
+  .tituloAlgoritmico {
+    font-size: clamp(50px, 16.8vw, 72px);
+  }
+
+  .plan {
+    padding: 24px 18px;
+    border-radius: 24px;
+  }
+
+  .plan h3 {
+    font-size: 43px;
+  }
+
+  .caracteristicasPlan {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 5px;
+  }
+
+  .caracteristicasPlan span {
+    padding: 9px 7px;
+    font-size: 10px;
+  }
+
+  .certificacion {
+    gap: 8px;
+    padding-inline: 12px;
+  }
+
+  .certificacion strong,
+  .certificacion span,
+  .bonusItems strong {
+    font-size: 14px;
+  }
+
+  .bonus {
+    gap: 12px;
+    font-size: 14px;
+  }
+}

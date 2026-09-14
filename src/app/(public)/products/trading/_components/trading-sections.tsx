@@ -131,21 +131,47 @@ export function InscripcionTrading() {
   );
 }
 
-export function ClaseGratisTrading({ fechaInicial }: { fechaInicial: string }) {
+export function ClaseGratisTrading({
+  fechaInicial,
+  variante = "trading",
+}: {
+  fechaInicial: string;
+  variante?: "trading" | "algoritmico";
+}) {
+  const esAlgoritmico = variante === "algoritmico";
+
   return (
     <section className={`tbs-grid-dark ${styles.claseGratis}`} id="clase-gratis">
       <div className={styles.contenedor}>
         <h2>¿Quieres ver<br />una clase<br /><em>totalmente gratis?</em></h2>
         <div className={styles.claseGratisGrid}>
           <div className={styles.claseImagen}>
-            <Image
-              src="/products/trading/clase-gratis.png"
-              alt="Clase gratuita de Trading desde cero"
-              fill
-              sizes="(min-width: 900px) 50vw, calc(100vw - 48px)"
-            />
+            {esAlgoritmico ? (
+              <video
+                autoPlay
+                loop
+                muted
+                playsInline
+                poster="/products/trading-algoritmico/clase-gratis.png"
+                preload="metadata"
+              >
+                <source
+                  src="/products/trading-algoritmico/algoritmico.mp4"
+                  type="video/mp4"
+                />
+              </video>
+            ) : (
+              <Image
+                src="/products/trading/clase-gratis.png"
+                alt="Clase gratuita de Trading desde cero"
+                fill
+                sizes="(min-width: 900px) 50vw, calc(100vw - 48px)"
+              />
+            )}
           </div>
-          <article className={styles.claseFormulario}>
+          <article
+            className={`${styles.claseFormulario} ${esAlgoritmico ? styles.claseFormularioAlgoritmico : ""}`}
+          >
             <Etiqueta tono="lima">Plazas disponibles</Etiqueta>
             <h3>Aprende Trading<br />desde cero</h3>
             <p>Aprende una forma estructurada de analizar oportunidades, gestionar el riesgo y empezar a invertir, incluso con poco.</p>

@@ -569,6 +569,56 @@
 .tituloCarrusel h2 {
   font-size: clamp(30px, 3vw, 42px);
 }
+.pestanasBeneficios {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-self: center;
+  border-radius: 999px;
+  background: #efefef;
+  padding: 2px;
+}
+
+.tituloCarruselConPestanas {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.tituloCarruselConPestanas h2 {
+  min-width: 0;
+}
+
+@media (max-width: 900px) {
+  .tituloCarruselConPestanas {
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+}
+
+.pestanasBeneficios button {
+  border: 0;
+  border-radius: 999px;
+  padding: 6px 18px;
+  color: #999;
+  font: inherit;
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1.2;
+  cursor: pointer;
+}
+
+.pestanasBeneficios button[aria-selected="true"] {
+  background: #0066ff;
+  color: white;
+  box-shadow: 0 1px 4px #0003;
+}
+
+.pestanasBeneficios button:focus-visible {
+  outline: 2px solid #1f1e23;
+  outline-offset: 3px;
+}
+
 .carruselBeneficios {
   display: flex;
   gap: 12px;
@@ -577,6 +627,14 @@
   scroll-snap-type: x mandatory;
   scroll-behavior: smooth;
   scrollbar-width: none;
+  cursor: grab;
+  touch-action: pan-y;
+  user-select: none;
+}
+.carruselArrastrando {
+  scroll-snap-type: none;
+  scroll-behavior: auto;
+  cursor: grabbing;
 }
 .carruselBeneficios::-webkit-scrollbar {
   display: none;
