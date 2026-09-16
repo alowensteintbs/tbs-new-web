@@ -38,7 +38,7 @@ const courses: Course[] = [
   {
     name: "Trading Algorítmico",
     displayName: "Trading\nalgorítmico",
-    freeHref: "/curso-trading-algoritmico-gratis/",
+    freeHref: "/clases-gratis/trading-algoritmico",
     reasons: [
       "Quieres mejorar tu forma de operar.",
       "Quieres reducir el peso de las emociones en tus decisiones.",
@@ -55,7 +55,7 @@ const courses: Course[] = [
   {
     name: "Curso de Trading Avanzado",
     displayName: "Trading",
-    freeHref: "/curso-trading-gratis/",
+    freeHref: "/clases-gratis/trading",
     reasons: [
       "Quieres empezar a hacer trading pero no sabes cómo.",
       "Quieres entender cuándo entrar y cuándo salir.",
@@ -72,7 +72,7 @@ const courses: Course[] = [
   {
     name: "Curso de Criptomonedas Avanzado",
     displayName: "Cripto",
-    freeHref: "/curso-criptomonedas-gratis/",
+    freeHref: "/clases-gratis/criptomonedas",
     reasons: [
       "Quieres empezar Cripto, pero no sabes cómo.",
       "Quieres entender qué es lo que compras de antemano.",
@@ -86,7 +86,7 @@ const courses: Course[] = [
   {
     name: "Curso de Acciones Avanzado",
     displayName: "Acciones",
-    freeHref: "/curso-bolsa-gratis/",
+    freeHref: "/clases-gratis/acciones",
     reasons: [
       "Quieres invertir en empresas, pero no sabes cuáles elegir.",
       "Quieres saber si una acción realmente merece la pena.",

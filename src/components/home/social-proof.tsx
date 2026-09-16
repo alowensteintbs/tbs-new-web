@@ -54,9 +54,9 @@ function StudentCount() {
   );
 }
 
-export function SocialProof() {
+export function SocialProof({ light = false }: { light?: boolean }) {
   return (
-    <div className="flex h-[65px] w-[361px] max-w-none origin-left items-center justify-between gap-0 max-[389px]:scale-[.95] xl:h-auto xl:w-auto xl:justify-center xl:gap-[22px]">
+    <div className={`flex h-[65px] w-[361px] max-w-none origin-left items-center justify-between gap-0 max-[389px]:scale-[.95] xl:h-auto xl:w-auto xl:justify-center xl:gap-[22px] ${light ? "brightness-0 invert" : ""}`}>
       <div className="order-2 xl:order-1">
         <StudentCount />
       </div>

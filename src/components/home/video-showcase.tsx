@@ -1,9 +1,9 @@
 import Image from "next/image";
 import { YoutubeVideoEmbed } from "./youtube-video-embed";
 
-export function PartnersStrip() {
+export function PartnersStrip({ light = false }: { light?: boolean }) {
   return (
-    <div className="relative h-[18px] w-full shrink-0 overflow-hidden xl:h-[27px]" aria-label="Empresas colaboradoras">
+    <div className={`relative h-[18px] w-full shrink-0 overflow-hidden xl:h-[27px] ${light ? "brightness-0 invert" : ""}`} aria-label="Empresas colaboradoras">
       <div className="tbs-partners-track h-[18px] xl:h-[27px]">
         {[0, 1, 2, 3, 4].map((copy) => (
           <div

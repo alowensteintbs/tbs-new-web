@@ -26,11 +26,11 @@ const linkColumns: FooterColumn[] = [
   {
     title: "Nuestras clases gratuitas",
     links: [
-      { label: "Curso de Finanzas Personales" },
-      { label: "Curso de Trading gratis" },
-      { label: "Curso de Trading Algorítmico gratis" },
-      { label: "Curso de Bolsa gratis" },
-      { label: "Curso de Criptomonedas gratis" },
+      { label: "Ver todas las clases", href: "/clases-gratis" },
+      { label: "Curso de Trading gratis", href: "/clases-gratis/trading" },
+      { label: "Curso de Trading Algorítmico gratis", href: "/clases-gratis/trading-algoritmico" },
+      { label: "Curso de Bolsa gratis", href: "/clases-gratis/acciones" },
+      { label: "Curso de Criptomonedas gratis", href: "/clases-gratis/criptomonedas" },
     ],
   },
   {

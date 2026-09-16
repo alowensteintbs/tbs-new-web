@@ -2,6 +2,7 @@ import type { MetadataRoute } from "next";
 import { db } from "@/lib/db";
 import { getSiteUrl } from "@/lib/env";
 import { getVisibleProductSlugs } from "@/lib/catalog";
+import { rutasClasesGratis } from "@/lib/clases-gratis";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const base = getSiteUrl();
@@ -14,6 +15,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   ]);
 
   return [
+    ...rutasClasesGratis.map((route, index) => ({
+      url: `${base}${route}`,
+      changeFrequency: "weekly" as const,
+      priority: index === 0 ? 0.8 : 0.7,
+    })),
     ...pages.map((page) => ({
       url: `${base}/${page.slug}`,
       lastModified: page.updatedAt,

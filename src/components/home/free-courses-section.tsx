@@ -1,24 +1,34 @@
 import Image from "next/image";
+import Link from "next/link";
 
 const courses = [
-  { title: "Trading desde cero", image: "trading-symbol.png" },
-  { title: "Cripto desde cero", image: "crypto-symbol.png" },
-  { title: "Trading con IA", image: "ai-symbol.png" },
-  { title: "Acciones y Bolsa", image: "stocks-symbol.png" },
+  { title: "Trading desde cero", image: "trading-symbol.png", href: "/clases-gratis/trading" },
+  { title: "Cripto desde cero", image: "crypto-symbol.png", href: "/clases-gratis/criptomonedas" },
+  { title: "Trading con IA", image: "ai-symbol.png", href: "/clases-gratis/trading-algoritmico" },
+  { title: "Acciones y Bolsa", image: "stocks-symbol.png", href: "/clases-gratis/acciones" },
 ];
 
-export function FreeCoursesSection({ className = "", showIntro = true }: { className?: string; showIntro?: boolean }) {
+export function FreeCoursesSection({
+  className = "",
+  showIntro = true,
+  title = "¿Quieres ver cómo enseñamos?",
+}: {
+  className?: string;
+  showIntro?: boolean;
+  title?: string;
+}) {
   return (
     <section id="clases-gratis" className={`px-4 pt-20 xl:h-[812px] xl:px-10 xl:pt-[160px] ${className}`}>
       <div className="mx-auto max-w-[1200px]">
         <span className="inline-flex h-7 items-center rounded-full border border-white bg-white/10 px-3 font-mono text-xs font-bold uppercase text-white">Clases gratuitas</span>
-        <h2 className="mt-3 font-raleway text-4xl font-extrabold leading-none tracking-[-1px] text-[#f4f4f5] xl:text-[46px]">¿Quieres ver cómo enseñamos?</h2>
+        <h2 className="mt-3 font-raleway text-4xl font-extrabold leading-none tracking-[-1px] text-[#f4f4f5] xl:text-[46px]">{title}</h2>
         {showIntro && <p className="mt-3 font-raleway text-xl leading-6 text-white">Empieza con una clase gratis.</p>}
         <div className="tbs-course-track mt-[42px] flex flex-col gap-2 xl:flex-row xl:overflow-x-auto xl:pb-3 xl:snap-x xl:snap-mandatory">
           {courses.map((course) => (
-            <article
+            <Link
               key={course.title}
-              className="relative h-[240px] w-full shrink-0 overflow-hidden rounded-[28px] border-[6px] border-white/10 bg-clip-padding p-3 shadow-[0_11px_12px_rgba(0,0,0,.25)] backdrop-blur-[4px] xl:h-[462px] xl:w-[294px] xl:snap-start"
+              href={course.href}
+              className="relative h-[240px] w-full shrink-0 overflow-hidden rounded-[28px] border-[6px] border-white/10 bg-clip-padding p-3 shadow-[0_11px_12px_rgba(0,0,0,.25)] backdrop-blur-[4px] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#e1ff3b] xl:h-[462px] xl:w-[294px] xl:snap-start"
               style={{
                 backgroundImage: "linear-gradient(180deg, rgba(0, 0, 0, 0) 47.48%, #000000 100%), radial-gradient(100% 100% at 100% 0%, #11E07F 0%, rgba(9, 122, 69, 0) 100%), radial-gradient(100% 100% at 100% 0%, #11E07F 0%, rgba(9, 122, 69, 0) 100%)",
               }}
@@ -36,7 +46,7 @@ export function FreeCoursesSection({ className = "", showIntro = true }: { class
                 <p className="mt-4 min-h-9 font-raleway text-xs leading-3 text-[#f4f4f5]">Accede al mundo de la inversión en bolsa y consigue moverte con soltura en este mercado diario.</p>
                 <div className="mt-4 flex h-8 items-center justify-center rounded-full bg-[#f7f7f7] font-raleway text-base font-bold text-[#1f1e23]">Asistir al curso</div>
               </div>
-            </article>
+            </Link>
           ))}
         </div>
       </div>

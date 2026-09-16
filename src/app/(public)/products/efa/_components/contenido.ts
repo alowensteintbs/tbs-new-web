@@ -2,7 +2,7 @@ import type { SiteNavigationItem } from "@/components/layout/site-header";
 
 export const navegacionEfa: SiteNavigationItem[] = [
   { label: "Nuestros cursos", href: "/products" },
-  { label: "Clases Gratis", href: "/#clases-gratis" },
+  { label: "Clases Gratis", href: "/clases-gratis" },
   { label: "Sobre nosotros", href: "/#sobre-nosotros" },
 ];
 

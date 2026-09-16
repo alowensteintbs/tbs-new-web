@@ -28,21 +28,25 @@ const grupos = [
 const clasesGratis = [
   {
     title: "Trading",
+    href: "/clases-gratis/trading",
     icon: "trading",
     topics: ["Lectura de gráficos", "Entradas y salidas", "Gestión del riesgo"],
   },
   {
     title: "Acciones",
+    href: "/clases-gratis/acciones",
     icon: "acciones",
     topics: ["Análisis de empresas", "Selección de acciones", "Gestión de cartera"],
   },
   {
     title: "Criptomonedas",
+    href: "/clases-gratis/criptomonedas",
     icon: "cripto",
     topics: ["Exchanges y wallets", "Análisis técnico", "Gestión del riesgo"],
   },
   {
     title: "Trading algorítmico",
+    href: "/clases-gratis/trading-algoritmico",
     icon: "ia",
     topics: ["IA aplicada al Trading", "Creación de bots", "Prueba de estrategias"],
   },
@@ -169,7 +173,7 @@ function ClasesGratis({ close, mobile = false }: { close: () => void; mobile?: b
           </ul>
 
           <Link
-            href="/#clases-gratis"
+            href={clase.href}
             onClick={close}
             className="mt-auto flex h-6 items-center justify-center rounded-full border border-[#c7f000] bg-[#c7f000]/10 font-space text-sm font-bold leading-none text-[#c7f000] transition-colors hover:bg-[#c7f000] hover:text-[#111113] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#c7f000]"
           >
@@ -187,7 +191,7 @@ export function SiteHeader({ items, className }: { items: SiteNavigationItem[]; 
   const [mobileOpen, setMobileOpen] = useState(false);
   const headerRef = useRef<HTMLElement>(null);
   const coursesButtonRef = useRef<HTMLButtonElement>(null);
-  const freeClassesButtonRef = useRef<HTMLButtonElement>(null);
+  const freeClassesButtonRef = useRef<HTMLAnchorElement>(null);
   const mobileButtonRef = useRef<HTMLButtonElement>(null);
   const desktopCloseTimerRef = useRef<number | null>(null);
 
@@ -239,7 +243,7 @@ export function SiteHeader({ items, className }: { items: SiteNavigationItem[]; 
 
   function itemHref(item: SiteNavigationItem) {
     if (item.href) return item.href;
-    if (item.label === "Clases Gratis") return "/#clases-gratis";
+    if (item.label === "Clases Gratis") return "/clases-gratis";
     if (item.label === "Plataforma IA") return "/#metodo";
     return "/products";
   }
@@ -263,24 +267,21 @@ export function SiteHeader({ items, className }: { items: SiteNavigationItem[]; 
                 {item.label}
               </button>
             ) : item.label === "Clases Gratis" ? (
-              <button
+              <Link
                 key={item.label}
                 ref={freeClassesButtonRef}
-                type="button"
+                href="/clases-gratis"
                 aria-expanded={freeClassesOpen}
                 aria-controls="menu-clases-gratis"
                 onMouseEnter={() => {
                   setFreeClassesOpen(true);
                   setCoursesOpen(false);
                 }}
-                onClick={() => {
-                  setFreeClassesOpen(!freeClassesOpen);
-                  setCoursesOpen(false);
-                }}
+                onClick={close}
                 className={cn("inline-flex h-[30px] cursor-pointer items-center rounded-full px-5 font-space text-sm font-medium hover:text-[#e1ff3b] focus-visible:outline-2 focus-visible:outline-[#e1ff3b]", freeClassesOpen ? "text-[#e1ff3b]" : "text-[#f7f7f7]")}
               >
                 {item.label}
-              </button>
+              </Link>
             ) : (
               <Link key={item.label} href={itemHref(item)} onClick={close} className="inline-flex h-[30px] items-center rounded-full px-5 font-space text-sm font-medium text-[#f7f7f7] hover:text-[#e1ff3b]">{item.label}</Link>
             ))}
@@ -302,7 +303,7 @@ export function SiteHeader({ items, className }: { items: SiteNavigationItem[]; 
         {mobileOpen && <nav id="menu-mobile" aria-label="Navegación móvil" className="mt-1 max-h-[calc(100dvh-122px)] overflow-y-auto overscroll-contain rounded-[22px] border-[6px] border-[#292a28] bg-black p-1 text-white shadow-[0_11px_12px_rgb(0_0_0/25%)] xl:hidden">
           {coursesOpen ? <div id="cursos-mobile"><Cursos close={close} mobile /></div> : freeClassesOpen ? <div id="clases-gratis-mobile"><ClasesGratis close={close} mobile /></div> : <div className="flex flex-col gap-1">
             <button type="button" onClick={() => { setCoursesOpen(true); mobileButtonRef.current?.focus(); }} className="flex min-h-10 w-full cursor-pointer items-center justify-between rounded-xl bg-[#111113] px-3 py-2 font-space text-base font-bold">Nuestros cursos<span aria-hidden="true" className="font-sans text-[25px] leading-none">↗</span></button>
-            <button type="button" aria-expanded={freeClassesOpen} aria-controls="clases-gratis-mobile" onClick={() => { setFreeClassesOpen(true); mobileButtonRef.current?.focus(); }} className="flex min-h-10 w-full cursor-pointer items-center justify-between rounded-xl bg-[#111113] px-3 py-2 font-space text-base font-bold">Aprender gratis<span aria-hidden="true" className="font-sans text-[25px] leading-none">↗</span></button>
+            <Link href="/clases-gratis" onClick={close} className="flex min-h-10 w-full cursor-pointer items-center justify-between rounded-xl bg-[#111113] px-3 py-2 font-space text-base font-bold">Aprender gratis<span aria-hidden="true" className="font-sans text-[25px] leading-none">↗</span></Link>
             <Link href="/#equipo" onClick={close} className="flex min-h-10 items-center justify-between rounded-xl bg-[#111113] px-3 py-2 font-space text-base font-bold">Sobre nosotros<span aria-hidden="true" className="font-sans text-[25px] leading-none">↗</span></Link>
           </div>}
         </nav>}
