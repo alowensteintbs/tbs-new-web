@@ -1,16 +1,26 @@
 import Image from "next/image";
 import Link from "next/link";
 
-const linkColumns = [
+type FooterLink = {
+  label: string;
+  href?: string;
+};
+
+type FooterColumn = {
+  title: string;
+  links: FooterLink[];
+};
+
+const linkColumns: FooterColumn[] = [
   {
     title: "Escuela de finanzas 360º",
     links: [
-      { label: "Curso de Acciones Avanzado" },
+      { label: "Curso de Acciones Avanzado", href: "/products/acciones" },
       { label: "Curso de Criptomonedas Avanzado", href: "/products/cripto" },
       { label: "Curso Trading Avanzado", href: "/products/trading" },
       { label: "Máster en trading algorítmico con IA", href: "/products/trading-algoritmico" },
-      { label: "Pack de Inversión Premium" },
-      { label: "Ver todos los cursos" },
+      { label: "Pack de Inversión Premium", href: "/products/pack-premium" },
+      { label: "Ver todos los cursos", href: "/products" },
     ],
   },
   {

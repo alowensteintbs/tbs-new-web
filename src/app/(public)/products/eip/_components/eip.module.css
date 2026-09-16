@@ -1,0 +1,49 @@
+.pagina {
+  background: #121214;
+}
+
+.tituloEip {
+  max-width: 590px;
+  font-family: var(--font-tbs-raleway), sans-serif;
+  line-height: 0.88;
+  letter-spacing: -0.055em;
+}
+
+.tituloEip em {
+  letter-spacing: -0.075em;
+}
+
+.etiquetasHero {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.resumenEip {
+  min-height: 372px;
+}
+
+.programaEip {
+  margin-top: 0;
+  border-radius: 0 0 36px 36px;
+}
+
+.programaEip img[src*="/programa/"] {
+  filter: brightness(0) invert(1);
+}
+
+@media (min-width: 901px) {
+  .tituloEip {
+    font-size: 86px;
+  }
+}
+
+@media (max-width: 900px) {
+  .tituloEip {
+    font-size: clamp(54px, 16.5vw, 82px);
+  }
+
+  .programaEip {
+    border-radius: 0 0 28px 28px;
+  }
+}

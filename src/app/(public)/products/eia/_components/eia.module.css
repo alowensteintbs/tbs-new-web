@@ -1,0 +1,49 @@
+.pagina {
+  background: #121214;
+}
+
+.tituloEia {
+  max-width: 590px;
+  font-family: var(--font-tbs-raleway), sans-serif;
+  line-height: 0.88;
+  letter-spacing: -0.055em;
+}
+
+.tituloEia em {
+  letter-spacing: -0.075em;
+}
+
+.etiquetasHero {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.resumenEia {
+  min-height: 372px;
+}
+
+.programaEia {
+  margin-top: 0;
+  border-radius: 0 0 36px 36px;
+}
+
+.programaEia img[src*="/programa/"] {
+  filter: brightness(0) invert(1);
+}
+
+@media (min-width: 901px) {
+  .tituloEia {
+    font-size: 86px;
+  }
+}
+
+@media (max-width: 900px) {
+  .tituloEia {
+    font-size: clamp(54px, 16.5vw, 82px);
+  }
+
+  .programaEia {
+    border-radius: 0 0 28px 28px;
+  }
+}

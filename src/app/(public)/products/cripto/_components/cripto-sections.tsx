@@ -6,6 +6,7 @@ import { MasInformacion } from "../../pack-premium/_components/mas-informacion";
 import packStyles from "../../pack-premium/_components/pack-premium.module.css";
 import { ProgramaTabs } from "../../pack-premium/_components/programa-tabs";
 import tradingStyles from "../../trading/_components/trading.module.css";
+import { ClaseGratisDetalles } from "../../trading/_components/clase-gratis-detalles";
 import {
   aprendizajesCripto,
   beneficiosCripto,
@@ -113,15 +114,13 @@ export function InscripcionCripto() {
           </div>
           <div className={tradingStyles.precios}>
             <article>
-              <span>12 meses · Aplazame</span>
+              <div><span>12 meses</span><span>Aplazame</span></div>
               <strong>{cursoCripto.mensual}</strong>
-              <small>Pago mensual</small>
               <BotonPack href="#informacion" tono="verde">Inscribirme hoy</BotonPack>
             </article>
             <article>
-              <span>Pago único · Garantía 15 días</span>
+              <div><span>Pago único</span><span>Garantía 15 días</span></div>
               <strong>{cursoCripto.completo}</strong>
-              <small>Pago único</small>
               <BotonPack href="#informacion" tono="verde">Inscribirme hoy</BotonPack>
             </article>
           </div>
@@ -158,10 +157,7 @@ export function ClaseGratisCripto({ fechaInicial }: { fechaInicial: string }) {
             <Etiqueta tono="lima">Plazas disponibles</Etiqueta>
             <h3>Aprende Cripto<br />desde cero</h3>
             <p>Aprende una forma estructurada de analizar oportunidades, gestionar el riesgo y empezar a invertir, incluso con poco.</p>
-            <div className={tradingStyles.formatoClase}>
-              <span>50 minutos</span>
-              <span>Formato online</span>
-            </div>
+            <ClaseGratisDetalles />
             <FormularioContacto
               claseGratis
               fechaInicial={fechaInicial}

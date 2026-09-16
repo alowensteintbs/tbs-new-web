@@ -175,7 +175,7 @@ export function ProgramaTabs({
                   <span
                     className={styles.iconoObjetivo}
                     aria-hidden="true"
-                    style={{ "--icono": `url("/products/pack-premium/programa/${objetivo.icono}.svg")` } as CSSProperties}
+                    style={{ "--icono": `url("${objetivo.icono.startsWith("/") ? objetivo.icono : `/products/pack-premium/programa/${objetivo.icono}.svg`}")` } as CSSProperties}
                   />
                   <span>{objetivo.texto}</span>
                 </li>

@@ -1,0 +1,49 @@
+.pagina {
+  background: #121214;
+}
+
+.tituloEfa {
+  max-width: 560px;
+  font-family: var(--font-tbs-raleway), sans-serif;
+  line-height: 0.78;
+  letter-spacing: -0.055em;
+}
+
+.tituloEfa em {
+  letter-spacing: -0.075em;
+}
+
+.etiquetasHero {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.resumenEfa {
+  min-height: 372px;
+}
+
+.programaEfa {
+  margin-top: 0;
+  border-radius: 0 0 36px 36px;
+}
+
+.programaEfa img[src*="/programa/"] {
+  filter: brightness(0) invert(1);
+}
+
+@media (min-width: 901px) {
+  .tituloEfa {
+    font-size: 86px;
+  }
+}
+
+@media (max-width: 900px) {
+  .tituloEfa {
+    font-size: clamp(60px, 19vw, 88px);
+  }
+
+  .programaEfa {
+    border-radius: 0 0 28px 28px;
+  }
+}

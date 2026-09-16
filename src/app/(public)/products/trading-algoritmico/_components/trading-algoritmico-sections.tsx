@@ -220,17 +220,15 @@ export function InscripcionTradingAlgoritmico() {
           </div>
           <div className={tradingStyles.precios}>
             <article>
-              <span>12 meses · Aplazame</span>
+              <div><span>12 meses</span><span>Aplazame</span></div>
               <strong>{cursoTradingAlgoritmico.mensual}</strong>
-              <small>Pago mensual</small>
               <BotonPack href="#informacion" tono="verde">
                 Inscribirme hoy
               </BotonPack>
             </article>
             <article>
-              <span>Pago único · Garantía 15 días</span>
+              <div><span>Pago único</span><span>Garantía 15 días</span></div>
               <strong>{cursoTradingAlgoritmico.completo}</strong>
-              <small>Pago único</small>
               <BotonPack href="#informacion" tono="verde">
                 Inscribirme hoy
               </BotonPack>

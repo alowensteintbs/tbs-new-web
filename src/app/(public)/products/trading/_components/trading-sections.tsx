@@ -6,6 +6,7 @@ import { FormularioContacto } from "../../pack-premium/_components/formulario-co
 import packStyles from "../../pack-premium/_components/pack-premium.module.css";
 import { ProgramaTabs } from "../../pack-premium/_components/programa-tabs";
 import { MasInformacion } from "../../pack-premium/_components/mas-informacion";
+import { ClaseGratisDetalles } from "./clase-gratis-detalles";
 import {
   aprendizajesTrading,
   beneficiosTrading,
@@ -112,15 +113,13 @@ export function InscripcionTrading() {
           </div>
           <div className={styles.precios}>
             <article>
-              <span>12 meses</span>
+              <div><span>12 meses</span><span>Aplazame</span></div>
               <strong>{cursoTrading.mensual}</strong>
-              <small>Pago mensual</small>
               <BotonPack href="#informacion" tono="verde">Inscribirme hoy</BotonPack>
             </article>
             <article>
-              <span>Pago único</span>
+              <div><span>Pago único</span><span>Garantía 15 días</span></div>
               <strong>{cursoTrading.completo}</strong>
-              <small>Garantía de 15 días</small>
               <BotonPack href="#informacion" tono="verde">Inscribirme hoy</BotonPack>
             </article>
           </div>
@@ -175,7 +174,7 @@ export function ClaseGratisTrading({
             <Etiqueta tono="lima">Plazas disponibles</Etiqueta>
             <h3>Aprende Trading<br />desde cero</h3>
             <p>Aprende una forma estructurada de analizar oportunidades, gestionar el riesgo y empezar a invertir, incluso con poco.</p>
-            <div className={styles.formatoClase}><span>50 minutos</span><span>Formato online</span></div>
+            <ClaseGratisDetalles />
             <FormularioContacto
               claseGratis
               fechaInicial={fechaInicial}

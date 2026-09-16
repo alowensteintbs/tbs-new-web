@@ -1,0 +1,171 @@
+.pagina {
+  background: #121214;
+}
+
+.tituloInversor {
+  max-width: 590px;
+  letter-spacing: -0.055em;
+}
+
+.tituloInversor em {
+  letter-spacing: -0.075em;
+}
+
+.marcaUniversidad {
+  min-width: 190px;
+}
+
+.marcaUniversidad > strong {
+  display: block;
+  margin-top: 18px;
+  font-size: 15px;
+  line-height: 1.1;
+}
+
+.marcaUniversidad img {
+  display: block;
+  width: 173px;
+  height: 40px;
+}
+
+.certificacionOpciones {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr 1fr;
+  gap: 16px;
+  margin-top: 24px;
+}
+
+.ventajasCertificacion {
+  padding-right: 16px;
+  border-right: 3px solid #1f1e23;
+}
+
+.ventajasCertificacion li {
+  border: 1.5px solid #1f1e23;
+  border-radius: 8px;
+  padding: 7px 10px;
+  font-family: var(--font-space-grotesk), sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.ventajasCertificacion li + li {
+  margin-top: -1px;
+}
+
+.certificacionOpciones article {
+  padding-left: 16px;
+  border-right: 3px solid #1f1e23;
+}
+
+.certificacionOpciones article:last-child {
+  border-right: 0;
+}
+
+.certificacionOpciones header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.certificacionOpciones header strong {
+  font-family: var(--font-space-grotesk), sans-serif;
+  font-size: 14px;
+  text-transform: uppercase;
+}
+
+.certificacionOpciones header span {
+  border: 1px solid currentColor;
+  border-radius: 999px;
+  padding: 3px 8px;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.certificacionOpciones h3 {
+  margin-top: 8px;
+  font-size: 20px;
+  line-height: 1;
+}
+
+.certificacionOpciones article p {
+  margin-top: 7px;
+  font-size: 15px;
+}
+
+.certificacionOpciones article b {
+  display: inline-block;
+  margin-top: 10px;
+  border-radius: 6px;
+  padding: 5px 8px;
+  background: rgb(31 30 35 / 10%);
+  font-size: 14px;
+}
+
+.programaInversor {
+  margin-top: 0;
+  border-radius: 0 0 36px 36px;
+}
+
+.programaInversor img[src^="/products/inversor-inteligente/programa/"] {
+  filter: brightness(0) invert(1);
+}
+
+.claseFormularioInversor {
+  border: 0;
+  background:
+    radial-gradient(circle at 22% 32%, rgb(157 190 19 / 13%), transparent 42%),
+    radial-gradient(circle at 78% 72%, rgb(157 190 19 / 10%), transparent 46%),
+    #182006;
+}
+
+@media (min-width: 901px) {
+  .tituloInversor {
+    font-size: 82px;
+    line-height: 0.84;
+  }
+}
+
+@media (max-width: 900px) {
+  .tituloInversor,
+  .tituloInversor em {
+    letter-spacing: -0.06em;
+  }
+
+  .soloDesktop {
+    display: none;
+  }
+
+  .marcaUniversidad {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .marcaUniversidad > strong {
+    margin-top: 0;
+    text-align: right;
+  }
+
+  .certificacionOpciones {
+    grid-template-columns: 1fr;
+  }
+
+  .ventajasCertificacion,
+  .certificacionOpciones article {
+    padding: 0 0 18px;
+    border-right: 0;
+    border-bottom: 2px solid #1f1e23;
+  }
+
+  .certificacionOpciones article:last-child {
+    padding-bottom: 0;
+    border-bottom: 0;
+  }
+
+  .programaInversor {
+    border-radius: 0 0 28px 28px;
+  }
+}

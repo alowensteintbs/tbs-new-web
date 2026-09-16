@@ -164,7 +164,9 @@ export function SimulatorCard({ title, options, totalSteps }: SimulatorCardProps
               Ver clase gratis
             </HomeButton>
             <HomeButton
-              href={`/products?q=${encodeURIComponent(recommendedCourse.name)}`}
+              href={recommendedCourse.name === "Curso de Acciones Avanzado"
+                ? "/products/acciones"
+                : `/products?q=${encodeURIComponent(recommendedCourse.name)}`}
               variant="navigation"
               className="h-8 w-full rounded-[24px] bg-white/30 px-3 py-2 text-sm font-bold leading-4 text-[#f4f4f5]"
             >

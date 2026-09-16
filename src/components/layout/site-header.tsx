@@ -105,6 +105,12 @@ function catalogo(nombre: string) {
     return "/products/trading-algoritmico";
   }
   if (nombre === "Criptomonedas avanzado") return "/products/cripto";
+  if (nombre === "Acciones avanzado") return "/products/acciones";
+  if (nombre === "Finanzas personales") return "/products/finanzas-personales";
+  if (nombre === "Inversor Inteligente") return "/products/inversor-inteligente";
+  if (nombre === "European Financial Advisor (EFA)") return "/products/efa";
+  if (nombre === "European Investment Practitioner (EIP)") return "/products/eip";
+  if (nombre === "European Investment Assistant (EIA)") return "/products/eia";
   return `/products?q=${encodeURIComponent(nombre)}`;
 }
 

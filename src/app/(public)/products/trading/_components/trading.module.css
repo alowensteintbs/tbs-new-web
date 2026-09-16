@@ -90,7 +90,16 @@
   text-align: center;
 }
 
-.precios article > span {
+.precios article > div {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 4px;
+  min-height: 26px;
+}
+
+.precios article > span,
+.precios article > div > span {
   border: 1px solid #fff9;
   border-radius: 7px;
   padding: 3px 8px;
@@ -115,7 +124,7 @@
 
 .precios a {
   width: 100%;
-  margin-top: auto;
+  margin-top: 20px;
 }
 
 .informacion {
@@ -185,7 +194,7 @@
 
 .claseFormulario {
   padding: 34px;
-  border: 6px solid #dfff0026;
+  border: 0;
   border-radius: 30px;
   background: #dfff0014;
 }
@@ -200,7 +209,7 @@
 
 .claseFormulario h3 {
   margin-top: 16px;
-  color: #dfff00;
+  color: #f7f7f7;
   font-family: var(--font-space-grotesk), sans-serif;
   font-size: clamp(40px, 4vw, 62px);
   font-weight: 700;
@@ -311,7 +320,8 @@
 }
 
 .formatoClase { display: flex; gap: 12px; color: #daff0a; font-size: 14px; font-weight: 700; }
-.formatoClase span { flex: 1; background: #daff0a1a; border-radius: 12px; padding: 12px 8px; text-align: center; }
+.formatoClase span { display: flex; flex: 1; align-items: center; justify-content: flex-start; gap: 12px; min-height: 58px; background: #daff0a1a; border-radius: 12px; padding: 12px 18px; }
+.formatoClase img { width: 30px; height: 30px; flex: 0 0 30px; filter: brightness(0) saturate(100%) invert(91%) sepia(98%) saturate(1280%) hue-rotate(20deg) brightness(106%) contrast(106%); }
 @media (min-width: 901px) {
   .inscripcion { padding-block: 120px; }
   .tituloTrading { letter-spacing: 0; }

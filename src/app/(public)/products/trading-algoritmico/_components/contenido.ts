@@ -125,7 +125,7 @@ export const beneficiosTradingAlgoritmico = [
   },
   {
     titulo: "Aprende viendo cómo se opera",
-    imagen: "operativa.png",
+    imagen: "/products/trading-algoritmico/beneficios/Coins.png",
     tipo: "operativa",
     puntos: ["Clases grupales en directo.", "Operativa explicada en vivo.", "Preguntas al profesor."],
   },
