@@ -24,7 +24,6 @@ export function YoutubeVideoEmbed({ poster }: { poster: string }) {
         src={poster}
         alt="Presentación de Traders Business School"
         fill
-        priority
         sizes="(min-width: 1280px) 1424px, 377px"
         className="object-cover object-center transition-transform duration-500 group-hover:scale-[1.02]"
       />

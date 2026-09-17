@@ -37,7 +37,7 @@ function IlustracionGuias() {
         width={520}
         height={592}
         className="h-full w-full object-contain"
-        priority
+        preload
       />
     </div>
   );

@@ -240,7 +240,7 @@ export function SiteHeader({ className }: { className?: string }) {
         className={cn("fixed left-4 right-4 top-10 z-50 xl:left-1/2 xl:right-auto xl:top-16 xl:w-[calc(100%-80px)] xl:max-w-[1199px] xl:-translate-x-1/2", className)}>
         <div className="flex h-[62px] items-center justify-between rounded-[20px] bg-tbs-black px-5 shadow-[0_8px_4px_rgba(18,18,20,0.5)] xl:h-[54px] xl:rounded-[26px] xl:pl-6 xl:pr-3">
           <Link href="/" aria-label="Traders Business School, inicio" onClick={close}>
-            <Image src="/home/logo-traders.svg" alt="Traders Business School" width={107} height={28} priority />
+            <Image src="/home/logo-traders.svg" alt="Traders Business School" width={107} height={28} />
           </Link>
           <nav className="hidden items-center gap-3 xl:flex" aria-label="Navegación principal">
             {navegacion.map((item) => item.label === "Nuestros cursos" ? (

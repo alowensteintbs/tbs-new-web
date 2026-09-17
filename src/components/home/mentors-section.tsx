@@ -126,7 +126,14 @@ export function MentorsCarousel({ variant = "home" }: { variant?: "home" | "prod
             return (
             <article key={mentor.name} className={cn("h-[576px] w-[331px] shrink-0 snap-start rounded-[40px] p-2 shadow-[0_8px_20px_rgba(0,0,0,.25)]", variant === "platform" ? "bg-white/10" : "bg-[#f1f1f1]")}>
               <div className="group relative h-[560px] overflow-hidden rounded-[32px] bg-[#141417]">
-                <Image src={`/home/mentors/${mentor.image}`} alt={mentor.name} fill sizes="331px" unoptimized className="object-cover" />
+                <Image
+                  src={`/home/mentors/${mentor.image}`}
+                  alt={mentor.name}
+                  fill
+                  sizes="331px"
+                  quality={90}
+                  className="object-cover"
+                />
                 <div className="absolute inset-0 bg-[linear-gradient(180deg,transparent_45%,rgba(6,6,8,.35)_60%,#08080a_100%)]" />
                 <div className="absolute inset-x-[15px] bottom-[15px] text-white">
                   {mentor.tag && <span className="mb-3 inline-flex rounded-full bg-[#023f22] px-3 py-1 font-space text-xs font-bold text-[#11e07f]">{mentor.tag}</span>}

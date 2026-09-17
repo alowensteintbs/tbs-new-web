@@ -1,7 +1,27 @@
 import Script from "next/script";
+import { Playfair_Display, Raleway, Space_Grotesk } from "next/font/google";
 import { GoogleTagManager, GoogleAnalytics } from "@next/third-parties/google";
 import { env, getSiteUrl } from "@/lib/env";
 import { JsonLd, organizationSchema } from "@/components/seo/json-ld";
+
+const spaceGrotesk = Space_Grotesk({
+  variable: "--font-space-grotesk",
+  subsets: ["latin"],
+  display: "swap",
+});
+
+const playfairDisplay = Playfair_Display({
+  style: ["normal", "italic"],
+  variable: "--font-playfair-display",
+  subsets: ["latin"],
+  display: "swap",
+});
+
+const raleway = Raleway({
+  variable: "--font-tbs-raleway",
+  subsets: ["latin"],
+  display: "swap",
+});
 
 export default function PublicLayout({
   children,
@@ -42,7 +62,11 @@ fbq('init','${pixelId}');fbq('track','PageView');`}
       )}
 
       <JsonLd data={organizationSchema({ name: siteName, url: getSiteUrl() })} />
-      {children}
+      <div
+        className={`${spaceGrotesk.variable} ${playfairDisplay.variable} ${raleway.variable} contents`}
+      >
+        {children}
+      </div>
     </>
   );
 }

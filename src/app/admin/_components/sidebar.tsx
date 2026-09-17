@@ -184,7 +184,6 @@ export function Sidebar({ collapsed, onToggle, role }: SidebarProps) {
             alt="Traders Business School"
             width={110}
             height={29}
-            priority
           />
         )}
         <button

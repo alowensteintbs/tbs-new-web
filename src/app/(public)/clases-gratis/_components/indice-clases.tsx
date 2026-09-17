@@ -55,7 +55,7 @@ export function IndiceClasesGratis() {
                 src="/home/video-portada.png"
                 alt="Clase de Traders Business School"
                 fill
-                priority
+                preload
                 sizes="(min-width: 1280px) 540px, 100vw"
                 className="object-cover"
               />

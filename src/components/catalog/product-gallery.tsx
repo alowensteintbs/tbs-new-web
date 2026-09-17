@@ -32,7 +32,7 @@ export function ProductGallery({
           fill
           sizes="(max-width: 768px) 100vw, 50vw"
           className="object-cover"
-          priority
+          preload
         />
       </div>
       {images.length > 1 && (

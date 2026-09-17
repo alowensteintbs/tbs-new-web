@@ -35,7 +35,6 @@ export default function LoginPage() {
             alt="Traders Business School"
             width={140}
             height={37}
-            priority
           />
           <p className="text-xs text-[#ffffff33]">© {new Date().getFullYear()} Traders Business School</p>
         </div>
@@ -52,7 +51,6 @@ export default function LoginPage() {
                 alt="Traders Business School"
                 width={120}
                 height={32}
-                priority
               />
             </div>
           </div>
