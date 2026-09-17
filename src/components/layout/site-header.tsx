@@ -244,7 +244,8 @@ export function SiteHeader({ items, className }: { items: SiteNavigationItem[]; 
   function itemHref(item: SiteNavigationItem) {
     if (item.href) return item.href;
     if (item.label === "Clases Gratis") return "/clases-gratis";
-    if (item.label === "Plataforma IA") return "/#metodo";
+    if (item.label === "Guías Gratis") return "/guias-gratis";
+    if (item.label === "Plataforma IA") return "/plataforma-ia";
     return "/products";
   }
 
@@ -303,7 +304,18 @@ export function SiteHeader({ items, className }: { items: SiteNavigationItem[]; 
         {mobileOpen && <nav id="menu-mobile" aria-label="Navegación móvil" className="mt-1 max-h-[calc(100dvh-122px)] overflow-y-auto overscroll-contain rounded-[22px] border-[6px] border-[#292a28] bg-black p-1 text-white shadow-[0_11px_12px_rgb(0_0_0/25%)] xl:hidden">
           {coursesOpen ? <div id="cursos-mobile"><Cursos close={close} mobile /></div> : freeClassesOpen ? <div id="clases-gratis-mobile"><ClasesGratis close={close} mobile /></div> : <div className="flex flex-col gap-1">
             <button type="button" onClick={() => { setCoursesOpen(true); mobileButtonRef.current?.focus(); }} className="flex min-h-10 w-full cursor-pointer items-center justify-between rounded-xl bg-[#111113] px-3 py-2 font-space text-base font-bold">Nuestros cursos<span aria-hidden="true" className="font-sans text-[25px] leading-none">↗</span></button>
-            <Link href="/clases-gratis" onClick={close} className="flex min-h-10 w-full cursor-pointer items-center justify-between rounded-xl bg-[#111113] px-3 py-2 font-space text-base font-bold">Aprender gratis<span aria-hidden="true" className="font-sans text-[25px] leading-none">↗</span></Link>
+            <button
+              type="button"
+              onClick={() => {
+                setFreeClassesOpen(true);
+                setCoursesOpen(false);
+                mobileButtonRef.current?.focus();
+              }}
+              className="flex min-h-10 w-full cursor-pointer items-center justify-between rounded-xl bg-[#111113] px-3 py-2 text-left font-space text-base font-bold"
+            >
+              Aprender gratis
+              <span aria-hidden="true" className="font-sans text-[25px] leading-none">↗</span>
+            </button>
             <Link href="/#equipo" onClick={close} className="flex min-h-10 items-center justify-between rounded-xl bg-[#111113] px-3 py-2 font-space text-base font-bold">Sobre nosotros<span aria-hidden="true" className="font-sans text-[25px] leading-none">↗</span></Link>
           </div>}
         </nav>}

@@ -32,11 +32,13 @@ export function FormularioContacto({
   fechaInicial,
   producto = "Pack Premium",
   claseGratis = false,
+  ocultarDatosContacto = false,
 }: {
   agenda?: boolean;
   fechaInicial: string;
   producto?: string;
   claseGratis?: boolean;
+  ocultarDatosContacto?: boolean;
 }) {
   const id = useId();
   // Actualiza la fecha al hidratar incluso si la página se generó días antes.
@@ -77,9 +79,11 @@ export function FormularioContacto({
       ? `Solicitud de llamada · ${producto}`
       : `Información · ${producto}`;
     const cuerpo = [
-      `Nombre: ${datos.get("nombre")}`,
-      `Correo: ${datos.get("correo")}`,
-      `Teléfono: ${prefijo} ${datos.get("telefono")}`,
+      ...(!ocultarDatosContacto ? [
+        `Nombre: ${datos.get("nombre")}`,
+        `Correo: ${datos.get("correo")}`,
+        `Teléfono: ${prefijo} ${datos.get("telefono")}`,
+      ] : []),
       agenda
         ? `Horario preferido: ${fecha} a las ${hora} (hora de España).`
         : `Quiero recibir más información sobre ${producto}.`,
@@ -92,10 +96,10 @@ export function FormularioContacto({
 
   return (
     <form
-      className={`${styles.formulario} ${agenda ? styles.formularioAgenda : styles.formularioInformacion} ${claseGratis ? styles.formularioClaseGratis : ""}`}
+      className={`${styles.formulario} ${agenda ? styles.formularioAgenda : styles.formularioInformacion} ${claseGratis ? styles.formularioClaseGratis : ""} ${ocultarDatosContacto ? styles.formularioAgendaCompacta : ""}`}
       onSubmit={enviar}
     >
-      <div className={styles.campos}>
+      {!ocultarDatosContacto && <div className={styles.campos}>
         <label htmlFor={`${id}-nombre`}>
           Nombre y apellidos*
           <input
@@ -141,7 +145,7 @@ export function FormularioContacto({
             maxLength={254}
           />
         </label>
-      </div>
+      </div>}
       {agenda && (
         <div className={styles.selectorCita}>
           <div className={styles.calendario}>

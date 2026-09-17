@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
+import { cn } from "@/lib/utils";
 
 const perfiles: Record<string, { activos: string[]; titulaciones: string[] }> = {
   "miguel.png": {
@@ -44,7 +45,7 @@ const mentors = [
   { name: "Javier Perez", role: "Mentor", experience: "+10 años invirtiendo en activo.", image: "javier.png" },
 ];
 
-export function MentorsCarousel({ variant = "home" }: { variant?: "home" | "product" }) {
+export function MentorsCarousel({ variant = "home" }: { variant?: "home" | "product" | "platform" }) {
   const carouselRef = useRef<HTMLDivElement>(null);
   const dragStart = useRef<{ pointerId: number; x: number; scrollLeft: number } | null>(null);
   const [perfilesAbiertos, setPerfilesAbiertos] = useState<string[]>([]);
@@ -90,13 +91,19 @@ export function MentorsCarousel({ variant = "home" }: { variant?: "home" | "prod
   };
 
   return (
-    <section data-product-mentors={variant === "product" || undefined} className={`tbs-grid-light overflow-hidden rounded-[36px] px-4 py-20 xl:px-10 xl:py-[120px] ${variant === "home" ? "xl:h-[986px]" : ""}`}>
+    <section data-product-mentors={variant === "product" || undefined} className={cn(
+      "overflow-hidden px-4 py-20 xl:px-10",
+      variant === "platform"
+        ? "tbs-grid-dark text-white xl:h-[966px] xl:pb-[60px] xl:pt-[160px]"
+        : "tbs-grid-light rounded-[36px] xl:py-[120px]",
+      variant === "home" && "xl:h-[986px]",
+    )}>
       <div className="mx-auto max-w-[1200px]">
         <div className="flex flex-col-reverse gap-5 xl:flex-row xl:items-start xl:justify-between">
-          <h2 className="font-raleway text-4xl font-extrabold leading-none tracking-[-1px] text-[#1f1e23] xl:text-[46px]">{variant === "home" ? <>Inversores con <span className="font-playfair font-medium italic">perfil activo</span></> : <>El equipo que te va a <span className="font-playfair font-medium italic">acompañar</span></>}</h2>
-          <span className="inline-flex h-7 w-fit items-center rounded-full border border-[#0066ff] bg-[#0066ff]/10 px-3 font-mono text-xs font-bold uppercase tracking-[0.06em] text-[#0066ff]">{variant === "home" ? "El equipo que hay detrás" : "Método + consistencia = criterio"}</span>
+          <h2 className={cn("font-raleway text-4xl font-extrabold leading-none tracking-[-1px] xl:text-[46px]", variant === "platform" ? "text-white" : "text-[#1f1e23]")}>{variant !== "product" ? <>Inversores con <span className="font-playfair font-medium italic">perfil activo</span></> : <>El equipo que te va a <span className="font-playfair font-medium italic">acompañar</span></>}</h2>
+          <span className={cn("inline-flex h-7 w-fit items-center rounded-full px-3 font-mono text-xs font-bold uppercase tracking-[0.06em]", variant === "platform" ? "border border-[#daff0a] bg-[#daff0a]/15 text-[#daff0a]" : "border border-[#0066ff] bg-[#0066ff]/10 text-[#0066ff]")}>{variant !== "product" ? "El equipo que hay detrás" : "Método + consistencia = criterio"}</span>
         </div>
-        {variant === "home" && <p className="mt-8 max-w-[643px] font-raleway text-lg leading-5 text-[#1f1e23] xl:text-xl">
+        {variant !== "product" && <p className={cn("mt-8 max-w-[643px] font-raleway text-lg leading-5 xl:text-xl", variant === "platform" ? "text-white/75" : "text-[#1f1e23]")}>
           Si quieres aprender a invertir, lo mejor es hacerlo con profesionales en activo. Por eso, nuestros profesores unen experiencia profesional, visión práctica y vocación por enseñar.
         </p>}
 
@@ -117,16 +124,16 @@ export function MentorsCarousel({ variant = "home" }: { variant?: "home" | "prod
             const perfilId = `perfil-${mentor.image.replace(".png", "")}`;
 
             return (
-            <article key={mentor.name} className="h-[576px] w-[331px] shrink-0 snap-start rounded-[40px] bg-[#f1f1f1] p-2 shadow-[0_8px_20px_rgba(0,0,0,.25)]">
+            <article key={mentor.name} className={cn("h-[576px] w-[331px] shrink-0 snap-start rounded-[40px] p-2 shadow-[0_8px_20px_rgba(0,0,0,.25)]", variant === "platform" ? "bg-white/10" : "bg-[#f1f1f1]")}>
               <div className="group relative h-[560px] overflow-hidden rounded-[32px] bg-[#141417]">
                 <Image src={`/home/mentors/${mentor.image}`} alt={mentor.name} fill sizes="331px" unoptimized className="object-cover" />
                 <div className="absolute inset-0 bg-[linear-gradient(180deg,transparent_45%,rgba(6,6,8,.35)_60%,#08080a_100%)]" />
                 <div className="absolute inset-x-[15px] bottom-[15px] text-white">
                   {mentor.tag && <span className="mb-3 inline-flex rounded-full bg-[#023f22] px-3 py-1 font-space text-xs font-bold text-[#11e07f]">{mentor.tag}</span>}
                   <h3 className="font-space text-[26px] font-bold leading-[22px] tracking-[-.5px]">{mentor.name}</h3>
-                  <p className="mt-[22px] font-space text-lg font-bold uppercase leading-[13px]">{mentor.role}</p>
-                  <p className="mt-[9px] font-raleway text-[15px] font-bold leading-[11px] text-white/70">{mentor.experience}</p>
-                  <div className={`mt-[11px] overflow-hidden rounded-[18px] ${abierto ? "bg-[#0066ff]/40" : ""}`}>
+                  <p className={cn("mt-[22px] font-space text-lg font-bold leading-[13px]", variant !== "platform" && "uppercase")}>{mentor.role}</p>
+                  <p className={cn("mt-[9px] font-raleway text-[15px] leading-[11px]", variant === "platform" ? "font-normal text-white" : "font-bold text-white/70")}>{mentor.experience}</p>
+                  <div className={cn("mt-[11px] overflow-hidden rounded-[18px]", abierto && (variant === "platform" ? "bg-[#daff0a]/10" : "bg-[#0066ff]/40"))}>
                     <button
                       type="button"
                       aria-expanded={abierto}
@@ -135,10 +142,10 @@ export function MentorsCarousel({ variant = "home" }: { variant?: "home" | "prod
                       onClick={() => setPerfilesAbiertos((actuales) => abierto
                         ? actuales.filter((imagen) => imagen !== mentor.image)
                         : [...actuales, mentor.image])}
-                      className="flex h-8 w-full cursor-pointer items-center justify-between rounded-full bg-[#0066ff] pl-3 text-left font-space text-base font-bold focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-white"
+                      className={cn("flex h-8 w-full cursor-pointer items-center justify-between rounded-full pl-3 text-left font-space text-base font-bold focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-white", variant === "platform" ? "bg-transparent text-[#daff0a] ring-1 ring-inset ring-[#daff0a] hover:bg-[#daff0a]/10" : "bg-[#0066ff]")}
                     >
                       <span>{abierto ? "Ocultar perfil" : "Ver perfil"}</span>
-                      <span className="grid size-8 shrink-0 place-items-center rounded-full bg-[#f7f7f7] text-[#0066ff]" aria-hidden="true"><span className="text-[17px] font-normal leading-none">{abierto ? "−" : "+"}</span></span>
+                      <span className={cn("grid size-8 shrink-0 place-items-center rounded-full", variant === "platform" ? "bg-[#daff0a] text-[#111113]" : "bg-[#f7f7f7] text-[#0066ff]")} aria-hidden="true"><span className="text-[17px] font-normal leading-none">{abierto ? "−" : "+"}</span></span>
                     </button>
                       <div id={perfilId} hidden={!abierto} className="px-[10px] pb-[10px] pt-3">
                         {perfil ? <>

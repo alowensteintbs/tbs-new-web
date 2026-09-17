@@ -1,10 +1,9 @@
 import Image from "next/image";
-import Link from "next/link";
 import { SocialProof } from "@/components/home/social-proof";
 import { EcosystemSection } from "@/components/home/ecosystem-section";
 import { PartnersStrip } from "@/components/home/video-showcase";
 import { SiteHeader } from "@/components/layout/site-header";
-import type { ClaseGratis } from "./contenido";
+import { navegacionClasesGratis, type ClaseGratis } from "./contenido";
 import { FormularioRegistro } from "./formulario-registro";
 
 function Etiqueta({ children, blue = false }: { children: React.ReactNode; blue?: boolean }) {
@@ -149,11 +148,7 @@ function IconoProfesor({ src }: { src: string }) {
 export function LandingClase({ clase }: { clase: ClaseGratis }) {
   return (
     <div className="tbs-grid-dark min-h-screen bg-[#121214]">
-      <SiteHeader items={[]} className="xl:hidden" />
-      <header className="absolute inset-x-4 top-10 z-20 mx-auto hidden h-14 max-w-[1200px] items-center justify-between rounded-full bg-[#111113] px-6 xl:inset-x-10 xl:top-[60px] xl:flex">
-        <Link href="/" aria-label="Traders Business School — inicio"><Image src="/home/logo-traders.svg" alt="Traders Business School" width={120} height={36} priority /></Link>
-        <span className="hidden rounded-full border border-[#ff0a54] bg-[#ff0a54]/10 px-3 py-1 font-mono text-xs uppercase text-[#ff0a54] sm:block">Escuela de inversión más elegida de España</span>
-      </header>
+      <SiteHeader items={navegacionClasesGratis} />
       <main>
         <HeroClase clase={clase} />
         <ContenidoClase clase={clase} />

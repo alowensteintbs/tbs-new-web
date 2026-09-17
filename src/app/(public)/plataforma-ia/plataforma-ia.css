@@ -1,0 +1,105 @@
+.plataforma-hero { position:relative; isolation:isolate; overflow:hidden; width:100%; border-radius:0 0 36px 36px; background:#000; color:#fff; }
+
+.plataforma-hero::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  left: calc(50% - 1080px);
+  top: 145px;
+  width: 2160px;
+  height: 620px;
+  transform: rotate(-24deg);
+  background: radial-gradient(ellipse closest-side, #0066ff 0%, #0066ff90 45%, #0066ff00 100%);
+}
+.plataforma-hero-copy {
+  position: relative;
+  z-index: 2;
+  padding: 216px 24px 36px;
+  text-align: center;
+}
+.plataforma-hero h1 {
+  margin: 24px auto 0;
+  font-family: var(--font-tbs-raleway), sans-serif;
+  font-size: 82px;
+  font-weight: 700;
+  line-height: 72px;
+  letter-spacing: -1.64px;
+}
+.plataforma-hero-copy p {
+  max-width: 524px;
+  margin: 24px auto 0;
+  font: 500 18px/22px var(--font-tbs-raleway), sans-serif;
+  color: #dcdee0;
+}
+.plataforma-portatil {
+  display: block;
+  margin: 32px auto 0;
+  width: min(100%, 1440px);
+  height: auto;
+}
+.plataforma-captura { display: block; width: 100%; height: auto; border-radius: 16px; }
+.plataforma-container { width:min(1200px,calc(100% - 80px)); margin-inline:auto; }
+.plataforma-producto { color:#f7f7f7; background-color:#121214; }
+.plataforma-aula { padding-block:160px 100px; background:radial-gradient(ellipse 46% 40% at 50% 60%,#11e07fa6 0%,#097a4500 100%); }
+.plataforma-producto h2 { margin-top:16px; font-family:var(--font-tbs-raleway),sans-serif; font-size:46px; font-weight:800; line-height:46px; letter-spacing:-.92px; }
+.plataforma-badge-neutral { border-color:#f7f7f780; background:#f7f7f71a; color:#f7f7f7; padding:5px 12px; font-size:12px; line-height:14px; }
+.plataforma-descripcion { margin-top:28px; font:20px/20px var(--font-tbs-raleway),sans-serif; color:#b6b6b7; }
+.plataforma-aula-tarjetas { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; margin-top:32px; }
+.plataforma-tarjeta,.plataforma-logros {
+  padding:12px;
+  border:6px solid #ffffff1a;
+  border-radius:28px;
+  background:
+    radial-gradient(ellipse at 50% 0%, #22222200, #22222250),
+    linear-gradient(180deg, #00000000, #000000b3);
+  background-clip:padding-box;
+  box-shadow:0 11px 12px #00000040;
+  backdrop-filter:blur(4px);
+}
+
+.plataforma-producto h3 { font:700 24px/24px var(--font-space-grotesk),sans-serif; letter-spacing:-.48px; }
+.plataforma-tarjeta h3 { margin-top:12px; }
+.plataforma-tarjeta p,.plataforma-logros p { margin-top:6px; font:16px/18px var(--font-tbs-raleway),sans-serif; color:#f7f7f7; }
+.plataforma-tarjeta p { margin-top:12px; }
+.plataforma-logros { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-top:12px; }
+.plataforma-insignias { width:363px; height:auto; flex-shrink:0; margin:-6px -8px; }
+.plataforma-asistente { padding-block:60px 160px; }
+.plataforma-asistente-layout { display:grid; grid-template-columns:1fr 610px; gap:32px; align-items:start; }
+.plataforma-chat { display:block; width:calc(100% + 37px); max-width:none; height:auto; margin:-9px -18.5px -37px; }
+.tbs-grid-light[data-variant="platform"] article { border-bottom-width:0; }
+@media (min-width:1280px) {
+  .plataforma-aula { min-height:1010px; }
+  .plataforma-asistente { min-height:726px; }
+  .plataforma-page [data-ecosystem-card="tall"] { height:496px; }
+  .plataforma-page [data-ecosystem-card="wide"] { height:160px; }
+}
+@media (max-width:1279px) {
+  .plataforma-hero-copy { padding-top:180px; }
+  .plataforma-hero h1 { font-size:72px; }
+  .plataforma-asistente-layout { grid-template-columns:1fr 1.2fr; }
+  .plataforma-producto h2 { font-size:42px; }
+  .plataforma-logros { flex-wrap:wrap; }
+}
+@media (max-width:767px) {
+  .plataforma-hero { border-radius:0 0 24px 24px; }
+  .plataforma-hero-copy { padding:145px 20px 24px; }
+  .plataforma-hero::before { left:-50%; top:120px; width:200%; height:320px; }
+  .plataforma-hero h1 { font-size:clamp(40px,10.8vw,64px); line-height:.9; letter-spacing:-1.7px; }
+  .plataforma-hero-copy p { font-size:15px; line-height:20px; max-width:360px; }
+  .plataforma-portatil { margin-top:32px; width:115%; max-width:none; margin-left:-7.5%; }
+  .plataforma-container { width:calc(100% - 40px); }
+  .plataforma-aula { padding-block:80px 48px; }
+  .plataforma-producto h2 { font-size:36px; letter-spacing:-1.2px; line-height:1; }
+  .plataforma-descripcion { margin-top:20px; font-size:16px; line-height:21px; }
+  .plataforma-aula-tarjetas { grid-template-columns:1fr; gap:16px; }
+  .plataforma-producto h3 { font-size:21px; line-height:24px; }
+  .plataforma-tarjeta p,.plataforma-logros p { font-size:14px; line-height:19px; }
+  .plataforma-logros { align-items:start; flex-direction:column; padding:16px; }
+  .plataforma-insignias { width:min(100%,363px); }
+  .plataforma-asistente { padding-block:40px 80px; }
+  .plataforma-asistente-layout { grid-template-columns:1fr; gap:32px; }
+}
+.plataforma-page :is(.tbs-grid-dark, .tbs-grid-light, .tbs-grid-blue) {
+  background-size: 180px 180px, 45px 45px, 45px 45px;
+  background-position: 0 0, 0 0, 0 0;
+}

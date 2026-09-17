@@ -968,6 +968,11 @@
   border-radius: 32px;
   backdrop-filter: blur(2px);
 }
+.formularioAgendaCompacta .selectorCita {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: 0;
+}
 .campos {
   display: grid;
   grid-template-columns: 1fr 1fr;

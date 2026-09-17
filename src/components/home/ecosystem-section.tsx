@@ -73,6 +73,7 @@ function EcosystemCard({
 }: EcosystemCardData) {
   return (
     <article
+      data-ecosystem-card={tall ? "tall" : "wide"}
       className={cn(
         "flex min-h-[220px] flex-col justify-between rounded-[24px] border-0 border-b-[3px] border-b-[#0066ff] bg-[#f0f0f0] p-6 max-md:h-[380px]",
         tall ? "xl:h-[445px]" : "xl:min-h-0 xl:h-[143px] xl:flex-row",
@@ -101,9 +102,19 @@ function EcosystemCard({
   );
 }
 
-export function EcosystemSection() {
+export function EcosystemSection({ variant = "home" }: { variant?: "home" | "platform" }) {
+  const cards = variant === "platform"
+    ? [
+        { ...CARDS[0], description: "Aportando la experiencia y visión como uno de los principales referentes del sector financiero en España." },
+        { ...CARDS[1], description: "Tenemos formaciones que cuentan con respaldo universitario, uniendo la formación práctica con el reconocimiento." },
+        { ...CARDS[3], description: "Colaboramos con una de las plataformas de análisis financiero más utilizadas por inversores de todo el mundo." },
+        { ...CARDS[4], description: "Reconocidos expertos en fiscalidad con un equipo de profesionales altamente cualificados." },
+        { ...CARDS[2], description: "De la mano de Zumitow, acercamos conocimiento a su comunidad para seguir haciendo de las inversiones algo más accesibles." },
+      ]
+    : CARDS;
+
   return (
-    <section className="tbs-grid-light relative z-10 rounded-[36px] px-4 py-20 md:flex md:items-center md:px-10 xl:h-[1132px] xl:py-0">
+    <section data-variant={variant} className="tbs-grid-light relative z-10 rounded-[36px] px-4 py-20 md:flex md:items-center md:px-10 xl:h-[1132px] xl:py-0">
       <div className="mx-auto w-full max-w-[1200px]">
         <header className="max-w-[998px] md:w-full xl:w-[998px]">
           <h2 className="font-space text-5xl font-bold leading-[0.98] tracking-[-1px] text-tbs-ink md:text-[64px] md:leading-[0.98] md:tracking-[-1.28px] xl:text-[82px] xl:leading-[80px] xl:tracking-[-1.64px]">
@@ -117,18 +128,18 @@ export function EcosystemSection() {
           </p>
         </header>
 
-        <MobileEcosystemCardStack cards={CARDS} />
+        <MobileEcosystemCardStack cards={cards} />
 
         <div className="mt-[60px] hidden gap-2 md:grid md:grid-cols-2">
           <div className="grid gap-2 md:grid-cols-2">
-            <EcosystemCard {...CARDS[0]} />
-            <EcosystemCard {...CARDS[1]} />
+            <EcosystemCard {...cards[0]} />
+            <EcosystemCard {...cards[1]} />
           </div>
 
           <div className="grid gap-2">
-            <EcosystemCard {...CARDS[2]} />
-            <EcosystemCard {...CARDS[3]} />
-            <EcosystemCard {...CARDS[4]} />
+            <EcosystemCard {...cards[2]} />
+            <EcosystemCard {...cards[3]} />
+            <EcosystemCard {...cards[4]} />
           </div>
         </div>
 

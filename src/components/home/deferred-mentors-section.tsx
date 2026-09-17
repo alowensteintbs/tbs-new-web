@@ -8,7 +8,7 @@ const MentorsCarousel = dynamic(
   { ssr: false },
 );
 
-export function DeferredMentorsSection() {
+export function DeferredMentorsSection({ variant = "home" }: { variant?: "home" | "platform" }) {
   const [shouldLoad, setShouldLoad] = useState(false);
   const markerRef = useRef<HTMLDivElement>(null);
 
@@ -27,5 +27,5 @@ export function DeferredMentorsSection() {
     return () => observer.disconnect();
   }, []);
 
-  return <div ref={markerRef} className="min-h-[986px]">{shouldLoad && <MentorsCarousel />}</div>;
+  return <div ref={markerRef} className={variant === "platform" ? "min-h-[966px]" : "min-h-[986px]"}>{shouldLoad && <MentorsCarousel variant={variant} />}</div>;
 }

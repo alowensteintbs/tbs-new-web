@@ -19,6 +19,7 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  --font-inter: var(--font-tbs-inter);
   --font-space: var(--font-space-grotesk);
   --font-playfair: var(--font-playfair-display);
   --font-raleway: var(--font-tbs-raleway);

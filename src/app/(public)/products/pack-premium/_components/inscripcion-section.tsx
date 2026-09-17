@@ -7,9 +7,11 @@ import styles from "./pack-premium.module.css";
 export function LlamadaSection({
   fechaInicial,
   producto = "Pack Premium",
+  ocultarDatosContacto = false,
 }: {
   fechaInicial: string;
   producto?: string;
+  ocultarDatosContacto?: boolean;
 }) {
   return (
     <section className={`tbs-grid-dark ${styles.llamada}`} id="llamada">
@@ -24,7 +26,7 @@ export function LlamadaSection({
             formación encaja mejor contigo.
           </p>
         </div>
-        <FormularioContacto agenda fechaInicial={fechaInicial} producto={producto} />
+        <FormularioContacto agenda fechaInicial={fechaInicial} producto={producto} ocultarDatosContacto={ocultarDatosContacto} />
       </div>
     </section>
   );
