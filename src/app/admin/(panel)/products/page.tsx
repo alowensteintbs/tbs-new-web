@@ -38,15 +38,21 @@ export default async function ProductsPage({
 
   const totalPages = getTotalPages(total);
 
-  const rows: ProductRow[] = products.map((product) => ({
-    id: product.id,
-    name: product.name,
-    prices: product.prices.map((price) => ({
-      code: price.currency.code,
-      symbol: price.currency.symbol,
-      amount: price.amount.toString(),
-    })),
-  }));
+  const rows: ProductRow[] = products.map((product) => {
+    return {
+      id: product.id,
+      name: product.name,
+      landing: {
+        slug: product.landingSlug,
+        label: product.landingSlug,
+      },
+      prices: product.prices.map((price) => ({
+        code: price.currency.code,
+        symbol: price.currency.symbol,
+        amount: price.amount.toString(),
+      })),
+    };
+  });
 
   return (
     <div className="space-y-6">

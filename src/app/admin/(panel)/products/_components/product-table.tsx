@@ -1,13 +1,15 @@
 "use client";
 
 import Link from "next/link";
-import { useTransition } from "react";
+import { useState, useTransition } from "react";
 import { SortableHeader, type SortDir } from "@/app/admin/_components/sortable-header";
+import { productPurchasePath } from "@/lib/product-landings";
 import { deleteProduct } from "../actions";
 
 export type ProductRow = {
   id: string;
   name: string;
+  landing: { slug: string; label: string };
   prices: { code: string; symbol: string; amount: string }[];
 };
 
@@ -36,6 +38,7 @@ export function ProductTable({
         <thead className="border-b border-gray-200 bg-gray-50 text-xs uppercase text-gray-500">
           <tr>
             <SortableHeader column="name" label="Nombre" currentSort={sort} currentDir={dir} searchParams={searchParams} />
+            <th className="px-5 py-3 font-medium">Landing</th>
             <th className="px-5 py-3 font-medium">Precios</th>
             <th className="px-5 py-3 text-right font-medium">Acciones</th>
           </tr>
@@ -52,6 +55,8 @@ export function ProductTable({
 
 function ProductRowItem({ row }: { row: ProductRow }) {
   const [isPending, startTransition] = useTransition();
+  const [copyStatus, setCopyStatus] = useState<"idle" | "copied" | "error">("idle");
+  const purchasePath = productPurchasePath(row.landing.slug);
 
   function handleDelete() {
     if (!confirm(`¿Eliminar el producto "${row.name}"? Esta acción no se puede deshacer.`)) {
@@ -60,9 +65,29 @@ function ProductRowItem({ row }: { row: ProductRow }) {
     startTransition(() => deleteProduct(row.id));
   }
 
+  async function handleCopyPurchaseLink() {
+    try {
+      await navigator.clipboard.writeText(`${window.location.origin}${purchasePath}`);
+      setCopyStatus("copied");
+    } catch {
+      setCopyStatus("error");
+    }
+    window.setTimeout(() => setCopyStatus("idle"), 2_000);
+  }
+
   return (
     <tr className="text-gray-900">
       <td className="px-5 py-3 font-medium">{row.name}</td>
+      <td className="px-5 py-3">
+        <Link
+          href={`/products/${row.landing.slug}`}
+          target="_blank"
+          className="font-medium text-[#2563EB] hover:underline"
+        >
+          {row.landing.label}
+        </Link>
+        <code className="mt-1 block text-xs text-gray-400">{purchasePath}</code>
+      </td>
       <td className="px-5 py-3 text-gray-600">
         {row.prices.length === 0 ? (
           <span className="text-gray-400">Sin precios</span>
@@ -78,7 +103,33 @@ function ProductRowItem({ row }: { row: ProductRow }) {
         )}
       </td>
       <td className="px-5 py-3">
-        <div className="flex items-center justify-end gap-3">
+        <div className="flex flex-wrap items-center justify-end gap-x-3 gap-y-1">
+          <Link
+            href={purchasePath}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-sm font-medium text-emerald-700 hover:underline"
+          >
+            Abrir compra
+          </Link>
+          <button
+            type="button"
+            onClick={handleCopyPurchaseLink}
+            className="text-sm font-medium text-gray-600 hover:underline"
+          >
+            {copyStatus === "copied"
+              ? "Copiado"
+              : copyStatus === "error"
+                ? "No se pudo copiar"
+                : "Copiar enlace"}
+          </button>
+          <span className="sr-only" aria-live="polite">
+            {copyStatus === "copied"
+              ? "Enlace de compra copiado"
+              : copyStatus === "error"
+                ? "No se pudo copiar el enlace de compra"
+                : ""}
+          </span>
           <Link
             href={`/admin/products/${row.id}`}
             className="text-sm font-medium text-[#2563EB] hover:underline"

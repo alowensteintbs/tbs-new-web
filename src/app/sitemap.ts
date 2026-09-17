@@ -4,21 +4,11 @@ import { rutasClasesGratis } from "@/lib/clases-gratis";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const base = getSiteUrl();
-  let pages: { slug: string; updatedAt: Date }[] = [];
-  let products: { slug: string; updatedAt: Date }[] = [];
+  let products: { landingSlug: string; updatedAt: Date }[] = [];
 
   if (process.env.DATABASE_URL) {
-    const [{ db }, { getVisibleProductSlugs }] = await Promise.all([
-      import("@/lib/db"),
-      import("@/lib/catalog"),
-    ]);
-    [pages, products] = await Promise.all([
-      db.page.findMany({
-        where: { status: "PUBLISHED", noindex: false },
-        select: { slug: true, updatedAt: true },
-      }),
-      getVisibleProductSlugs(),
-    ]);
+    const { getVisibleProductLandings } = await import("@/lib/catalog");
+    products = await getVisibleProductLandings();
   }
 
   return [
@@ -37,14 +27,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: "weekly" as const,
       priority: index === 0 ? 0.8 : 0.7,
     })),
-    ...pages.map((page) => ({
-      url: `${base}/${page.slug}`,
-      lastModified: page.updatedAt,
-      changeFrequency: "weekly" as const,
-      priority: 0.7,
-    })),
     ...products.map((product) => ({
-      url: `${base}/products/${product.slug}`,
+      url: `${base}/products/${product.landingSlug}`,
       lastModified: product.updatedAt,
       changeFrequency: "weekly" as const,
       priority: 0.6,

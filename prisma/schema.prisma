@@ -23,28 +23,6 @@ enum Role {
   COMERCIAL
 }
 
-enum PageStatus {
-  DRAFT
-  PUBLISHED
-}
-
-model Page {
-  id           String     @id @default(cuid())
-  name         String
-  slug         String     @unique
-  figmaFileKey String
-  figmaNodeId  String
-  status       PageStatus @default(DRAFT)
-  // SEO (replaces Rank Math per-page meta)
-  metaTitle       String?
-  metaDescription String? @db.Text
-  ogImage         String?
-  canonical       String?
-  noindex         Boolean @default(false)
-  createdAt    DateTime   @default(now())
-  updatedAt    DateTime   @updatedAt
-}
-
 /// Editable key/value site configuration (GTM id, default currency, etc.).
 model SiteSetting {
   key       String   @id
@@ -128,7 +106,7 @@ model Category {
 model Product {
   id          String         @id @default(cuid())
   name        String
-  slug        String         @unique
+  landingSlug String         @unique
   sku         String?
   description String         @db.Text
   academyId   String         @default("") // external academy identifier
@@ -144,7 +122,6 @@ model Product {
 
   @@index([name]) // search by name
   @@index([updatedAt]) // default sort
-  @@index([slug])
   @@index([visible])
   @@index([categoryId])
 }

@@ -4,27 +4,16 @@ import { revalidatePath, revalidateTag } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { db } from "@/lib/db";
+import { Prisma } from "@/generated/prisma/client";
 import { requireSession } from "@/lib/auth/dal";
 import { CATALOG_TAGS } from "@/lib/catalog";
-
-function slugify(value: string): string {
-  return value
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[̀-ͯ]/g, "") // strip diacritics
-    .replace(/\s+/g, "-")
-    .replace(/[^a-z0-9-]/g, "")
-    .replace(/-+/g, "-")
-    .replace(/^-|-$/g, "");
-}
+import { isProductLandingSlug } from "@/lib/product-landings.server";
 
 const productSchema = z.object({
   name: z.string().min(1, "El nombre es requerido").max(150),
-  slug: z
+  landingSlug: z
     .string()
-    .trim()
-    .regex(/^[a-z0-9-]*$/, "Solo minúsculas, números y guiones")
-    .optional(),
+    .min(1, "La landing es requerida"),
   sku: z
     .string()
     .trim()
@@ -38,7 +27,6 @@ const productSchema = z.object({
     .transform((v) => (v === "" ? null : v))
     .nullable(),
   visible: z.boolean().default(true),
-  featured: z.boolean().default(false),
 });
 
 export type ProductFormState = {
@@ -84,13 +72,12 @@ async function getEnabledCurrencyIds(): Promise<Set<string>> {
 function parseProductForm(formData: FormData) {
   return productSchema.safeParse({
     name: formData.get("name"),
-    slug: formData.get("slug") ?? "",
+    landingSlug: formData.get("landingSlug") ?? "",
     sku: formData.get("sku") ?? "",
     description: formData.get("description") ?? "",
     academyId: formData.get("academyId"),
     categoryId: formData.get("categoryId") ?? "",
     visible: formData.get("visible") === "on",
-    featured: formData.get("featured") === "on",
   });
 }
 
@@ -104,11 +91,16 @@ export async function createProduct(
   if (!parsed.success) {
     return { fieldErrors: z.flattenError(parsed.error).fieldErrors };
   }
-  const { slug: rawSlug, ...rest } = parsed.data;
-  const slug = rawSlug || slugify(parsed.data.name);
-
-  const clash = await db.product.findUnique({ where: { slug }, select: { id: true } });
-  if (clash) return { error: `Ya existe un producto con el slug "${slug}".` };
+  if (!(await isProductLandingSlug(parsed.data.landingSlug))) {
+    return { fieldErrors: { landingSlug: ["Selecciona una landing válida."] } };
+  }
+  const landingClash = await db.product.findUnique({
+    where: { landingSlug: parsed.data.landingSlug },
+    select: { id: true },
+  });
+  if (landingClash) {
+    return { fieldErrors: { landingSlug: ["Esta landing ya está asignada."] } };
+  }
 
   const enabledIds = await getEnabledCurrencyIds();
   const result = parsePrices(formData, enabledIds);
@@ -116,14 +108,20 @@ export async function createProduct(
 
   const images = parseImages(formData);
 
-  await db.product.create({
-    data: {
-      ...rest,
-      slug,
-      prices: { create: result.prices },
-      images: { create: images },
-    },
-  });
+  try {
+    await db.product.create({
+      data: {
+        ...parsed.data,
+        prices: { create: result.prices },
+        images: { create: images },
+      },
+    });
+  } catch (error) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
+      return { fieldErrors: { landingSlug: ["Esta landing ya está asignada."] } };
+    }
+    throw error;
+  }
 
   revalidatePath("/admin/products");
   revalidateTag(CATALOG_TAGS.products, "max");
@@ -143,14 +141,16 @@ export async function updateProduct(
   if (!parsed.success) {
     return { fieldErrors: z.flattenError(parsed.error).fieldErrors };
   }
-  const { slug: rawSlug, ...rest } = parsed.data;
-  const slug = rawSlug || slugify(parsed.data.name);
-
-  const clash = await db.product.findFirst({
-    where: { slug, NOT: { id } },
+  if (!(await isProductLandingSlug(parsed.data.landingSlug))) {
+    return { fieldErrors: { landingSlug: ["Selecciona una landing válida."] } };
+  }
+  const landingClash = await db.product.findFirst({
+    where: { landingSlug: parsed.data.landingSlug, NOT: { id } },
     select: { id: true },
   });
-  if (clash) return { error: `Ya existe otro producto con el slug "${slug}".` };
+  if (landingClash) {
+    return { fieldErrors: { landingSlug: ["Esta landing ya está asignada."] } };
+  }
 
   const enabledIds = await getEnabledCurrencyIds();
   const result = parsePrices(formData, enabledIds);
@@ -159,17 +159,24 @@ export async function updateProduct(
   const images = parseImages(formData);
 
   // Replace prices and images atomically: both sets always reflect the form.
-  await db.$transaction([
-    db.product.update({ where: { id }, data: { ...rest, slug } }),
-    db.productPrice.deleteMany({ where: { productId: id } }),
-    db.productPrice.createMany({
-      data: result.prices.map((p) => ({ ...p, productId: id })),
-    }),
-    db.productImage.deleteMany({ where: { productId: id } }),
-    db.productImage.createMany({
-      data: images.map((img) => ({ ...img, productId: id })),
-    }),
-  ]);
+  try {
+    await db.$transaction([
+      db.product.update({ where: { id }, data: parsed.data }),
+      db.productPrice.deleteMany({ where: { productId: id } }),
+      db.productPrice.createMany({
+        data: result.prices.map((p) => ({ ...p, productId: id })),
+      }),
+      db.productImage.deleteMany({ where: { productId: id } }),
+      db.productImage.createMany({
+        data: images.map((img) => ({ ...img, productId: id })),
+      }),
+    ]);
+  } catch (error) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
+      return { fieldErrors: { landingSlug: ["Esta landing ya está asignada."] } };
+    }
+    throw error;
+  }
 
   revalidatePath("/admin/products");
   revalidatePath(`/admin/products/${id}`);

@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
+import { productLandingPath } from "@/lib/product-landings";
 
 const navegacion = [
   { label: "Nuestros cursos", href: "/products" },
@@ -15,21 +16,21 @@ const navegacion = [
 
 const grupos = [
   { title: "Trading", courses: [
-    { prefix: "Curso de ", name: "Trading avanzado" },
-    { prefix: "Curso de ", name: "Trading algorítmico con IA" },
+    { prefix: "Curso de ", name: "Trading avanzado", landingSlug: "trading" },
+    { prefix: "Curso de ", name: "Trading algorítmico con IA", landingSlug: "trading-algoritmico" },
   ] },
-  { title: "Criptomonedas", courses: [{ prefix: "Curso de ", name: "Criptomonedas avanzado" }] },
-  { title: "Acciones", courses: [{ prefix: "Curso de ", name: "Acciones avanzado" }] },
+  { title: "Criptomonedas", courses: [{ prefix: "Curso de ", name: "Criptomonedas avanzado", landingSlug: "cripto" }] },
+  { title: "Acciones", courses: [{ prefix: "Curso de ", name: "Acciones avanzado", landingSlug: "acciones" }] },
   { title: "Inversión y finanzas", courses: [
-    { prefix: "Curso de ", name: "Finanzas personales" },
-    { prefix: "Curso de ", name: "Inversor Inteligente" },
+    { prefix: "Curso de ", name: "Finanzas personales", landingSlug: "finanzas-personales" },
+    { prefix: "Curso de ", name: "Inversor Inteligente", landingSlug: "inversor-inteligente" },
   ] },
   { title: "Certificaciones EFPA", courses: [
-    { prefix: "", name: "European Financial Advisor (EFA)" },
-    { prefix: "", name: "European Investment Practitioner (EIP)" },
-    { prefix: "", name: "European Investment Assistant (EIA)" },
+    { prefix: "", name: "European Financial Advisor (EFA)", landingSlug: "efa" },
+    { prefix: "", name: "European Investment Practitioner (EIP)", landingSlug: "eip" },
+    { prefix: "", name: "European Investment Assistant (EIA)", landingSlug: "eia" },
   ] },
-];
+] satisfies { title: string; courses: { prefix: string; name: string; landingSlug: string }[] }[];
 
 const clasesGratis = [
   {
@@ -106,24 +107,6 @@ function IconoClase({ nombre }: { nombre: IconoClaseGratis }) {
   );
 }
 
-// El catálogo admite búsquedas por nombre; sustituir por URLs directas cuando
-// estén publicados todos los productos de esta navegación.
-function catalogo(nombre: string) {
-  if (nombre === "Pack Inversión Premium") return "/products/pack-premium";
-  if (nombre === "Trading avanzado") return "/products/trading";
-  if (nombre === "Trading algorítmico con IA") {
-    return "/products/trading-algoritmico";
-  }
-  if (nombre === "Criptomonedas avanzado") return "/products/cripto";
-  if (nombre === "Acciones avanzado") return "/products/acciones";
-  if (nombre === "Finanzas personales") return "/products/finanzas-personales";
-  if (nombre === "Inversor Inteligente") return "/products/inversor-inteligente";
-  if (nombre === "European Financial Advisor (EFA)") return "/products/efa";
-  if (nombre === "European Investment Practitioner (EIP)") return "/products/eip";
-  if (nombre === "European Investment Assistant (EIA)") return "/products/eia";
-  return `/products?q=${encodeURIComponent(nombre)}`;
-}
-
 function Cursos({ close, mobile = false }: { close: () => void; mobile?: boolean }) {
   return (
     <div className={cn("grid xl:grid-cols-[407px_334.37px]", mobile ? "gap-1" : "gap-3")}>
@@ -134,7 +117,7 @@ function Cursos({ close, mobile = false }: { close: () => void; mobile?: boolean
             <ul className={mobile ? "space-y-0" : "mt-1 space-y-1"}>
               {grupo.courses.map((course) => (
                 <li key={course.name}>
-                  <Link href={catalogo(course.name)} onClick={close} className={cn("block rounded-sm font-raleway text-sm text-[#f7f7f7] transition-colors hover:text-[#e1ff3b] focus-visible:outline-2 focus-visible:outline-[#e1ff3b]", mobile ? "leading-[18px]" : "leading-[22px]")}>
+                  <Link href={productLandingPath(course.landingSlug)} onClick={close} className={cn("block rounded-sm font-raleway text-sm text-[#f7f7f7] transition-colors hover:text-[#e1ff3b] focus-visible:outline-2 focus-visible:outline-[#e1ff3b]", mobile ? "leading-[18px]" : "leading-[22px]")}>
                     {course.prefix}{course.prefix ? <strong className="font-bold">{course.name}</strong> : course.name}
                   </Link>
                 </li>
@@ -143,7 +126,7 @@ function Cursos({ close, mobile = false }: { close: () => void; mobile?: boolean
           </section>
         ))}
       </div>
-      <Link href="/products/pack-premium" onClick={close} className={cn("relative block overflow-hidden rounded-2xl bg-black outline-offset-4 focus-visible:outline-2 focus-visible:outline-[#e1ff3b]", mobile ? "aspect-[684/560]" : "aspect-[376/486]")} aria-label="Ver formación Pack Inversión Premium: Trading, Criptomonedas, Acciones y Trading con IA">
+      <Link href={productLandingPath("pack-premium")} onClick={close} className={cn("relative block overflow-hidden rounded-2xl bg-black outline-offset-4 focus-visible:outline-2 focus-visible:outline-[#e1ff3b]", mobile ? "aspect-[684/560]" : "aspect-[376/486]")} aria-label="Ver formación Pack Inversión Premium: Trading, Criptomonedas, Acciones y Trading con IA">
         {/* Asset provisional de la captura del usuario, recortado por CSS.
             Reemplazar por la exportación original de Curso card (7622:5910). */}
         <span aria-hidden="true" className={cn("absolute inset-0", mobile ? "bg-[url('/home/menu/referencia-cursos-mobile.png')] bg-[length:111.69591%_266.25%] bg-[position:55%_94.09237%]" : "bg-[url('/home/menu/referencia-cursos.png')] bg-[length:316.48936%_143.41564%] bg-[position:71.99017%_62.55924%]")} />

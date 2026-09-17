@@ -51,7 +51,7 @@ export const getVisibleCategories = unstable_cache(
 );
 
 export type CatalogProduct = {
-  slug: string;
+  landingSlug: string;
   name: string;
   imageUrl: string | null;
   amount: number | null;
@@ -80,9 +80,9 @@ export const getVisibleProducts = unstable_cache(
     const [rows, total] = await db.$transaction([
       db.product.findMany({
         where,
-        orderBy: [{ featured: "desc" }, { updatedAt: "desc" }],
+        orderBy: { updatedAt: "desc" },
         select: {
-          slug: true,
+          landingSlug: true,
           name: true,
           images: { orderBy: { position: "asc" }, take: 1, select: { url: true } },
           prices: opts.currencyId
@@ -96,7 +96,7 @@ export const getVisibleProducts = unstable_cache(
     ]);
 
     const products = rows.map((p) => ({
-      slug: p.slug,
+      landingSlug: p.landingSlug,
       name: p.name,
       imageUrl: p.images[0]?.url ?? null,
       amount: p.prices?.[0] ? Number(p.prices[0].amount) : null,
@@ -107,45 +107,13 @@ export const getVisibleProducts = unstable_cache(
   { tags: [CATALOG_TAGS.products] }
 );
 
-/** Single visible product by slug, priced in `currencyId` (cached). */
-export const getProductDetail = unstable_cache(
-  async (slug: string, currencyId: string | null) => {
-    const product = await db.product.findUnique({
-      where: { slug },
-      select: {
-        id: true,
-        name: true,
-        description: true,
-        visible: true,
-        category: { select: { name: true, slug: true, visible: true } },
-        images: { orderBy: { position: "asc" }, select: { url: true, alt: true } },
-        prices: currencyId
-          ? { where: { currencyId }, select: { amount: true } }
-          : false,
-      },
-    });
-
-    if (!product || !product.visible) return null;
-    return {
-      id: product.id,
-      name: product.name,
-      description: product.description,
-      category: product.category,
-      images: product.images,
-      amount: product.prices?.[0] ? Number(product.prices[0].amount) : null,
-    };
-  },
-  ["catalog-product-detail"],
-  { tags: [CATALOG_TAGS.products] }
-);
-
 /** Slugs of visible products, for sitemap (cached). */
-export const getVisibleProductSlugs = unstable_cache(
+export const getVisibleProductLandings = unstable_cache(
   async () =>
     db.product.findMany({
       where: { visible: true },
-      select: { slug: true, updatedAt: true },
+      select: { landingSlug: true, updatedAt: true },
     }),
-  ["catalog-product-slugs"],
+  ["catalog-product-landings"],
   { tags: [CATALOG_TAGS.products] }
 );

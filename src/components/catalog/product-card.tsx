@@ -3,7 +3,7 @@ import Link from "next/link";
 import { PriceTag } from "./price-tag";
 
 export type ProductCardData = {
-  slug: string;
+  landingSlug: string;
   name: string;
   imageUrl: string | null;
   amount: number | null;
@@ -13,7 +13,7 @@ export type ProductCardData = {
 export function ProductCard({ product }: { product: ProductCardData }) {
   return (
     <Link
-      href={`/products/${product.slug}`}
+      href={`/products/${product.landingSlug}`}
       className="group flex flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white transition-all duration-300 hover:-translate-y-1 hover:border-gray-300 hover:shadow-lg focus-visible:-translate-y-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
     >
       <div className="relative aspect-square overflow-hidden bg-gray-50">

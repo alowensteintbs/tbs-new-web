@@ -1,13 +1,18 @@
 import type { Metadata } from "next";
 import { ProductForm } from "../_components/product-form";
-import { getEnabledCurrencies, getCategoryOptions } from "../_lib/queries";
+import {
+  getAvailableLandingOptions,
+  getCategoryOptions,
+  getEnabledCurrencies,
+} from "../_lib/queries";
 
 export const metadata: Metadata = { title: "Nuevo producto" };
 
 export default async function NewProductPage() {
-  const [currencies, categories] = await Promise.all([
+  const [currencies, categories, landings] = await Promise.all([
     getEnabledCurrencies(),
     getCategoryOptions(),
+    getAvailableLandingOptions(),
   ]);
 
   return (
@@ -18,7 +23,11 @@ export default async function NewProductPage() {
           Carga el nombre, la descripción y los precios por moneda.
         </p>
       </div>
-      <ProductForm currencies={currencies} categories={categories} />
+      <ProductForm
+        currencies={currencies}
+        categories={categories}
+        landings={landings}
+      />
     </div>
   );
 }

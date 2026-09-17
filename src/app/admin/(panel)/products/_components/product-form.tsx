@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useRef } from "react";
+import { useActionState } from "react";
 import { Field, inputCls } from "@/app/admin/_components/form-field";
 import {
   createProduct,
@@ -21,16 +21,20 @@ export type CategoryOption = {
   name: string;
 };
 
+export type LandingOption = {
+  slug: string;
+  label: string;
+};
+
 type InitialValues = {
   id: string;
   name: string;
-  slug: string;
+  landingSlug: string;
   sku: string | null;
   description: string;
   academyId: string;
   categoryId: string | null;
   visible: boolean;
-  featured: boolean;
   prices: Record<string, string>; // currencyId -> amount
   images: ProductImageValue[];
 };
@@ -38,10 +42,12 @@ type InitialValues = {
 export function ProductForm({
   currencies,
   categories,
+  landings,
   initialValues,
 }: {
   currencies: EnabledCurrency[];
   categories: CategoryOption[];
+  landings: LandingOption[];
   initialValues?: InitialValues;
 }) {
   const isEditing = !!initialValues;
@@ -50,18 +56,6 @@ export function ProductForm({
     action,
     {}
   );
-  const slugRef = useRef<HTMLInputElement>(null);
-
-  function handleNameChange(e: React.ChangeEvent<HTMLInputElement>) {
-    if (isEditing) return;
-    if (slugRef.current && !slugRef.current.dataset.touched) {
-      slugRef.current.value = e.target.value
-        .toLowerCase()
-        .replace(/\s+/g, "-")
-        .replace(/[^a-z0-9-]/g, "");
-    }
-  }
-
   return (
     <form
       action={formAction}
@@ -76,20 +70,28 @@ export function ProductForm({
           defaultValue={initialValues?.name}
           placeholder="Nombre del producto"
           errors={state.fieldErrors?.name}
-          onChange={handleNameChange}
           required
         />
-        <Field label="Slug" name="slug" errors={state.fieldErrors?.slug}>
-          <input
-            ref={slugRef}
-            name="slug"
-            defaultValue={initialValues?.slug}
-            placeholder="se genera del nombre si lo dejas vacío"
+        <Field
+          label="Landing asociada"
+          name="landingSlug"
+          errors={state.fieldErrors?.landingSlug}
+        >
+          <select
+            name="landingSlug"
+            defaultValue={initialValues?.landingSlug ?? ""}
             className={inputCls}
-            onInput={() => {
-              if (slugRef.current) slugRef.current.dataset.touched = "1";
-            }}
-          />
+            required
+          >
+            <option value="" disabled>
+              Selecciona una landing
+            </option>
+            {landings.map((landing) => (
+              <option key={landing.slug} value={landing.slug}>
+                {landing.label}
+              </option>
+            ))}
+          </select>
         </Field>
       </div>
 
@@ -174,26 +176,15 @@ export function ProductForm({
         )}
       </fieldset>
 
-      <div className="flex flex-wrap gap-6">
-        <label className="flex items-center gap-2 text-sm text-gray-700">
-          <input
-            name="visible"
-            type="checkbox"
-            defaultChecked={initialValues?.visible ?? true}
-            className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-          />
-          Visible en el catálogo
-        </label>
-        <label className="flex items-center gap-2 text-sm text-gray-700">
-          <input
-            name="featured"
-            type="checkbox"
-            defaultChecked={initialValues?.featured ?? false}
-            className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-          />
-          Destacado
-        </label>
-      </div>
+      <label className="flex items-center gap-2 text-sm text-gray-700">
+        <input
+          name="visible"
+          type="checkbox"
+          defaultChecked={initialValues?.visible ?? true}
+          className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+        />
+        Disponible para la venta
+      </label>
 
       {state.error && <p className="text-sm text-red-600">{state.error}</p>}
 
