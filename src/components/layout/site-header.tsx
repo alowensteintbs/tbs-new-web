@@ -5,7 +5,13 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 
-export type SiteNavigationItem = { label: string; href?: string };
+const navegacion = [
+  { label: "Nuestros cursos", href: "/products" },
+  { label: "Clases Gratis", href: "/clases-gratis" },
+  { label: "Guías Gratis", href: "/guias-gratis" },
+  { label: "Plataforma IA", href: "/plataforma-ia" },
+  { label: "Blog", href: "/blog" },
+];
 
 const grupos = [
   { title: "Trading", courses: [
@@ -185,7 +191,7 @@ function ClasesGratis({ close, mobile = false }: { close: () => void; mobile?: b
   );
 }
 
-export function SiteHeader({ items, className }: { items: SiteNavigationItem[]; className?: string }) {
+export function SiteHeader({ className }: { className?: string }) {
   const [coursesOpen, setCoursesOpen] = useState(false);
   const [freeClassesOpen, setFreeClassesOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -241,14 +247,6 @@ export function SiteHeader({ items, className }: { items: SiteNavigationItem[]; 
     return () => document.removeEventListener("keydown", onKeyDown);
   }, [coursesOpen, freeClassesOpen, mobileOpen]);
 
-  function itemHref(item: SiteNavigationItem) {
-    if (item.href) return item.href;
-    if (item.label === "Clases Gratis") return "/clases-gratis";
-    if (item.label === "Guías Gratis") return "/guias-gratis";
-    if (item.label === "Plataforma IA") return "/plataforma-ia";
-    return "/products";
-  }
-
   return (
     <>
       {(coursesOpen || freeClassesOpen || mobileOpen) && <div className="fixed inset-0 z-40 bg-black/60" aria-hidden="true" onClick={close} />}
@@ -262,7 +260,7 @@ export function SiteHeader({ items, className }: { items: SiteNavigationItem[]; 
             <Image src="/home/logo-traders.svg" alt="Traders Business School" width={107} height={28} priority />
           </Link>
           <nav className="hidden items-center gap-3 xl:flex" aria-label="Navegación principal">
-            {items.map((item) => item.label === "Nuestros cursos" ? (
+            {navegacion.map((item) => item.label === "Nuestros cursos" ? (
               <button key={item.label} ref={coursesButtonRef} type="button" aria-expanded={coursesOpen} aria-controls="menu-cursos" onMouseEnter={() => { setCoursesOpen(true); setFreeClassesOpen(false); }} onClick={() => { setCoursesOpen(!coursesOpen); setFreeClassesOpen(false); }}
                 className={cn("inline-flex h-[30px] cursor-pointer items-center rounded-full px-5 font-space text-sm font-medium hover:text-[#e1ff3b] focus-visible:outline-2 focus-visible:outline-[#e1ff3b]", coursesOpen ? "text-[#e1ff3b]" : "text-[#f7f7f7]")}>
                 {item.label}
@@ -284,7 +282,7 @@ export function SiteHeader({ items, className }: { items: SiteNavigationItem[]; 
                 {item.label}
               </Link>
             ) : (
-              <Link key={item.label} href={itemHref(item)} onClick={close} className="inline-flex h-[30px] items-center rounded-full px-5 font-space text-sm font-medium text-[#f7f7f7] hover:text-[#e1ff3b]">{item.label}</Link>
+              <Link key={item.label} href={item.href} onClick={close} className="inline-flex h-[30px] items-center rounded-full px-5 font-space text-sm font-medium text-[#f7f7f7] hover:text-[#e1ff3b]">{item.label}</Link>
             ))}
           </nav>
           <a href="https://academia.tradersbusinessschool.com" target="_blank" rel="noopener noreferrer" onClick={close} className="hidden h-[30px] items-center rounded-full border-2 border-[#f7f7f7] px-3 font-raleway text-base font-extrabold leading-4 text-[#f7f7f7] xl:inline-flex">Aula Virtual</a>

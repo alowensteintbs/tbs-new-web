@@ -1,23 +1,13 @@
 import { z } from "zod";
 
-/**
- * Validated environment variables. Importing this module throws at boot if a
- * required variable is missing or malformed, so the rest of the app can read
- * `env.*` without re-checking. Add new server vars here as features land.
- */
+/** Public configuration shared by static and dynamic routes. */
 const schema = z.object({
-  // Auth
-  SESSION_SECRET: z.string().min(1, "SESSION_SECRET is required"),
-  // Database (MariaDB/MySQL connection string consumed by the Prisma adapter)
-  DATABASE_URL: z.string().url("DATABASE_URL must be a valid connection URL"),
-  // Figma → IA page generator
-  FIGMA_TOKEN: z.string().min(1, "FIGMA_TOKEN is required"),
-  ANTHROPIC_API_KEY: z.string().min(1, "ANTHROPIC_API_KEY is required"),
-  // Public site base URL (used for canonical URLs, sitemap, OG). Optional in dev.
   SITE_URL: z.string().url().optional(),
-  // Google Tag Manager container id (fallback when no SiteSetting is stored)
   NEXT_PUBLIC_GTM_ID: z.string().optional(),
-  // Product images are stored on local disk under public/uploads (see storage.ts).
+  NEXT_PUBLIC_GA_ID: z.string().optional(),
+  NEXT_PUBLIC_HUBSPOT_ID: z.string().optional(),
+  NEXT_PUBLIC_FACEBOOK_PIXEL_ID: z.string().optional(),
+  NEXT_PUBLIC_SITE_NAME: z.string().optional(),
   NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
 });
 
@@ -34,7 +24,15 @@ function parseEnv() {
 
 export const env = parseEnv();
 
+/** Validate private configuration only in the feature that actually needs it. */
+export function requireEnv(name: "DATABASE_URL" | "SESSION_SECRET"): string {
+  const value = process.env[name];
+  if (!value) throw new Error(`${name} is not set`);
+  return value;
+}
+
 /** Public site base URL with a sensible local fallback. No trailing slash. */
 export function getSiteUrl(): string {
-  return (env.SITE_URL ?? "http://localhost:3000").replace(/\/$/, "");
+  const vercelUrl = process.env.VERCEL_PROJECT_PRODUCTION_URL;
+  return (env.SITE_URL ?? (vercelUrl ? `https://${vercelUrl}` : "http://localhost:3000")).replace(/\/$/, "");
 }

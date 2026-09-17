@@ -1,0 +1,8 @@
+.env
+.env.*
+.next
+node_modules
+.git
+.figma-cache
+public/generated
+public/uploads

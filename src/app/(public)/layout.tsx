@@ -1,22 +1,18 @@
 import Script from "next/script";
 import { GoogleTagManager, GoogleAnalytics } from "@next/third-parties/google";
 import { env, getSiteUrl } from "@/lib/env";
-import { getSettings } from "@/lib/settings";
 import { JsonLd, organizationSchema } from "@/components/seo/json-ld";
 
-export default async function PublicLayout({
+export default function PublicLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const settings = await getSettings();
-
-  // Tracking ids: a SiteSetting takes precedence, the env var is the fallback.
-  const gtmId = settings.gtm_id || env.NEXT_PUBLIC_GTM_ID;
-  const gaId = settings.ga_id;
-  const hubspotId = settings.hubspot_id;
-  const pixelId = settings.facebook_pixel_id;
-  const siteName = settings.site_name || "TBS";
+  const gtmId = env.NEXT_PUBLIC_GTM_ID;
+  const gaId = env.NEXT_PUBLIC_GA_ID;
+  const hubspotId = env.NEXT_PUBLIC_HUBSPOT_ID;
+  const pixelId = env.NEXT_PUBLIC_FACEBOOK_PIXEL_ID;
+  const siteName = env.NEXT_PUBLIC_SITE_NAME || "TBS";
 
   return (
     <>

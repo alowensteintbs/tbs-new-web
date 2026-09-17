@@ -3,7 +3,7 @@ import { SocialProof } from "@/components/home/social-proof";
 import { EcosystemSection } from "@/components/home/ecosystem-section";
 import { PartnersStrip } from "@/components/home/video-showcase";
 import { SiteHeader } from "@/components/layout/site-header";
-import { navegacionClasesGratis, type ClaseGratis } from "./contenido";
+import { type ClaseGratis } from "./contenido";
 import { FormularioRegistro } from "./formulario-registro";
 
 function Etiqueta({ children, blue = false }: { children: React.ReactNode; blue?: boolean }) {
@@ -148,7 +148,7 @@ function IconoProfesor({ src }: { src: string }) {
 export function LandingClase({ clase }: { clase: ClaseGratis }) {
   return (
     <div className="tbs-grid-dark min-h-screen bg-[#121214]">
-      <SiteHeader items={navegacionClasesGratis} />
+      <SiteHeader />
       <main>
         <HeroClase clase={clase} />
         <ContenidoClase clase={clase} />

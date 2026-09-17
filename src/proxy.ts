@@ -59,7 +59,9 @@ export async function proxy(request: NextRequest) {
   const isAdmin = pathname.startsWith("/admin");
 
   // 1) Redirects (public + admin), checked before anything else.
-  const redirects = await getRedirects(request);
+  const redirects = process.env.DATABASE_URL
+    ? await getRedirects(request)
+    : new Map<string, { to: string; statusCode: number }>();
   const match = redirects.get(pathname);
   if (match) {
     const dest = match.to.startsWith("http")

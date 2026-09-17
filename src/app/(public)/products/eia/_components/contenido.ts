@@ -1,11 +1,3 @@
-import type { SiteNavigationItem } from "@/components/layout/site-header";
-
-export const navegacionEia: SiteNavigationItem[] = [
-  { label: "Nuestros cursos", href: "/products" },
-  { label: "Clases Gratis", href: "/clases-gratis" },
-  { label: "Sobre nosotros", href: "/#sobre-nosotros" },
-];
-
 export const cursoEia = {
   nombre: "European Investment Assistant",
   mensual: "73€",

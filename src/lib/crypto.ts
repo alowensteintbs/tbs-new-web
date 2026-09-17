@@ -4,7 +4,7 @@ import {
   randomBytes,
   scryptSync,
 } from "node:crypto";
-import { env } from "@/lib/env";
+import { requireEnv } from "@/lib/env";
 
 /**
  * Symmetric encryption for secrets at rest (payment gateway credentials).
@@ -22,7 +22,7 @@ const SALT_LEN = 16;
 const IV_LEN = 12;
 
 function deriveKey(salt: Buffer): Buffer {
-  return scryptSync(env.SESSION_SECRET, salt, KEY_LEN);
+  return scryptSync(requireEnv("SESSION_SECRET"), salt, KEY_LEN);
 }
 
 export function encrypt(plaintext: string): string {

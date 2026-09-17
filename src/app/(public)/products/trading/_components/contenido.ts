@@ -1,13 +1,3 @@
-import type { SiteNavigationItem } from "@/components/layout/site-header";
-
-export const navegacionTrading: SiteNavigationItem[] = [
-  { label: "Nuestros cursos", href: "/products" },
-  { label: "Clases Gratis", href: "/clases-gratis" },
-  { label: "Guías Gratis", href: "/guias-gratis" },
-  { label: "Plataforma IA", href: "/plataforma-ia" },
-  { label: "Blog", href: "/products" },
-];
-
 export const cursoTrading = {
   nombre: "Curso de Trading",
   mensual: "73€",

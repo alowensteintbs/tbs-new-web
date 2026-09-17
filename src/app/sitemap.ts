@@ -1,18 +1,25 @@
 import type { MetadataRoute } from "next";
-import { db } from "@/lib/db";
 import { getSiteUrl } from "@/lib/env";
-import { getVisibleProductSlugs } from "@/lib/catalog";
 import { rutasClasesGratis } from "@/lib/clases-gratis";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const base = getSiteUrl();
-  const [pages, products] = await Promise.all([
-    db.page.findMany({
-      where: { status: "PUBLISHED", noindex: false },
-      select: { slug: true, updatedAt: true },
-    }),
-    getVisibleProductSlugs(),
-  ]);
+  let pages: { slug: string; updatedAt: Date }[] = [];
+  let products: { slug: string; updatedAt: Date }[] = [];
+
+  if (process.env.DATABASE_URL) {
+    const [{ db }, { getVisibleProductSlugs }] = await Promise.all([
+      import("@/lib/db"),
+      import("@/lib/catalog"),
+    ]);
+    [pages, products] = await Promise.all([
+      db.page.findMany({
+        where: { status: "PUBLISHED", noindex: false },
+        select: { slug: true, updatedAt: true },
+      }),
+      getVisibleProductSlugs(),
+    ]);
+  }
 
   return [
     {

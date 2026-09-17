@@ -5,21 +5,13 @@ import { LlamadaSection } from "@/app/(public)/products/pack-premium/_components
 import { AppFooterSection } from "@/components/home/app-footer-section";
 import { FreeCoursesSection } from "@/components/home/free-courses-section";
 import { PartnersStrip } from "@/components/home/video-showcase";
-import { SiteHeader, type SiteNavigationItem } from "@/components/layout/site-header";
+import { SiteHeader } from "@/components/layout/site-header";
 
 export const metadata: Metadata = {
   title: "Guías gratis de inversión y finanzas",
   description:
     "Descarga gratis guías prácticas para empezar a invertir, entender los mercados y mejorar tus finanzas.",
 };
-
-const navegacion: SiteNavigationItem[] = [
-  { label: "Nuestros cursos", href: "/products" },
-  { label: "Clases Gratis", href: "/clases-gratis" },
-  { label: "Guías Gratis", href: "/guias-gratis" },
-  { label: "Plataforma IA", href: "/plataforma-ia" },
-  { label: "Blog", href: "/products" },
-];
 
 const beneficios = [
   ["Dar tus primeros", "en el mundo de la inversión."],
@@ -142,7 +134,7 @@ export default function GuiasGratisPage() {
 
   return (
     <div className="tbs-grid-dark min-h-screen overflow-clip bg-[#121214] font-raleway text-white">
-      <SiteHeader items={navegacion} />
+      <SiteHeader />
       <main>
         <HeroGuias />
         <CatalogoGuias />

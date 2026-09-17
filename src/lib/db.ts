@@ -1,9 +1,9 @@
 import { PrismaMariaDb } from "@prisma/adapter-mariadb";
 import { PrismaClient } from "@/generated/prisma/client";
-import { env } from "@/lib/env";
+import { requireEnv } from "@/lib/env";
 
 function createPrismaClient() {
-  const url = new URL(env.DATABASE_URL);
+  const url = new URL(requireEnv("DATABASE_URL"));
   const adapter = new PrismaMariaDb({
     host: url.hostname,
     port: Number(url.port) || 3306,
@@ -14,8 +14,25 @@ function createPrismaClient() {
   return new PrismaClient({ adapter });
 }
 
-const globalForPrisma = globalThis as unknown as { prisma: PrismaClient };
+const globalForPrisma = globalThis as unknown as { prisma?: PrismaClient };
 
-export const db = globalForPrisma.prisma ?? createPrismaClient();
+function getPrismaClient(): PrismaClient {
+  if (globalForPrisma.prisma) return globalForPrisma.prisma;
 
-if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = db;
+  const client = createPrismaClient();
+  if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = client;
+  return client;
+}
+
+/**
+ * Delay adapter creation until the first real database operation. Importing a
+ * route that references `db` therefore does not require DATABASE_URL at build
+ * time, while database-backed routes still fail clearly when invoked without it.
+ */
+export const db = new Proxy({} as PrismaClient, {
+  get(_target, property) {
+    const client = getPrismaClient();
+    const value = Reflect.get(client, property, client);
+    return typeof value === "function" ? value.bind(client) : value;
+  },
+});

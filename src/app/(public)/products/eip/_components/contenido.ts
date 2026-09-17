@@ -1,11 +1,3 @@
-import type { SiteNavigationItem } from "@/components/layout/site-header";
-
-export const navegacionEip: SiteNavigationItem[] = [
-  { label: "Nuestros cursos", href: "/products" },
-  { label: "Clases Gratis", href: "/clases-gratis" },
-  { label: "Sobre nosotros", href: "/#sobre-nosotros" },
-];
-
 export const cursoEip = {
   nombre: "European Investment Practitioner",
   mensual: "73€",

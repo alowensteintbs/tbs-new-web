@@ -4,7 +4,6 @@ import { SiteHeader } from "@/components/layout/site-header";
 import { ColaboracionesSection } from "../../pack-premium/_components/colaboraciones-section";
 import { LlamadaSection } from "../../pack-premium/_components/inscripcion-section";
 import packStyles from "../../pack-premium/_components/pack-premium.module.css";
-import { navegacionFinanzas } from "./contenido";
 import {
   BarraFinanzas,
   ClaseGratisFinanzas,
@@ -21,7 +20,7 @@ export function FinanzasPersonalesPage() {
 
   return (
     <div className={`${packStyles.pagina} ${styles.pagina}`}>
-      <SiteHeader items={navegacionFinanzas} />
+      <SiteHeader />
       <main>
         <HeroFinanzas />
         <ProgramaFinanzas />

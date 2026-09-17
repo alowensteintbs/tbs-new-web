@@ -6,21 +6,13 @@ import { AppFooterSection } from "@/components/home/app-footer-section";
 import { EcosystemSection } from "@/components/home/ecosystem-section";
 import { MentorsSection } from "@/components/home/mentors-section-server";
 import { SectionBadge } from "@/components/home/section-badge";
-import { SiteHeader, type SiteNavigationItem } from "@/components/layout/site-header";
+import { SiteHeader } from "@/components/layout/site-header";
 
 export const metadata: Metadata = {
   title: "Plataforma IA y aula virtual 360",
   description:
     "Descubre el aula virtual y el asistente de inteligencia artificial de Traders Business School.",
 };
-
-const navegacion: SiteNavigationItem[] = [
-  { label: "Nuestros cursos", href: "/products" },
-  { label: "Clases Gratis", href: "/clases-gratis" },
-  { label: "Guías Gratis", href: "/guias-gratis" },
-  { label: "Plataforma IA", href: "/plataforma-ia" },
-  { label: "Blog", href: "/products" },
-];
 
 function HeroPlataforma() {
   return (
@@ -122,7 +114,7 @@ function MetodoPlataformaSection() {
 export default function PlataformaIAPage() {
   return (
     <main className="plataforma-page min-w-0 overflow-clip bg-[#121214]">
-      <SiteHeader items={navegacion} />
+      <SiteHeader />
       <HeroPlataforma />
       <div className="tbs-grid-dark plataforma-producto">
         <AulaVirtualSection />

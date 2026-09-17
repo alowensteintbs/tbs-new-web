@@ -5,7 +5,6 @@ import { ColaboracionesSection } from "../../pack-premium/_components/colaboraci
 import { LlamadaSection } from "../../pack-premium/_components/inscripcion-section";
 import packStyles from "../../pack-premium/_components/pack-premium.module.css";
 import { ClaseGratisTrading } from "../../trading/_components/trading-sections";
-import { navegacionTradingAlgoritmico } from "./contenido";
 import {
   BarraTradingAlgoritmico,
   HeroTradingAlgoritmico,
@@ -21,7 +20,7 @@ export function TradingAlgoritmicoPage() {
 
   return (
     <div className={`${packStyles.pagina} ${styles.pagina}`}>
-      <SiteHeader items={navegacionTradingAlgoritmico} />
+      <SiteHeader />
       <main>
         <HeroTradingAlgoritmico />
         <ProgramaTradingAlgoritmico />

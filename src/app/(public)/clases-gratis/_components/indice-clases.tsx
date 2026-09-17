@@ -5,7 +5,6 @@ import { EcosystemSection } from "@/components/home/ecosystem-section";
 import { FreeCoursesSection } from "@/components/home/free-courses-section";
 import { PartnersStrip } from "@/components/home/video-showcase";
 import { SiteHeader } from "@/components/layout/site-header";
-import { navegacionClasesGratis } from "./contenido";
 import { ProfesorMiguel } from "./landing-clase";
 
 export function IndiceClasesGratis() {
@@ -15,7 +14,7 @@ export function IndiceClasesGratis() {
 
   return (
     <div className="tbs-grid-dark min-h-screen bg-[#121214]">
-      <SiteHeader items={navegacionClasesGratis} />
+      <SiteHeader />
       <main>
         <section className="relative z-10 rounded-b-[36px] bg-white px-4 pb-[72px] pt-[132px] text-[#1f1e23] shadow-[0_24px_9px_rgba(0,0,0,.8)] xl:px-[120px] xl:pt-[200px]">
           <div className="mx-auto grid max-w-[1200px] items-center gap-10 xl:grid-cols-[1.05fr_.95fr] xl:gap-[72px]">
