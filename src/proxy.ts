@@ -18,6 +18,7 @@ function getSecret() {
 // on every matched request, so we cache the result in memory and refresh it at
 // most every REDIRECT_TTL_MS. Admin CRUD changes take effect within the TTL.
 const REDIRECT_TTL_MS = 60_000;
+const REDIRECT_FETCH_TIMEOUT_MS = 1_000;
 let redirectCache: Map<string, { to: string; statusCode: number }> | null = null;
 let redirectCacheAt = 0;
 
@@ -31,8 +32,11 @@ async function getRedirects(request: NextRequest) {
   try {
     const res = await fetch(new URL("/api/redirects", request.url), {
       cache: "no-store",
+      signal: AbortSignal.timeout(REDIRECT_FETCH_TIMEOUT_MS),
     });
+    if (!res.ok) throw new Error(`Redirect API responded ${res.status}`);
     const rows = (await res.json()) as RedirectRow[];
+    if (!Array.isArray(rows)) throw new Error("Invalid redirects response");
     redirectCache = new Map(
       rows.map((r) => [r.from, { to: r.to, statusCode: r.statusCode }])
     );
@@ -40,6 +44,7 @@ async function getRedirects(request: NextRequest) {
   } catch {
     // On failure, fall back to the last known cache (or empty) and retry later.
     redirectCache = redirectCache ?? new Map();
+    redirectCacheAt = now;
   }
   return redirectCache;
 }

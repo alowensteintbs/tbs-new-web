@@ -7,9 +7,15 @@ function createPrismaClient() {
   const adapter = new PrismaMariaDb({
     host: url.hostname,
     port: Number(url.port) || 3306,
-    user: url.username,
-    password: url.password,
-    database: url.pathname.replace("/", ""),
+    user: decodeURIComponent(url.username),
+    password: decodeURIComponent(url.password),
+    database: decodeURIComponent(url.pathname.replace(/^\//, "")),
+    // En serverless, un pool grande por instancia multiplica rápidamente las
+    // conexiones. Un timeout de conexión mayor evita reintentos agresivos
+    // mientras MySQL valida el host remoto durante el handshake inicial.
+    connectionLimit: 3,
+    connectTimeout: 5_000,
+    acquireTimeout: 8_000,
   });
   return new PrismaClient({ adapter });
 }
