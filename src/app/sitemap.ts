@@ -7,8 +7,15 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   let products: { landingSlug: string; updatedAt: Date }[] = [];
 
   if (process.env.DATABASE_URL) {
-    const { getVisibleProductLandings } = await import("@/lib/catalog");
-    products = await getVisibleProductLandings();
+    try {
+      const { getVisibleProductLandings } = await import("@/lib/catalog");
+      products = await getVisibleProductLandings();
+    } catch (error) {
+      // El sitemap estático no debe bloquear un deploy por una caída temporal
+      // de la base. Las rutas conocidas siguen publicándose y se reintenta en
+      // el próximo build.
+      console.error("No se pudieron cargar productos para el sitemap", error);
+    }
   }
 
   return [
