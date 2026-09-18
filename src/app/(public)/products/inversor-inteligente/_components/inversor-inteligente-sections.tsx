@@ -146,7 +146,7 @@ export function ClaseGratisInversor({ fechaInicial }: { fechaInicial: string }) 
             <h3>Aprende a invertir<br />desde cero</h3>
             <p>Aprende una forma estructurada de analizar oportunidades, gestionar el riesgo y empezar a invertir, incluso con poco.</p>
             <ClaseGratisDetalles />
-            <FormularioContacto claseGratis fechaInicial={fechaInicial} producto="Clase gratuita Aprende a invertir desde cero" />
+            <FormularioContacto claseGratis fechaInicial={fechaInicial} hubspotForm="inversor-inteligente" producto="Clase gratuita Aprende a invertir desde cero" />
           </article>
         </div>
       </div>

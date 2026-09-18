@@ -963,6 +963,13 @@
   min-width: 0;
   --form-focus-color: #ff0a54;
 }
+.campoTrampa {
+  position: absolute !important;
+  left: -10000px !important;
+  width: 1px !important;
+  height: 1px !important;
+  overflow: hidden !important;
+}
 .formularioAgenda {
   padding: 20px;
   background: #ff0a5433;

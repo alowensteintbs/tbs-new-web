@@ -2,7 +2,7 @@
 
 import { useEffect, useId, useState, useSyncExternalStore } from "react";
 import { HomeButton } from "@/components/home/home-button";
-import { pack } from "./contenido";
+import type { HubSpotFormKey } from "@/lib/hubspot-config";
 import styles from "./pack-premium.module.css";
 
 const diasSemana = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"];
@@ -39,6 +39,7 @@ export function FormularioContacto({
   claseGratis = false,
   ocultarDatosContacto = false,
   landingSlug,
+  hubspotForm,
 }: {
   agenda?: boolean;
   fechaInicial: string;
@@ -46,6 +47,7 @@ export function FormularioContacto({
   claseGratis?: boolean;
   ocultarDatosContacto?: boolean;
   landingSlug?: string;
+  hubspotForm?: HubSpotFormKey;
 }) {
   const id = useId();
   const hoy = useSyncExternalStore(observarFecha, fechaDeHoy, () => fechaInicial);
@@ -57,7 +59,7 @@ export function FormularioContacto({
   const [cargandoHorarios, setCargandoHorarios] = useState(agenda);
   const [actualizacion, setActualizacion] = useState(0);
   const [enviando, setEnviando] = useState(false);
-  const [reservaConfirmada, setReservaConfirmada] = useState(false);
+  const [envioConfirmado, setEnvioConfirmado] = useState(false);
   const [mostrarDatos, setMostrarDatos] = useState(!ocultarDatosContacto);
   const [mensaje, setMensaje] = useState("");
   const [prefijo, setPrefijo] = useState("+34");
@@ -105,15 +107,36 @@ export function FormularioContacto({
     const datos = new FormData(event.currentTarget);
 
     if (!agenda) {
-      const asunto = `Información · ${producto}`;
-      const cuerpo = [
-        `Nombre: ${datos.get("nombre")}`,
-        `Correo: ${datos.get("correo")}`,
-        `Teléfono: ${prefijo} ${datos.get("telefono")}`,
-        `Quiero recibir más información sobre ${producto}.`,
-      ].join("\n");
-      window.location.href = `mailto:${pack.contacto}?subject=${encodeURIComponent(asunto)}&body=${encodeURIComponent(cuerpo)}`;
-      setMensaje("Se ha preparado tu correo. Envíalo desde tu aplicación de email para que podamos responderte.");
+      if (!hubspotForm) {
+        setMensaje("No hay un formulario de HubSpot asociado a esta página.");
+        return;
+      }
+      setEnviando(true);
+      setMensaje("");
+      try {
+        const response = await fetch("/api/hubspot/submissions", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            form: hubspotForm,
+            name: datos.get("nombre"),
+            email: datos.get("correo"),
+            phone: normalizarTelefono(prefijo, datos.get("telefono")),
+            consent: datos.get("consentimiento") === "on",
+            website: datos.get("website"),
+          }),
+        });
+        const payload = (await response.json()) as { ok?: boolean; error?: string };
+        if (!response.ok || !payload.ok) {
+          throw new Error(payload.error ?? "No pudimos registrar tus datos.");
+        }
+        setEnvioConfirmado(true);
+        setMensaje(`¡Listo! Registramos tu interés en ${producto}. Revisa tu correo para continuar.`);
+      } catch (cause) {
+        setMensaje(cause instanceof Error ? cause.message : "No pudimos registrar tus datos en este momento.");
+      } finally {
+        setEnviando(false);
+      }
       return;
     }
 
@@ -151,7 +174,7 @@ export function FormularioContacto({
         if (payload.refreshAvailability) setActualizacion((value) => value + 1);
         throw new Error(payload.error ?? "No pudimos confirmar la llamada.");
       }
-      setReservaConfirmada(true);
+      setEnvioConfirmado(true);
       setMensaje(`Llamada reservada para el ${fecha.split("-").reverse().join("/")} a las ${etiquetaHora(slotSeleccionado)}. Recibirás la confirmación por correo.`);
     } catch (cause) {
       setMensaje(cause instanceof Error ? cause.message : "No pudimos confirmar la llamada en este momento.");
@@ -165,7 +188,8 @@ export function FormularioContacto({
       className={`${styles.formulario} ${agenda ? styles.formularioAgenda : styles.formularioInformacion} ${claseGratis ? styles.formularioClaseGratis : ""} ${ocultarDatosContacto ? styles.formularioAgendaCompacta : ""}`}
       onSubmit={enviar}
     >
-      {mostrarDatos && !reservaConfirmada && <div className={styles.campos}>
+      <input className={styles.campoTrampa} type="text" name="website" tabIndex={-1} autoComplete="off" aria-hidden="true" />
+      {mostrarDatos && !envioConfirmado && <div className={styles.campos}>
         <label htmlFor={`${id}-nombre`}>
           Nombre y apellidos*
           <input id={`${id}-nombre`} name="nombre" autoComplete="name" required maxLength={120} />
@@ -192,7 +216,7 @@ export function FormularioContacto({
         </label>
       </div>}
 
-      {agenda && !reservaConfirmada && (
+      {agenda && !envioConfirmado && (
         <div className={styles.selectorCita} aria-busy={cargandoHorarios}>
           <div className={styles.calendario}>
             <div className={styles.mes}>
@@ -243,25 +267,25 @@ export function FormularioContacto({
         </div>
       )}
 
-      {claseGratis && (
+      {claseGratis && !envioConfirmado && (
         <label className={styles.consentimiento}>
           <input type="checkbox" required name="consentimiento" />
           He leído y acepto los Términos y condiciones y la Política de privacidad.
         </label>
       )}
-      {!reservaConfirmada && <div className={styles.enviar}>
+      {!envioConfirmado && <div className={styles.enviar}>
         {!claseGratis && <p>
           {agenda
             ? slotSeleccionado
               ? `Horario seleccionado: ${fecha.split("-").reverse().join("/")} a las ${etiquetaHora(slotSeleccionado)} (${Intl.DateTimeFormat().resolvedOptions().timeZone || "hora local"}).`
               : "Elige una fecha y un horario disponible para tu llamada."
-            : "Se abrirá tu aplicación de email con la solicitud preparada."}
+            : "Tus datos se registrarán de forma segura para que podamos contactarte."}
         </p>}
         <HomeButton type="submit" disabled={enviando || (agenda && cargandoHorarios)} variant={agenda ? "magenta" : "green"} className={styles.enviarBoton}>
-          {enviando ? "Confirmando…" : agenda ? "Continuar" : claseGratis ? "Apuntarme" : "Solicitar información"}
+          {enviando ? (agenda ? "Confirmando…" : "Enviando…") : agenda ? "Continuar" : claseGratis ? "Apuntarme" : "Solicitar información"}
         </HomeButton>
       </div>}
-      <p className={`${styles.estadoFormulario} ${reservaConfirmada ? styles.reservaConfirmada : ""}`} role="status">
+      <p className={`${styles.estadoFormulario} ${envioConfirmado ? styles.reservaConfirmada : ""}`} role="status">
         {mensaje}
       </p>
     </form>

@@ -107,7 +107,7 @@ export function ClaseGratisFinanzas({ fechaInicial }: { fechaInicial: string }) 
             <h3>Aprende finanzas<br />desde cero</h3>
             <p>Aprende una forma estructurada de analizar oportunidades, gestionar el riesgo y empezar a invertir, incluso con poco.</p>
             <ClaseGratisDetalles />
-            <FormularioContacto claseGratis fechaInicial={fechaInicial} producto="Clase gratuita de Finanzas desde cero" />
+            <FormularioContacto claseGratis fechaInicial={fechaInicial} hubspotForm="finanzas-personales" producto="Clase gratuita de Finanzas desde cero" />
           </article>
         </div>
       </div>

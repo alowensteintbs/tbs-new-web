@@ -161,6 +161,7 @@ export function ClaseGratisCripto({ fechaInicial }: { fechaInicial: string }) {
             <FormularioContacto
               claseGratis
               fechaInicial={fechaInicial}
+              hubspotForm="criptomonedas"
               producto="Clase gratuita de Cripto desde cero"
             />
           </article>

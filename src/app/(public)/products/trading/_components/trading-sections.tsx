@@ -178,6 +178,7 @@ export function ClaseGratisTrading({
             <FormularioContacto
               claseGratis
               fechaInicial={fechaInicial}
+              hubspotForm={esAlgoritmico ? "trading-algoritmico" : "trading"}
               producto="Clase gratuita de Trading desde cero"
             />
           </article>

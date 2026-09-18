@@ -198,6 +198,7 @@ export function ClaseGratisAcciones({
             <FormularioContacto
               claseGratis
               fechaInicial={fechaInicial}
+              hubspotForm="acciones"
               producto="Clase gratuita de Bolsa desde cero"
             />
           </article>

@@ -249,7 +249,6 @@ export async function createCalendlyBooking(input: {
       answer: input.phone,
       position: question.position,
     })),
-    tracking: { utm_source: "tbs-web", utm_campaign: input.landingSlug },
   };
   const response = await fetch(`${CALENDLY_API_URL}/invitees`, {
     method: "POST",
@@ -267,6 +266,11 @@ export async function createCalendlyBooking(input: {
       );
     }
     const providerError = await response.text();
+    console.error("Calendly rechazó la creación de la reserva", {
+      status: response.status,
+      landingSlug: input.landingSlug,
+      providerError,
+    });
     const slotUnavailable = response.status === 409 ||
       /start.?time|available|slot|occupied/i.test(providerError);
     if (slotUnavailable) {
