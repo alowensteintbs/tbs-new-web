@@ -57,7 +57,7 @@ export default async function BlogPage({ searchParams }: {
           </div>
         </section>
         <FreeCoursesSection className="!h-auto pb-[160px] xl:min-h-[910px]" showIntro={false} />
-        <LlamadaSection fechaInicial={fechaInicial} producto="Blog" ocultarDatosContacto />
+        <LlamadaSection landingSlug="blog" fechaInicial={fechaInicial} producto="Blog" ocultarDatosContacto />
       </main>
       <AppFooterSection showAppPromo={false} />
     </div>

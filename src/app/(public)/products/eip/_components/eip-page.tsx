@@ -28,6 +28,7 @@ export function EipPage() {
         <ColaboracionesSection variante="efa" />
         <MentorsCarousel variant="product" />
         <LlamadaSection
+          landingSlug="eip"
           fechaInicial={fechaInicial}
           producto="European Investment Practitioner (EIP)"
         />

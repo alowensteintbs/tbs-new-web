@@ -29,6 +29,7 @@ export function InversorInteligentePage() {
         <ColaboracionesSection />
         <MentorsCarousel variant="product" />
         <LlamadaSection
+          landingSlug="inversor-inteligente"
           fechaInicial={fechaInicial}
           producto="Curso de Inversor Inteligente"
         />

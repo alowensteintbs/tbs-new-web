@@ -27,6 +27,7 @@ export function TradingPage() {
         <ColaboracionesSection />
         <MentorsCarousel variant="product" />
         <LlamadaSection
+          landingSlug="trading"
           fechaInicial={fechaInicial}
           producto="Curso de Trading"
         />

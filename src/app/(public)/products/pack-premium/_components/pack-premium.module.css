@@ -961,6 +961,7 @@
 }
 .formulario {
   min-width: 0;
+  --form-focus-color: #ff0a54;
 }
 .formularioAgenda {
   padding: 20px;
@@ -1001,6 +1002,16 @@
 }
 .campos input::placeholder {
   color: #ffffff88;
+}
+.campos input:focus,
+.telefonoCampo select:focus {
+  outline: none;
+  border-color: var(--form-focus-color);
+  box-shadow: inset 0 0 0 1px var(--form-focus-color);
+}
+.formulario input[type="checkbox"]:focus-visible {
+  outline: 2px solid var(--form-focus-color);
+  outline-offset: 3px;
 }
 .correo {
   grid-column: 1/-1;
@@ -1075,7 +1086,10 @@
 }
 .horarios {
   display: grid;
+  align-content: start;
   gap: 12px;
+  max-height: 432px;
+  overflow-y: auto;
 }
 .horarios legend {
   position: absolute;
@@ -1111,6 +1125,13 @@
   outline: 2px solid white;
   outline-offset: 3px;
 }
+.horariosVacios {
+  align-self: center;
+  color: #f7f7f799;
+  font-size: 14px;
+  line-height: 1.4;
+  text-align: center;
+}
 .enviar {
   display: flex;
   gap: 24px;
@@ -1137,6 +1158,18 @@
 }
 .estadoFormulario:empty {
   display: none;
+}
+.reservaConfirmada {
+  display: grid;
+  min-height: 180px;
+  place-items: center;
+  padding: 28px;
+  border: 1px solid #11e07f66;
+  border-radius: 20px;
+  color: #11e07f;
+  font-size: 18px;
+  font-weight: 700;
+  text-align: center;
 }
 .inscripcion {
   padding-block: 120px;
@@ -1263,6 +1296,7 @@
 }
 .formularioInformacion {
   margin-top: 28px;
+  --form-focus-color: #11e07f;
 }
 .formularioInformacion .campos label {
   color: #e6f0ff;
@@ -1949,7 +1983,9 @@
   .horarios {
     grid-template-columns: repeat(3, 1fr);
     gap: 8px;
+    max-height: 300px;
   }
+  .horariosVacios { grid-column: 1 / -1; }
   .horarios span {
     min-height: 44px;
   }
@@ -2082,6 +2118,7 @@
   .pagina [data-product-mentors] h2 { max-width: 740px; }
 }
 
+.formularioClaseGratis { --form-focus-color: #daff0a; }
 .formularioClaseGratis .campos { grid-template-columns: 1fr; gap: 16px; }
 .formularioClaseGratis .campos label { color: #daff0a; font-family: var(--font-tbs-raleway), sans-serif; }
 .formularioClaseGratis .campos label:nth-child(2) { order: 3; }

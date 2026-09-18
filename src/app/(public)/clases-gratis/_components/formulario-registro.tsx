@@ -5,7 +5,7 @@ export function FormularioRegistro({ clase, ubicacion = "inicio" }: { clase: Cla
 
   return (
     <form
-      className="w-full rounded-[32px] border-2 border-[#0066ff] bg-[#0066ff]/20 p-[22px] backdrop-blur-[2px] [&_input]:focus-visible:outline-2 [&_input]:focus-visible:outline-offset-2 [&_input]:focus-visible:outline-white [&_select]:focus-visible:outline-2 [&_select]:focus-visible:outline-white"
+      className="w-full rounded-[32px] border-2 border-[#0066ff] bg-[#0066ff]/20 p-[22px] backdrop-blur-[2px] [&_input]:focus-visible:outline-2 [&_input]:focus-visible:outline-offset-2 [&_input]:focus-visible:outline-[#3f83ff] [&_select]:focus-visible:outline-2 [&_select]:focus-visible:outline-[#3f83ff]"
       aria-label={`Inscripción a ${clase.nombre}`}
     >
       <div className="space-y-2">

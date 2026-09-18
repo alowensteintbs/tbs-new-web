@@ -139,7 +139,7 @@ export default function GuiasGratisPage() {
         <HeroGuias />
         <CatalogoGuias />
         <FreeCoursesSection className="!h-auto pb-[160px] xl:min-h-[910px]" showIntro={false} />
-        <LlamadaSection fechaInicial={fechaInicial} producto="Guías gratuitas" ocultarDatosContacto />
+        <LlamadaSection landingSlug="guias-gratis" fechaInicial={fechaInicial} producto="Guías gratuitas" ocultarDatosContacto />
       </main>
       <AppFooterSection showAppPromo={false} />
     </div>

@@ -5,10 +5,12 @@ import { pack } from "./contenido";
 import styles from "./pack-premium.module.css";
 
 export function LlamadaSection({
+  landingSlug,
   fechaInicial,
   producto = "Pack Premium",
   ocultarDatosContacto = false,
 }: {
+  landingSlug: string;
   fechaInicial: string;
   producto?: string;
   ocultarDatosContacto?: boolean;
@@ -26,7 +28,13 @@ export function LlamadaSection({
             formación encaja mejor contigo.
           </p>
         </div>
-        <FormularioContacto agenda fechaInicial={fechaInicial} producto={producto} ocultarDatosContacto={ocultarDatosContacto} />
+        <FormularioContacto
+          agenda
+          fechaInicial={fechaInicial}
+          landingSlug={landingSlug}
+          producto={producto}
+          ocultarDatosContacto={ocultarDatosContacto}
+        />
       </div>
     </section>
   );

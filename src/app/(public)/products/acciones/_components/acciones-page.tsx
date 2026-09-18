@@ -27,6 +27,7 @@ export function AccionesPage() {
         <ColaboracionesSection />
         <MentorsCarousel variant="product" />
         <LlamadaSection
+          landingSlug="acciones"
           fechaInicial={fechaInicial}
           producto="Curso de Acciones"
         />

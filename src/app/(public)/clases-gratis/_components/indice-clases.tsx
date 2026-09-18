@@ -79,7 +79,7 @@ export function IndiceClasesGratis() {
         </section>
 
         <div className="text-white">
-          <LlamadaSection fechaInicial={fechaInicial} producto="Clases gratuitas" />
+          <LlamadaSection landingSlug="clases-gratis" fechaInicial={fechaInicial} producto="Clases gratuitas" />
         </div>
       </main>
     </div>

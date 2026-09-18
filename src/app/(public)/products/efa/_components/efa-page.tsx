@@ -28,6 +28,7 @@ export function EfaPage() {
         <ColaboracionesSection variante="efa" />
         <MentorsCarousel variant="product" />
         <LlamadaSection
+          landingSlug="efa"
           fechaInicial={fechaInicial}
           producto="European Financial Advisor (EFA)"
         />

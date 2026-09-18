@@ -28,6 +28,7 @@ export function EiaPage() {
         <ColaboracionesSection variante="efa" />
         <MentorsCarousel variant="product" />
         <LlamadaSection
+          landingSlug="eia"
           fechaInicial={fechaInicial}
           producto="European Investment Assistant (EIA)"
         />

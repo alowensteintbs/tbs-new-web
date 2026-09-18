@@ -26,7 +26,7 @@ export function CriptoPage() {
         <ProgramaCripto />
         <ColaboracionesSection />
         <MentorsCarousel variant="product" />
-        <LlamadaSection fechaInicial={fechaInicial} producto="Curso de Cripto" />
+        <LlamadaSection landingSlug="cripto" fechaInicial={fechaInicial} producto="Curso de Cripto" />
         <InscripcionCripto />
         <ClaseGratisCripto fechaInicial={fechaInicial} />
       </main>

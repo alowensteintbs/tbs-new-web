@@ -22,7 +22,7 @@ export function PackPremiumPage() {
         <FormacionSection />
         <ColaboracionesSection />
         <MentorsCarousel variant="product" />
-        <LlamadaSection fechaInicial={fechaInicial} />
+        <LlamadaSection landingSlug="pack-premium" fechaInicial={fechaInicial} />
         <InscripcionSection />
         <FreeCoursesSection className="tbs-grid-dark" showIntro={false} />
       </main>

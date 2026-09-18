@@ -27,6 +27,7 @@ export function FinanzasPersonalesPage() {
         <ColaboracionesSection />
         <MentorsCarousel variant="product" />
         <LlamadaSection
+          landingSlug="finanzas-personales"
           fechaInicial={fechaInicial}
           producto="Curso de Finanzas Personales"
         />
