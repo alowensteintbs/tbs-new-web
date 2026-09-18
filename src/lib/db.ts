@@ -13,7 +13,12 @@ function createPrismaClient() {
     // En serverless, un pool grande por instancia multiplica rápidamente las
     // conexiones. Un timeout de conexión mayor evita reintentos agresivos
     // mientras MySQL valida el host remoto durante el handshake inicial.
-    connectionLimit: 3,
+    // Aiven Free permits 76 connections in total. Vercel can run multiple
+    // isolated instances, so each instance must keep at most one connection
+    // and release it quickly instead of accumulating sleeping pools.
+    connectionLimit: 1,
+    minimumIdle: 0,
+    idleTimeout: 30,
     connectTimeout: 5_000,
     acquireTimeout: 8_000,
   });
