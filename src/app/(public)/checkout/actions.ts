@@ -20,7 +20,7 @@ import {
   formatOrderNumber,
   readGatewayConfig,
 } from "@/lib/payments/checkout";
-import type { PayableOrder } from "@/lib/payments/types";
+import type { PayableOrder, PaymentStart } from "@/lib/payments/types";
 
 const checkoutSchema = z
   .object({
@@ -135,6 +135,29 @@ export type CheckoutState = {
     orderNumber: string;
   };
 };
+
+function paymentStartError(provider: string, error: unknown): CheckoutState {
+  const detail = error instanceof Error ? error.message.toLowerCase() : "";
+
+  if (
+    provider === "sequra" &&
+    (detail.includes("allowed country") || detail.includes("delivery address"))
+  ) {
+    return {
+      error: "No pudimos iniciar la financiación con seQura para esta dirección.",
+      fieldErrors: {
+        country: [
+          "SeQura no admite el país o región de entrega seleccionado. Revísalo o elige otro medio de pago.",
+        ],
+      },
+    };
+  }
+
+  const providerName = provider === "sequra" ? "seQura" : provider;
+  return {
+    error: `No pudimos iniciar el pago con ${providerName}. Revisa tus datos o elige otro medio de pago.`,
+  };
+}
 
 export async function placeOrder(
   _prev: CheckoutState,
@@ -333,11 +356,21 @@ export async function placeOrder(
   };
 
   const config = readGatewayConfig(gateway.config);
-  const start = await adapter.createPayment(payable, config, {
-    baseUrl: getSiteUrl(),
-    gatewayId: gateway.id,
-    live: gateway.live,
-  });
+  let start: PaymentStart;
+  try {
+    start = await adapter.createPayment(payable, config, {
+      baseUrl: getSiteUrl(),
+      gatewayId: gateway.id,
+      live: gateway.live,
+    });
+  } catch (error) {
+    console.error(`No se pudo iniciar el pago con ${gateway.provider}`, error);
+    await db.order.update({
+      where: { id: order.id },
+      data: { status: "FAILED" },
+    });
+    return paymentStartError(gateway.provider, error);
+  }
 
   if (start.paymentRef) {
     await db.order.update({
