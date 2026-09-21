@@ -63,7 +63,7 @@ export type WebhookResult = {
   orderId?: string;
   paymentRef?: string;
   /** New payment state, if the event implies one. */
-  status?: "PAID" | "FAILED" | "REFUNDED";
+  status?: "PENDING" | "PAID" | "FAILED" | "REFUNDED";
   /** Raw payload to persist for auditing. */
   raw?: string;
   /**

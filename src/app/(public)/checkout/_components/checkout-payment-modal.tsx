@@ -63,15 +63,9 @@ export function CheckoutPaymentModal({ state }: { state: CheckoutState }) {
   }
 
   if (state.widget) {
-    return (
-      <PaymentShell
-        title="Continúa con seQura"
-        description="Elige tus cuotas y completa la solicitud de financiación."
-        orderNumber={state.widget.orderNumber}
-      >
-        <SequraCheckout html={state.widget.html} />
-      </PaymentShell>
-    );
+    // seQura renders its own full-screen overlay. A second payment shell here
+    // would leave the shopper with two stacked modals.
+    return <SequraCheckout html={state.widget.html} />;
   }
 
   if (state.external) {

@@ -35,11 +35,12 @@ const SANDBOX_BASE = "https://sandbox.sequrapi.com";
 const LIVE_BASE = "https://live.sequrapi.com";
 
 /**
- * SeQura's identification-form resource. `ajax=true` returns the snippet suited
- * for injection into an already-loaded page (we mount it client-side after the
- * server action, not on a full page load). `product` defaults to i1 (invoice).
+ * SeQura's complete HTML identification form. The checkout offers installment
+ * payments, so the form and the original solicitation both target pp3. Do not
+ * request `ajax=true` here: that variant returns JSON configuration intended
+ * for seQura's own AJAX client, not a standalone document for an iframe.
  */
-const FORM_RESOURCE = "form_v2?ajax=true";
+const FORM_RESOURCE = "form_v2?product=pp3";
 
 function baseUrl(live: boolean): string {
   return live ? LIVE_BASE : SANDBOX_BASE;
@@ -81,7 +82,8 @@ type SolicitableOrder = Pick<
 function buildOrderPayload(
   order: SolicitableOrder,
   config: GatewayConfig,
-  ctx: PaymentContext
+  ctx: PaymentContext,
+  state: "confirmed" | "on_hold" | null = null
 ) {
   const items = order.items.map((it) => {
     const priceWithTax = toCents(Number(it.unitPrice));
@@ -124,8 +126,9 @@ function buildOrderPayload(
 
   return {
     order: {
-      // No state change at solicitation (null = leave as-is).
-      state: null,
+      // A solicitation leaves the order untouched. The IPN confirmation later
+      // changes this to `confirmed` or `on_hold`.
+      state,
       merchant: {
         id: config.merchantRef,
         notify_url: `${ctx.baseUrl}/api/payments/webhook/${ctx.gatewayId}`,
@@ -140,6 +143,8 @@ function buildOrderPayload(
         order_total_with_tax: orderTotal,
         items,
       },
+      // pp3 is seQura's part-payment product (3/6/9/12/18 installments).
+      processing: { product_type: "pp3" },
       // Digital delivery: no shipping. EUR only, country is indistinct.
       delivery_method: { name: "Descarga digital", provider: "digital" },
       delivery_address: address,
@@ -192,6 +197,7 @@ export const sequraAdapter: PaymentAdapter = {
         "Content-Type": "application/json",
         Accept: "application/json",
         Authorization: auth,
+        "Sequra-Merchant-Id": config.merchantRef,
       },
       body: JSON.stringify(buildOrderPayload(order, config, ctx)),
     });
@@ -208,13 +214,24 @@ export const sequraAdapter: PaymentAdapter = {
     // 2) Fetch the identification form (HTML+JS) to embed on our checkout page.
     const formRes = await fetch(`${location}/${FORM_RESOURCE}`, {
       method: "GET",
-      headers: { Accept: "text/html", Authorization: auth },
+      headers: {
+        Accept: "text/html",
+        Authorization: auth,
+        "Sequra-Merchant-Id": config.merchantRef,
+      },
     });
     if (!formRes.ok) {
       const detail = await formRes.text().catch(() => "");
-      throw new Error(`SeQura: no se pudo obtener el formulario (${formRes.status}) ${detail}`);
+      throw new Error(
+        `SeQura: no se pudo obtener el formulario (${formRes.status}) ${detail}`
+      );
     }
     const html = await formRes.text();
+    if (html.trimStart().startsWith("{")) {
+      throw new Error(
+        "SeQura: devolvió datos de configuración en vez del formulario HTML"
+      );
+    }
 
     return { kind: "html", html, paymentRef: uuid };
   },
@@ -260,11 +277,15 @@ export const sequraAdapter: PaymentAdapter = {
     });
     if (!order) return null;
 
+    const sqState = params.sq_state;
+    if (sqState !== "approved" && sqState !== "needs_review") return null;
+
     const orderUuid = uuid || order.id;
     const base = baseUrl(ctx.live);
+    const sequraState = sqState === "approved" ? "confirmed" : "on_hold";
 
-    // Confirm the order: PUT the (rebuilt) payload. SeQura moves it out of hold
-    // and, for a matching cart, accepts the credit risk.
+    // Match the decision in the IPN: `approved` is confirmed immediately,
+    // while `needs_review` keeps the order on hold until a later IPN approves it.
     const payable: SolicitableOrder = {
       id: order.id,
       number: order.number,
@@ -278,8 +299,11 @@ export const sequraAdapter: PaymentAdapter = {
         "Content-Type": "application/json",
         Accept: "application/json",
         Authorization: authHeader(config),
+        "Sequra-Merchant-Id": config.merchantRef,
       },
-      body: JSON.stringify(buildOrderPayload(payable, config, ctx)),
+      body: JSON.stringify(
+        buildOrderPayload(payable, config, ctx, sequraState)
+      ),
     });
     if (confirm.status !== 200 && confirm.status !== 204) {
       const detail = await confirm.text().catch(() => "");
@@ -289,7 +313,7 @@ export const sequraAdapter: PaymentAdapter = {
     const result: WebhookResult = {
       orderId: order.id,
       paymentRef: uuid || undefined,
-      status: "PAID",
+      status: sqState === "approved" ? "PAID" : "PENDING",
       raw: rawBody,
     };
     return result;
