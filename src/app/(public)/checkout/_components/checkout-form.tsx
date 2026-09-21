@@ -1,8 +1,7 @@
 "use client";
 
-import { useActionState, useState, useTransition } from "react";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
+import Image from "next/image";
+import { useActionState, useMemo, useState, useTransition } from "react";
 import type { AvailableGateway } from "@/lib/payments/checkout";
 import type { CountryOption } from "@/lib/countries";
 import {
@@ -13,32 +12,86 @@ import {
 } from "../actions";
 import { StripeEmbeddedCheckout } from "./stripe-embedded-checkout";
 import { SequraCheckout } from "./sequra-checkout";
+import styles from "./checkout.module.css";
 
 function FieldError({ errors }: { errors?: string[] }) {
   if (!errors?.length) return null;
-  return <p className="mt-1 text-sm text-red-600">{errors[0]}</p>;
+  return <p className={styles.fieldError}>{errors[0]}</p>;
+}
+
+function Field({
+  label,
+  name,
+  placeholder,
+  type,
+  errors,
+}: {
+  label: string;
+  name: string;
+  placeholder: string;
+  type?: React.HTMLInputTypeAttribute;
+  errors?: string[];
+}) {
+  return (
+    <div className={styles.field}>
+      <label htmlFor={name}>{label} *</label>
+      <input
+        id={name}
+        className={styles.input}
+        name={name}
+        type={type}
+        placeholder={placeholder}
+        required
+      />
+      <FieldError errors={errors} />
+    </div>
+  );
+}
+
+function gatewayLabel(gateway: AvailableGateway) {
+  if (gateway.provider === "sequra") return "Paga Fraccionado con seQura";
+  if (gateway.provider === "stripe") return "Tarjetas de crédito/débito";
+  if (gateway.provider === "aplazame") return "Aplazame";
+  return gateway.name;
 }
 
 export function CheckoutForm({
   productId,
+  productName,
   currencyId,
+  currencyCode,
   gateways,
   countries,
+  amount,
   amountLabel,
 }: {
   productId: string;
+  productName: string;
   currencyId: string;
+  currencyCode: string;
   gateways: AvailableGateway[];
   countries: CountryOption[];
+  amount: number;
   amountLabel: string;
 }) {
   const [state, formAction, isPending] = useActionState<CheckoutState, FormData>(
     placeOrder,
     {}
   );
+  const [couponOpen, setCouponOpen] = useState(false);
   const [couponCode, setCouponCode] = useState("");
   const [coupon, setCoupon] = useState<CouponPreview | null>(null);
+  const [selectedGateway, setSelectedGateway] = useState(gateways[0]?.id ?? "");
   const [checking, startCheck] = useTransition();
+
+  const installmentLabel = useMemo(
+    () =>
+      new Intl.NumberFormat("es-ES", {
+        style: "currency",
+        currency: currencyCode,
+      }).format(amount / 12),
+    [amount, currencyCode]
+  );
 
   function applyCoupon() {
     if (!couponCode.trim()) return;
@@ -49,8 +102,6 @@ export function CheckoutForm({
     startCheck(async () => setCoupon(await previewCoupon(fd)));
   }
 
-  // Gateway needs an inline payment form (Stripe embedded): swap the details
-  // form for it once the server has created the payment session.
   if (state.embedded) {
     return (
       <StripeEmbeddedCheckout
@@ -60,184 +111,275 @@ export function CheckoutForm({
     );
   }
 
-  // Gateway returned an HTML+JS form to embed inline (SeQura).
   if (state.widget) {
     return <SequraCheckout html={state.widget.html} />;
   }
 
   return (
-    <form action={formAction} className="space-y-5">
+    <form action={formAction} className={styles.form}>
       <input type="hidden" name="productId" value={productId} />
       <input type="hidden" name="currencyId" value={currencyId} />
 
-      <div className="grid gap-4 sm:grid-cols-2">
-        <div>
-          <label className="mb-1.5 block text-sm font-medium text-gray-700">
-            Nombre
-          </label>
-          <Input name="name" placeholder="Tu nombre" required />
-          <FieldError errors={state.fieldErrors?.name} />
-        </div>
-
-        <div>
-          <label className="mb-1.5 block text-sm font-medium text-gray-700">
-            Apellidos
-          </label>
-          <Input name="surname" placeholder="Tus apellidos" required />
-          <FieldError errors={state.fieldErrors?.surname} />
-        </div>
-      </div>
-
-      <div>
-        <label className="mb-1.5 block text-sm font-medium text-gray-700">Email</label>
-        <Input name="email" type="email" placeholder="tu@email.com" required />
-        <FieldError errors={state.fieldErrors?.email} />
-      </div>
-
-      <div>
-        <label className="mb-1.5 block text-sm font-medium text-gray-700">
-          Teléfono
-        </label>
-        <Input name="phone" type="tel" placeholder="+34 600 000 000" required />
-        <FieldError errors={state.fieldErrors?.phone} />
-      </div>
-
-      <div>
-        <label className="mb-1.5 block text-sm font-medium text-gray-700">
-          Dirección
-        </label>
-        <Input name="addressLine" placeholder="Calle, número, piso" required />
-        <FieldError errors={state.fieldErrors?.addressLine} />
-      </div>
-
-      <div className="grid gap-4 sm:grid-cols-2">
-        <div>
-          <label className="mb-1.5 block text-sm font-medium text-gray-700">
-            Población
-          </label>
-          <Input name="city" placeholder="Ciudad" required />
-          <FieldError errors={state.fieldErrors?.city} />
-        </div>
-
-        <div>
-          <label className="mb-1.5 block text-sm font-medium text-gray-700">
-            Código postal
-          </label>
-          <Input name="postalCode" placeholder="28001" required />
-          <FieldError errors={state.fieldErrors?.postalCode} />
-        </div>
-      </div>
-
-      <div className="grid gap-4 sm:grid-cols-2">
-        <div>
-          <label className="mb-1.5 block text-sm font-medium text-gray-700">
-            Provincia
-          </label>
-          <Input name="province" placeholder="Madrid" required />
-          <FieldError errors={state.fieldErrors?.province} />
-        </div>
-
-        <div>
-          <label className="mb-1.5 block text-sm font-medium text-gray-700">
-            País
-          </label>
-          <select
-            name="country"
-            defaultValue={countries[0]?.code}
-            required
-            className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500"
-          >
-            {countries.map((c) => (
-              <option key={c.code} value={c.code}>
-                {c.name}
-              </option>
-            ))}
-          </select>
-          <FieldError errors={state.fieldErrors?.country} />
-        </div>
-      </div>
-
-      {/* Coupon + order summary */}
-      <div className="space-y-3 rounded-xl border border-gray-200 p-4">
-        <div>
-          <label className="mb-1.5 block text-sm font-medium text-gray-700">
-            Código de descuento
-          </label>
-          <div className="flex gap-2">
-            <Input
-              name="couponCode"
-              placeholder="Introduce tu código"
-              value={couponCode}
-              onChange={(e) => {
-                setCouponCode(e.target.value);
-                setCoupon(null);
-              }}
-            />
-            <Button
-              type="button"
-              variant="secondary"
-              onClick={applyCoupon}
-              disabled={checking || !couponCode.trim()}
-            >
-              {checking ? "…" : "Aplicar"}
-            </Button>
-          </div>
-          {coupon && !coupon.ok && (
-            <p className="mt-1 text-sm text-red-600">{coupon.error}</p>
-          )}
-          <FieldError errors={state.fieldErrors?.couponCode} />
-        </div>
-
-        <div className="space-y-1 border-t border-gray-100 pt-3 text-sm">
-          <div className="flex justify-between text-gray-600">
-            <span>Subtotal</span>
+      <section className={styles.summary} aria-labelledby="checkout-summary-title">
+        <h1 id="checkout-summary-title" className={styles.summaryHeading}>
+          Tus formaciones
+          <Image
+            src="/checkout/shopping-cart.svg"
+            alt=""
+            width={40}
+            height={40}
+            aria-hidden="true"
+          />
+        </h1>
+        <div className={styles.summaryBody}>
+          <div className={styles.summaryRow}>
+            <span>{productName}</span>
             <span>{amountLabel}</span>
           </div>
-          {coupon?.ok && (
-            <div className="flex justify-between text-green-700">
-              <span>Descuento ({coupon.code})</span>
-              <span>−{coupon.discountLabel}</span>
+          <hr className={styles.summaryDivider} />
+          <div className={styles.summaryDetails}>
+            {coupon?.ok && (
+              <div className={`${styles.summaryRow} ${styles.summaryDiscount}`}>
+                <span>Código {coupon.code}</span>
+                <span>- {coupon.discountLabel}</span>
+              </div>
+            )}
+            <div className={styles.summaryRow}>
+              <span>Subtotal</span>
+              <span>{amountLabel}</span>
             </div>
-          )}
-          <div className="flex justify-between text-base font-semibold text-gray-900">
-            <span>Total</span>
+          </div>
+          <hr className={styles.summaryDivider} />
+          <div className={`${styles.summaryRow} ${styles.summaryTotal}`}>
+            <span>TOTAL</span>
             <span>{coupon?.ok ? coupon.totalLabel : amountLabel}</span>
           </div>
         </div>
-      </div>
+      </section>
 
-      <fieldset className="space-y-2">
-        <legend className="mb-1.5 text-sm font-medium text-gray-700">
-          Método de pago
-        </legend>
-        {gateways.map((g, i) => (
-          <label
-            key={g.id}
-            className="flex cursor-pointer items-start gap-3 rounded-lg border border-gray-200 p-4 transition hover:border-blue-400 has-[:checked]:border-blue-500 has-[:checked]:bg-blue-50"
-          >
-            <input
-              type="radio"
-              name="gatewayId"
-              value={g.id}
-              defaultChecked={i === 0}
-              className="mt-0.5 h-4 w-4 border-gray-300 text-blue-600 focus:ring-blue-500"
+      <div className={styles.columns}>
+        <section className={styles.panel} aria-labelledby="customer-title">
+          <h2 id="customer-title" className={styles.panelHeading}>
+            Información del cliente
+          </h2>
+          <div className={styles.fields}>
+            <Field
+              label="Correo electrónico"
+              name="email"
+              type="email"
+              placeholder="tu@correo.com"
+              errors={state.fieldErrors?.email}
             />
+            <div className={`${styles.fieldRow} ${styles.fieldRowTight}`}>
+              <Field
+                label="Nombre"
+                name="name"
+                placeholder="Nombre"
+                errors={state.fieldErrors?.name}
+              />
+              <Field
+                label="Apellidos"
+                name="surname"
+                placeholder="Apellidos"
+                errors={state.fieldErrors?.surname}
+              />
+            </div>
+            <div className={styles.field}>
+              <label htmlFor="phone">Teléfono *</label>
+              <div className={styles.phone}>
+                <span className={styles.phoneCode}>+34</span>
+                <input
+                  id="phone"
+                  className={styles.input}
+                  name="phone"
+                  type="tel"
+                  placeholder="600 000 000"
+                  required
+                />
+              </div>
+              <FieldError errors={state.fieldErrors?.phone} />
+            </div>
+            <Field
+              label="Dirección de la calle"
+              name="addressLine"
+              placeholder="Calle, número, piso, puerta"
+              errors={state.fieldErrors?.addressLine}
+            />
+            <div className={styles.fieldRow}>
+              <Field
+                label="Población"
+                name="city"
+                placeholder="Ciudad / Municipio"
+                errors={state.fieldErrors?.city}
+              />
+              <Field
+                label="Código postal / ZIP"
+                name="postalCode"
+                placeholder="41001"
+                errors={state.fieldErrors?.postalCode}
+              />
+            </div>
+            <div className={styles.fieldRow}>
+              <div className={styles.field}>
+                <label htmlFor="country">Country *</label>
+                <div className={styles.selectWrap}>
+                  <select
+                    id="country"
+                    name="country"
+                    defaultValue={
+                      countries.find((country) => country.code === "ES")?.code ??
+                      countries[0]?.code
+                    }
+                    required
+                    className={styles.select}
+                  >
+                    {countries.map((country) => (
+                      <option key={country.code} value={country.code}>
+                        {country.name}
+                      </option>
+                    ))}
+                  </select>
+                  <Image
+                    src="/checkout/chevron-down.svg"
+                    alt=""
+                    width={12}
+                    height={8}
+                    aria-hidden="true"
+                  />
+                </div>
+                <FieldError errors={state.fieldErrors?.country} />
+              </div>
+              <Field
+                label="Provincia"
+                name="province"
+                placeholder="Sevilla"
+                errors={state.fieldErrors?.province}
+              />
+            </div>
+          </div>
+
+          <div className={styles.coupon}>
+            <button
+              type="button"
+              className={styles.couponToggle}
+              aria-expanded={couponOpen}
+              onClick={() => setCouponOpen((open) => !open)}
+            >
+              ¿Tienes un cupón? Haz clic aquí para introducir tu código
+            </button>
+            {couponOpen && (
+              <div>
+                <div className={styles.couponFields}>
+                  <input
+                    className={styles.input}
+                    name="couponCode"
+                    aria-label="Código de descuento"
+                    placeholder="Introduce tu código"
+                    value={couponCode}
+                    onChange={(event) => {
+                      setCouponCode(event.target.value);
+                      setCoupon(null);
+                    }}
+                  />
+                  <button
+                    type="button"
+                    className={styles.couponButton}
+                    onClick={applyCoupon}
+                    disabled={checking || !couponCode.trim()}
+                  >
+                    {checking ? "Comprobando…" : "Aplicar"}
+                  </button>
+                </div>
+                {coupon && !coupon.ok && (
+                  <p className={styles.fieldError}>{coupon.error}</p>
+                )}
+                {coupon?.ok && (
+                  <p className={styles.couponSuccess}>Cupón {coupon.code} aplicado</p>
+                )}
+                <FieldError errors={state.fieldErrors?.couponCode} />
+              </div>
+            )}
+          </div>
+        </section>
+
+        <section className={styles.panel} aria-labelledby="payment-title">
+          <h2 id="payment-title" className={styles.panelHeading}>
+            Método de pago
+          </h2>
+          <fieldset className={styles.gateways}>
+            <legend className="sr-only">Elige un método de pago</legend>
+            {gateways.map((gateway) => {
+              const selected = selectedGateway === gateway.id;
+              return (
+                <label
+                  key={gateway.id}
+                  className={`${styles.gateway} ${selected ? styles.gatewaySelected : ""}`}
+                >
+                  <input
+                    type="radio"
+                    name="gatewayId"
+                    value={gateway.id}
+                    checked={selected}
+                    onChange={() => setSelectedGateway(gateway.id)}
+                    className={styles.radio}
+                  />
+                  <span className={styles.gatewayCopy}>
+                    <span className={styles.gatewayName}>{gatewayLabel(gateway)}</span>
+                    {selected && gateway.description && (
+                      <span className={styles.gatewayDescription}>
+                        {gateway.provider === "sequra"
+                          ? "en 3, 6, 9, 12 o 18 meses"
+                          : gateway.description}
+                      </span>
+                    )}
+                  </span>
+                  {gateway.provider === "sequra" && (
+                    <span className={styles.sequraBadge}>seQura</span>
+                  )}
+                  {selected && gateway.provider === "sequra" && (
+                    <span className={styles.gatewayExtra}>
+                      <span>desde {installmentLabel}/cuota</span>
+                      <span>+información</span>
+                    </span>
+                  )}
+                </label>
+              );
+            })}
+            <FieldError errors={state.fieldErrors?.gatewayId} />
+          </fieldset>
+
+          <p className={styles.privacy}>
+            Tus datos personales se utilizarán para procesar tu pedido, mejorar tu
+            experiencia en esta web y otros propósitos descritos en nuestra{" "}
+            <a href="/politica-de-privacidad">política de privacidad</a>.
+          </p>
+
+          <label className={styles.terms}>
+            <input type="checkbox" name="terms" value="accepted" required />
             <span>
-              <span className="block text-sm font-medium text-gray-900">{g.name}</span>
-              {g.description && (
-                <span className="block text-xs text-gray-500">{g.description}</span>
-              )}
+              He leído y estoy de acuerdo con los{" "}
+              <a href="/terminos-y-condiciones">términos y condiciones de la web</a> *
             </span>
           </label>
-        ))}
-        <FieldError errors={state.fieldErrors?.gatewayId} />
-      </fieldset>
+          <FieldError errors={state.fieldErrors?.terms} />
 
-      {state.error && <p className="text-sm text-red-600">{state.error}</p>}
+          {state.error && <p className={styles.formError}>{state.error}</p>}
 
-      <Button type="submit" size="lg" disabled={isPending} className="w-full">
-        {isPending ? "Procesando…" : "Confirmar compra"}
-      </Button>
+          <button type="submit" disabled={isPending} className={styles.submit}>
+            {isPending ? "Procesando…" : "Realizar Matrícula"}
+          </button>
+
+          <p className={styles.help}>
+            Si estás encontrando problemas para realizar el pago, por favor escríbenos
+            al <a href="https://wa.me/34666600867">Whatsapp (666 600 867)</a> o{" "}
+            <a href="mailto:info@tradersbusinessschool.com?subject=Quiero%20agendar%20una%20llamada">
+              agenda una llamada
+            </a>{" "}
+            con nosotros en la que te resolveremos todas las dudas y te ayudaremos
+            personalmente.
+          </p>
+        </section>
+      </div>
     </form>
   );
 }

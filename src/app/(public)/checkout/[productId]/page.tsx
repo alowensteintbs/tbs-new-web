@@ -4,8 +4,11 @@ import { db } from "@/lib/db";
 import { getActiveCurrency, formatPrice } from "@/lib/currency-resolver";
 import { getGatewaysForCurrency } from "@/lib/payments/checkout";
 import { countryOptions } from "@/lib/countries";
-import { Container } from "@/components/ui/container";
+import { TestimonialsSection } from "@/components/home/testimonials-section";
 import { CheckoutForm } from "../_components/checkout-form";
+import { CheckoutHeader } from "../_components/checkout-header";
+import styles from "../_components/checkout.module.css";
+import "@/components/home/home.css";
 
 export const metadata: Metadata = { title: "Finalizar compra" };
 
@@ -46,36 +49,34 @@ export default async function CheckoutPage({
     .filter(Boolean);
   const countries = countryOptions(allowedCountries);
 
-  return (
-    <Container className="py-12">
-      <div className="mx-auto max-w-lg space-y-6">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Finalizar compra</h1>
-          <p className="mt-1 text-sm text-gray-500">{product.name}</p>
-        </div>
+  const unavailableMessage = !price
+    ? `Este producto no tiene precio en tu moneda (${currency.code}). Contactanos para completar la compra.`
+    : gateways.length === 0
+      ? `No hay métodos de pago disponibles para tu moneda (${currency.code}) en este momento.`
+      : null;
 
-        {!price ? (
-          <p className="rounded-lg bg-amber-50 p-4 text-sm text-amber-800">
-            Este producto no tiene precio en tu moneda ({currency.code}). Contactanos
-            para completar la compra.
-          </p>
-        ) : gateways.length === 0 ? (
-          <p className="rounded-lg bg-amber-50 p-4 text-sm text-amber-800">
-            No hay métodos de pago disponibles para tu moneda ({currency.code}) en
-            este momento.
-          </p>
-        ) : (
-          <>
+  return (
+    <main className={styles.page}>
+      <section className={`tbs-grid-light ${styles.main}`}>
+        <CheckoutHeader />
+        <div className={styles.content}>
+          {unavailableMessage || !price ? (
+            <p className={styles.unavailable}>{unavailableMessage}</p>
+          ) : (
             <CheckoutForm
               productId={product.id}
+              productName={product.name}
               currencyId={currency.id}
+              currencyCode={currency.code}
               gateways={gateways}
               countries={countries}
+              amount={Number(price.amount)}
               amountLabel={formatPrice(Number(price.amount), currency.code)}
             />
-          </>
-        )}
-      </div>
-    </Container>
+          )}
+        </div>
+      </section>
+      <TestimonialsSection />
+    </main>
   );
 }

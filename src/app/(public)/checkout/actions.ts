@@ -30,6 +30,7 @@ const checkoutSchema = z.object({
   postalCode: z.string().trim().min(1, "El código postal es requerido").max(20),
   province: z.string().trim().min(1, "La provincia es requerida").max(120),
   country: z.string().trim().length(2, "El país es requerido"),
+  terms: z.literal("accepted", "Debes aceptar los términos y condiciones"),
 });
 
 /** Result of the checkout's "apply coupon" preview (see previewCoupon). */
@@ -107,6 +108,7 @@ export async function placeOrder(
     productId: formData.get("productId"),
     currencyId: formData.get("currencyId"),
     gatewayId: formData.get("gatewayId"),
+    couponCode: String(formData.get("couponCode") ?? ""),
     email: formData.get("email"),
     name: formData.get("name"),
     surname: formData.get("surname"),
@@ -116,6 +118,7 @@ export async function placeOrder(
     postalCode: formData.get("postalCode"),
     province: formData.get("province"),
     country: (formData.get("country") as string)?.toUpperCase(),
+    terms: formData.get("terms"),
   });
   if (!parsed.success) {
     return { fieldErrors: z.flattenError(parsed.error).fieldErrors };
