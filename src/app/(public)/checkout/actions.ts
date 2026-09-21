@@ -7,7 +7,11 @@ import { db } from "@/lib/db";
 import { Prisma } from "@/generated/prisma/client";
 import { getSiteUrl } from "@/lib/env";
 import { formatPrice } from "@/lib/currency-resolver";
-import { isSpanishPostalCode, isSpanishProvince } from "@/lib/address";
+import {
+  countryCallingCode,
+  isSpanishPostalCode,
+  isSpanishProvince,
+} from "@/lib/address";
 import { COUNTRIES } from "@/lib/countries";
 import { validateCoupon, normalizeCode } from "@/lib/coupons";
 import { sendOrderStatusEmail } from "@/lib/email/notify";
@@ -232,7 +236,7 @@ export async function placeOrder(
   const customerData = {
     name: input.name,
     surname: input.surname,
-    phone: input.phone,
+    phone: `${countryCallingCode(input.country)} ${input.phone}`.trim(),
     addressLine: input.addressLine,
     city: input.city,
     postalCode: input.postalCode,

@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { useActionState, useMemo, useState, useTransition } from "react";
-import { SPANISH_PROVINCES } from "@/lib/address";
+import { countryCallingCode, SPANISH_PROVINCES } from "@/lib/address";
 import type { AvailableGateway } from "@/lib/payments/checkout";
 import type { CountryOption } from "@/lib/countries";
 import {
@@ -197,7 +197,9 @@ export function CheckoutForm({
             <div className={styles.field}>
               <label htmlFor="phone">Teléfono *</label>
               <div className={styles.phone}>
-                <span className={styles.phoneCode}>+34</span>
+                <span className={styles.phoneCode} aria-label="Prefijo internacional">
+                  {countryCallingCode(selectedCountry)}
+                </span>
                 <input
                   id="phone"
                   className={styles.input}
