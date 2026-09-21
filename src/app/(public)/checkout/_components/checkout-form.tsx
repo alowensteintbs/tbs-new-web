@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { useActionState, useMemo, useState, useTransition } from "react";
+import { SPANISH_PROVINCES } from "@/lib/address";
 import type { AvailableGateway } from "@/lib/payments/checkout";
 import type { CountryOption } from "@/lib/countries";
 import {
@@ -24,12 +25,16 @@ function Field({
   placeholder,
   type,
   errors,
+  pattern,
+  title,
 }: {
   label: string;
   name: string;
   placeholder: string;
   type?: React.HTMLInputTypeAttribute;
   errors?: string[];
+  pattern?: string;
+  title?: string;
 }) {
   return (
     <div className={styles.field}>
@@ -40,6 +45,8 @@ function Field({
         name={name}
         type={type}
         placeholder={placeholder}
+        pattern={pattern}
+        title={title}
         required
       />
       <FieldError errors={errors} />
@@ -91,6 +98,9 @@ export function CheckoutForm({
   const [couponCode, setCouponCode] = useState("");
   const [coupon, setCoupon] = useState<CouponPreview | null>(null);
   const [selectedGateway, setSelectedGateway] = useState(gateways[0]?.id ?? "");
+  const [selectedCountry, setSelectedCountry] = useState(
+    countries.find((country) => country.code === "ES")?.code ?? countries[0]?.code ?? ""
+  );
   const [checking, startCheck] = useTransition();
 
   const installmentLabel = useMemo(
@@ -217,19 +227,23 @@ export function CheckoutForm({
                 name="postalCode"
                 placeholder="41001"
                 errors={state.fieldErrors?.postalCode}
+                pattern={selectedCountry === "ES" ? "[0-9]{5}" : undefined}
+                title={
+                  selectedCountry === "ES"
+                    ? "Introduce un código postal español de 5 dígitos."
+                    : undefined
+                }
               />
             </div>
             <div className={styles.fieldRow}>
               <div className={styles.field}>
-                <label htmlFor="country">Country *</label>
+                <label htmlFor="country">País / Región *</label>
                 <div className={styles.selectWrap}>
                   <select
                     id="country"
                     name="country"
-                    defaultValue={
-                      countries.find((country) => country.code === "ES")?.code ??
-                      countries[0]?.code
-                    }
+                    value={selectedCountry}
+                    onChange={(event) => setSelectedCountry(event.target.value)}
                     required
                     className={styles.select}
                   >
@@ -249,12 +263,45 @@ export function CheckoutForm({
                 </div>
                 <FieldError errors={state.fieldErrors?.country} />
               </div>
-              <Field
-                label="Provincia"
-                name="province"
-                placeholder="Sevilla"
-                errors={state.fieldErrors?.province}
-              />
+              {selectedCountry === "ES" ? (
+                <div className={styles.field}>
+                  <label htmlFor="province">Provincia *</label>
+                  <div className={styles.selectWrap}>
+                    <select
+                      id="province"
+                      name="province"
+                      defaultValue="Sevilla"
+                      required
+                      className={styles.select}
+                    >
+                      <option value="" disabled>
+                        Elige una provincia
+                      </option>
+                      {SPANISH_PROVINCES.map((province) => (
+                        <option key={province} value={province}>
+                          {province}
+                        </option>
+                      ))}
+                    </select>
+                    <Image
+                      src="/checkout/chevron-down.svg"
+                      alt=""
+                      width={12}
+                      height={8}
+                      aria-hidden="true"
+                    />
+                  </div>
+                  <FieldError errors={state.fieldErrors?.province} />
+                </div>
+              ) : (
+                <Field
+                  key={selectedCountry}
+                  label="Provincia / Región"
+                  name="province"
+                  placeholder="Provincia / Región"
+                  errors={state.fieldErrors?.province}
+                />
+              )}
             </div>
           </div>
 

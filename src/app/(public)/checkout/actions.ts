@@ -7,6 +7,8 @@ import { db } from "@/lib/db";
 import { Prisma } from "@/generated/prisma/client";
 import { getSiteUrl } from "@/lib/env";
 import { formatPrice } from "@/lib/currency-resolver";
+import { isSpanishPostalCode, isSpanishProvince } from "@/lib/address";
+import { COUNTRIES } from "@/lib/countries";
 import { validateCoupon, normalizeCode } from "@/lib/coupons";
 import { sendOrderStatusEmail } from "@/lib/email/notify";
 import { getAdapter } from "@/lib/payments";
@@ -16,22 +18,37 @@ import {
 } from "@/lib/payments/checkout";
 import type { PayableOrder } from "@/lib/payments/types";
 
-const checkoutSchema = z.object({
-  productId: z.string().min(1),
-  currencyId: z.string().min(1),
-  gatewayId: z.string().min(1, "Elige un método de pago"),
-  couponCode: z.string().trim().max(60).optional(),
-  email: z.email("Email inválido"),
-  name: z.string().trim().min(1, "El nombre es requerido").max(120),
-  surname: z.string().trim().min(1, "Los apellidos son requeridos").max(120),
-  phone: z.string().trim().min(1, "El teléfono es requerido").max(40),
-  addressLine: z.string().trim().min(1, "La dirección es requerida").max(200),
-  city: z.string().trim().min(1, "La población es requerida").max(120),
-  postalCode: z.string().trim().min(1, "El código postal es requerido").max(20),
-  province: z.string().trim().min(1, "La provincia es requerida").max(120),
-  country: z.string().trim().length(2, "El país es requerido"),
-  terms: z.literal("accepted", "Debes aceptar los términos y condiciones"),
-});
+const checkoutSchema = z
+  .object({
+    productId: z.string().min(1),
+    currencyId: z.string().min(1),
+    gatewayId: z.string().min(1, "Elige un método de pago"),
+    couponCode: z.string().trim().max(60).optional(),
+    email: z.email("Email inválido"),
+    name: z.string().trim().min(1, "El nombre es requerido").max(120),
+    surname: z.string().trim().min(1, "Los apellidos son requeridos").max(120),
+    phone: z.string().trim().min(1, "El teléfono es requerido").max(40),
+    addressLine: z.string().trim().min(1, "La dirección es requerida").max(200),
+    city: z.string().trim().min(1, "La población es requerida").max(120),
+    postalCode: z.string().trim().min(1, "El código postal es requerido").max(20),
+    province: z.string().trim().min(1, "La provincia es requerida").max(120),
+    country: z.string().trim().length(2, "El país es requerido"),
+    terms: z.literal("accepted", "Debes aceptar los términos y condiciones"),
+  })
+  .superRefine((input, ctx) => {
+    if (input.country !== "ES") return;
+
+    if (!isSpanishProvince(input.province)) {
+      ctx.addIssue({ code: "custom", path: ["province"], message: "Elige una provincia de la lista." });
+    }
+    if (!isSpanishPostalCode(input.postalCode)) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["postalCode"],
+        message: "Introduce un código postal español de 5 dígitos.",
+      });
+    }
+  });
 
 /** Result of the checkout's "apply coupon" preview (see previewCoupon). */
 export type CouponPreview =
@@ -139,10 +156,13 @@ export async function placeOrder(
     return { fieldErrors: z.flattenError(parsed.error).fieldErrors };
   }
   const input = parsed.data;
+  if (!COUNTRIES[input.country]) {
+    return { error: "El país o región seleccionado no es válido." };
+  }
 
   // Re-resolve price server-side from (product, currency). Never trust a client
   // amount. The gateway must be enabled AND accept this currency.
-  const [product, gateway] = await Promise.all([
+  const [product, gateway, currency] = await Promise.all([
     db.product.findUnique({
       where: { id: input.productId },
       select: {
@@ -164,12 +184,24 @@ export async function placeOrder(
       },
       select: { id: true, provider: true, config: true, live: true },
     }),
+    db.currency.findUnique({
+      where: { id: input.currencyId },
+      select: { countryCodes: true },
+    }),
   ]);
 
   if (!product || !product.visible) return { error: "El producto no está disponible." };
   const price = product.prices[0];
   if (!price) return { error: "El producto no tiene precio en esta moneda." };
   if (!gateway) return { error: "El método de pago no es válido para esta moneda." };
+
+  const allowedCountries = (currency?.countryCodes ?? "")
+    .split(",")
+    .map((country) => country.trim().toUpperCase())
+    .filter(Boolean);
+  if (allowedCountries.length > 0 && !allowedCountries.includes(input.country)) {
+    return { error: "El país o región seleccionado no está disponible para esta compra." };
+  }
 
   const adapter = getAdapter(gateway.provider);
   if (!adapter) return { error: "El método de pago no está disponible." };
