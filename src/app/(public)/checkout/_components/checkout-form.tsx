@@ -10,8 +10,7 @@ import {
   type CheckoutState,
   type CouponPreview,
 } from "../actions";
-import { StripeEmbeddedCheckout } from "./stripe-embedded-checkout";
-import { SequraCheckout } from "./sequra-checkout";
+import { CheckoutPaymentModal } from "./checkout-payment-modal";
 import styles from "./checkout.module.css";
 
 function FieldError({ errors }: { errors?: string[] }) {
@@ -55,6 +54,16 @@ function gatewayLabel(gateway: AvailableGateway) {
   return gateway.name;
 }
 
+function checkoutButtonLabel(gateway?: AvailableGateway) {
+  if (!gateway) return "Continuar al pago";
+  if (gateway.provider === "stripe") return "Continuar con tarjeta";
+  if (gateway.provider === "paypal") return "Continuar con PayPal";
+  if (gateway.provider === "sequra") return "Continuar con seQura";
+  if (gateway.provider === "aplazame") return "Continuar con Aplazame";
+  if (gateway.provider === "manual") return "Ver instrucciones de pago";
+  return "Continuar al pago";
+}
+
 export function CheckoutForm({
   productId,
   productName,
@@ -92,6 +101,9 @@ export function CheckoutForm({
       }).format(amount / 12),
     [amount, currencyCode]
   );
+  const selectedGatewayDetails = gateways.find(
+    (gateway) => gateway.id === selectedGateway
+  );
 
   function applyCoupon() {
     if (!couponCode.trim()) return;
@@ -102,20 +114,8 @@ export function CheckoutForm({
     startCheck(async () => setCoupon(await previewCoupon(fd)));
   }
 
-  if (state.embedded) {
-    return (
-      <StripeEmbeddedCheckout
-        publishableKey={state.embedded.publishableKey}
-        clientSecret={state.embedded.clientSecret}
-      />
-    );
-  }
-
-  if (state.widget) {
-    return <SequraCheckout html={state.widget.html} />;
-  }
-
   return (
+    <>
     <form action={formAction} className={styles.form}>
       <input type="hidden" name="productId" value={productId} />
       <input type="hidden" name="currencyId" value={currencyId} />
@@ -366,7 +366,7 @@ export function CheckoutForm({
           {state.error && <p className={styles.formError}>{state.error}</p>}
 
           <button type="submit" disabled={isPending} className={styles.submit}>
-            {isPending ? "Procesando…" : "Realizar Matrícula"}
+            {isPending ? "Procesando…" : checkoutButtonLabel(selectedGatewayDetails)}
           </button>
 
           <p className={styles.help}>
@@ -381,5 +381,7 @@ export function CheckoutForm({
         </section>
       </div>
     </form>
+    <CheckoutPaymentModal state={state} />
+    </>
   );
 }

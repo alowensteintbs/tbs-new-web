@@ -98,6 +98,21 @@ export type CheckoutState = {
     html: string;
     orderNumber: string;
   };
+  /**
+   * Set when a provider must collect payment on its own secure checkout page.
+   * The client presents an explicit confirmation before leaving this checkout.
+   */
+  external?: {
+    provider: string;
+    url: string;
+    orderId: string;
+    orderNumber: string;
+  };
+  /** Set for manual payments, whose instructions live on the order page. */
+  internal?: {
+    orderId: string;
+    orderNumber: string;
+  };
 };
 
 export async function placeOrder(
@@ -323,8 +338,24 @@ export async function placeOrder(
     };
   }
 
-  // External providers redirect off-site; manual/internal go to our status page.
-  // The status URL keys off the unguessable `id`, not the sequential number.
-  if (start.kind === "redirect") redirect(start.url);
-  redirect(`/orders/${order.id}`);
+  // External providers collect payment on their own secure checkout. Keep the
+  // buyer in control by letting the client confirm the handoff first. The
+  // order URL keys off its unguessable `id`, not the sequential number.
+  if (start.kind === "redirect") {
+    return {
+      external: {
+        provider: gateway.provider,
+        url: start.url,
+        orderId: order.id,
+        orderNumber: order.number,
+      },
+    };
+  }
+
+  return {
+    internal: {
+      orderId: order.id,
+      orderNumber: order.number,
+    },
+  };
 }

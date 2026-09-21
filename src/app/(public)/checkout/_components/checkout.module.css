@@ -519,6 +519,105 @@
   text-align: center;
 }
 
+.paymentOverlay {
+  position: fixed;
+  z-index: 100;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  overflow-y: auto;
+  padding: 24px;
+  background: rgb(17 18 20 / 76%);
+  backdrop-filter: blur(8px);
+}
+
+.paymentModal {
+  width: min(100%, 760px);
+  max-height: calc(100vh - 48px);
+  overflow-y: auto;
+  border: 1px solid rgb(255 255 255 / 18%);
+  border-radius: 28px;
+  background: #f0f0f0;
+  padding: 28px;
+  box-shadow: 0 28px 80px rgb(0 0 0 / 42%);
+}
+
+.paymentModalHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+  margin-bottom: 22px;
+}
+
+.paymentEyebrow {
+  margin: 0 0 6px;
+  color: #6f7377;
+  font-family: var(--font-tbs-raleway), sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.paymentModalHeader h2 {
+  margin: 0;
+  color: #242429;
+  font-family: var(--font-space-grotesk), sans-serif;
+  font-size: 28px;
+  line-height: 1.1;
+}
+
+.paymentModalHeader p:not(.paymentEyebrow) {
+  max-width: 520px;
+  margin: 8px 0 0;
+  color: #56595d;
+  font-family: var(--font-tbs-raleway), sans-serif;
+  font-size: 15px;
+  line-height: 1.4;
+}
+
+.paymentSecure {
+  flex: 0 0 auto;
+  border-radius: 999px;
+  background: #0cce7a;
+  padding: 7px 11px;
+  color: #102d20;
+  font-family: var(--font-space-grotesk), sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.paymentActions {
+  display: grid;
+  gap: 12px;
+}
+
+.paymentPrimaryAction,
+.paymentSecondaryAction {
+  display: flex;
+  min-height: 52px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  font-family: var(--font-space-grotesk), sans-serif;
+  font-size: 17px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.paymentPrimaryAction {
+  background: #ff0a54;
+  color: #fff;
+}
+
+.paymentPrimaryAction:hover {
+  background: #e8094c;
+}
+
+.paymentSecondaryAction {
+  border: 1px solid #b9bcc0;
+  color: #242429;
+}
+
 @media (max-width: 79.999rem) {
   .main {
     padding: 152px 24px 80px;
@@ -589,6 +688,30 @@
 
   .panel {
     padding: 18px;
+  }
+
+  .paymentOverlay {
+    align-items: end;
+    padding: 12px;
+  }
+
+  .paymentModal {
+    max-height: calc(100vh - 24px);
+    border-radius: 24px;
+    padding: 20px;
+  }
+
+  .paymentModalHeader {
+    gap: 12px;
+  }
+
+  .paymentModalHeader h2 {
+    font-size: 24px;
+  }
+
+  .paymentSecure {
+    padding: 6px 9px;
+    font-size: 11px;
   }
 }
 
