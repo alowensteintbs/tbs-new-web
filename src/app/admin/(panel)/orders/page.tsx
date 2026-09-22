@@ -27,6 +27,7 @@ export default async function OrdersPage({
   const dir: SortDir = params.dir === "asc" ? "asc" : "desc";
 
   const where: Prisma.OrderWhereInput = {
+    deletedAt: null,
     ...(q && {
       OR: [
         { number: { contains: q } },

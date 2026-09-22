@@ -256,16 +256,64 @@ model Order {
   paymentRef String?
   // Raw provider payload (last webhook/notification) for auditing.
   paymentMeta String? @db.Text
+  // Human-readable failure detail, either supplied by an admin or extracted
+  // from the provider response. The full original response lives in events.
+  failureReason String? @db.Text
+  // Legacy internal field retained only to match the already-applied database
+  // schema. It is intentionally not exposed or written by the application.
+  adminReference String?
+  // "Delete" is a reversible archive so a financial/audit trail is never
+  // physically erased. Archived orders are excluded from every public/admin
+  // operational query.
+  deletedAt DateTime?
+  deletedBy String?
   paidAt     DateTime?
   createdAt  DateTime    @default(now())
   updatedAt  DateTime    @updatedAt
   items      OrderItem[]
+  notes      OrderNote[]
+  events     OrderEvent[]
 
   @@index([customerId])
   @@index([status])
   @@index([createdAt]) // default sort
   @@index([gatewayId])
   @@index([couponId])
+  @@index([deletedAt])
+}
+
+/// Internal notes left by the operations team. Author data is snapshotted so
+/// notes remain intelligible even if that admin account is removed later.
+model OrderNote {
+  id         String   @id @default(cuid())
+  orderId    String
+  order      Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  body       String   @db.Text
+  authorId   String?
+  authorName String
+  createdAt  DateTime @default(now())
+
+  @@index([orderId, createdAt])
+}
+
+/// Append-only audit trail. Stores manual operations and every relevant payment
+/// response, including repeated or out-of-order webhooks.
+model OrderEvent {
+  id             String       @id @default(cuid())
+  orderId        String
+  order          Order        @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  type           String
+  source         String
+  message        String       @db.Text
+  previousStatus OrderStatus?
+  nextStatus     OrderStatus?
+  payload        String?      @db.Text
+  actorId        String?
+  actorName      String?
+  createdAt      DateTime     @default(now())
+
+  @@index([orderId, createdAt])
+  @@index([type])
 }
 
 enum CouponType {

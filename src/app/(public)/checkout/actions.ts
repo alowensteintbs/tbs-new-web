@@ -302,6 +302,16 @@ export async function placeOrder(
         total,
         status: isFree ? "PAID" : "PENDING",
         paidAt: isFree ? new Date() : null,
+        events: {
+          create: {
+            type: "ORDER_CREATED",
+            source: "SYSTEM",
+            message: isFree
+              ? "Pedido creado y pagado mediante descuento total."
+              : "Pedido creado; pendiente de iniciar el pago.",
+            nextStatus: isFree ? "PAID" : "PENDING",
+          },
+        },
         items: {
           create: {
             productId: product.id,
@@ -365,19 +375,49 @@ export async function placeOrder(
     });
   } catch (error) {
     console.error(`No se pudo iniciar el pago con ${gateway.provider}`, error);
-    await db.order.update({
-      where: { id: order.id },
-      data: { status: "FAILED" },
-    });
+    const reason = error instanceof Error ? error.message : "No se pudo iniciar el pago.";
+    const payload = JSON.stringify({ stage: "create_payment", provider: gateway.provider, error: reason });
+    await db.$transaction([
+      db.order.update({
+        where: { id: order.id },
+        data: { status: "FAILED", failureReason: reason.slice(0, 2_000), paymentMeta: payload },
+      }),
+      db.orderEvent.create({
+        data: {
+          orderId: order.id,
+          type: "PAYMENT_START_FAILED",
+          source: "PAYMENT",
+          message: "La pasarela no pudo iniciar el pago.",
+          previousStatus: "PENDING",
+          nextStatus: "FAILED",
+          payload,
+        },
+      }),
+    ]);
     return paymentStartError(gateway.provider, error);
   }
 
-  if (start.paymentRef) {
-    await db.order.update({
-      where: { id: order.id },
-      data: { paymentRef: start.paymentRef },
-    });
-  }
+  // Never store client secrets or redirect URLs in the audit log. The external
+  // reference is sufficient to reconcile this payment start with webhooks.
+  await db.$transaction([
+    ...(start.paymentRef
+      ? [
+          db.order.update({
+            where: { id: order.id },
+            data: { paymentRef: start.paymentRef },
+          }),
+        ]
+      : []),
+    db.orderEvent.create({
+      data: {
+        orderId: order.id,
+        type: "PAYMENT_STARTED",
+        source: "PAYMENT",
+        message: "Se inició el pago en la pasarela.",
+        payload: start.paymentRef ? JSON.stringify({ paymentRef: start.paymentRef }) : null,
+      },
+    }),
+  ]);
 
   // Embedded providers (Stripe) render their form inline: hand the client the
   // client secret + publishable key so Stripe.js can mount it. No redirect.

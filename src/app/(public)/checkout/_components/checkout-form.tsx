@@ -55,9 +55,6 @@ function Field({
 }
 
 function gatewayLabel(gateway: AvailableGateway) {
-  if (gateway.provider === "sequra") return "Paga Fraccionado con seQura";
-  if (gateway.provider === "stripe") return "Tarjetas de crédito/débito";
-  if (gateway.provider === "aplazame") return "Aplazame";
   return gateway.name;
 }
 

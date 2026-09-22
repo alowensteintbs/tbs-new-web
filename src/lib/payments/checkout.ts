@@ -2,6 +2,7 @@ import "server-only";
 import { db } from "@/lib/db";
 import { decrypt } from "@/lib/crypto";
 import { sendOrderStatusEmail } from "@/lib/email/notify";
+import { paymentFailureReason } from "@/lib/orders/audit";
 import { getProvider } from "./providers";
 import type { GatewayConfig, WebhookResult } from "./types";
 
@@ -49,7 +50,8 @@ export function readGatewayConfig(encrypted: string): GatewayConfig {
  * from the event. Idempotent and non-regressing: re-delivered events are safe,
  * and a late FAILED/expired event can't undo an already-PAID order.
  *
- * Returns the affected order id, or null if nothing matched / no state change.
+ * Returns the affected order id, or null if nothing matched. A webhook is
+ * logged even when it does not change state, which makes retries visible.
  */
 export async function applyWebhookResult(
   result: WebhookResult
@@ -58,6 +60,7 @@ export async function applyWebhookResult(
 
   const order = await db.order.findFirst({
     where: {
+      deletedAt: null,
       OR: [
         ...(result.paymentRef ? [{ paymentRef: result.paymentRef }] : []),
         ...(result.orderId ? [{ id: result.orderId }] : []),
@@ -67,39 +70,56 @@ export async function applyWebhookResult(
   });
   if (!order) return null;
 
-  // Guard against out-of-order / regressive transitions.
-  if (result.status === "FAILED" && order.status !== "PENDING") return null;
-  if (
+  // Guard against out-of-order / regressive transitions. We still retain the
+  // provider payload as an audit event, but never regress the order itself.
+  const isRegressive =
+    (result.status === "FAILED" && order.status !== "PENDING") ||
+    (
     result.status === "REFUNDED" &&
     order.status !== "PAID" &&
     order.status !== "FULFILLED"
-  ) {
-    return null;
-  }
-  if (order.status === result.status) {
-    // Already in this state; just persist the latest raw payload for auditing.
-    if (result.raw) {
-      await db.order.update({
-        where: { id: order.id },
-        data: { paymentMeta: result.raw },
-      });
-    }
-    return null;
-  }
+    );
+  const changed = !isRegressive && order.status !== result.status;
+  const failureReason =
+    result.status === "FAILED"
+      ? paymentFailureReason(result.raw) ?? "La pasarela informó que el pago falló, sin detalle adicional."
+      : null;
 
-  await db.order.update({
-    where: { id: order.id },
-    data: {
-      status: result.status,
-      paidAt:
-        result.status === "PAID" ? order.paidAt ?? new Date() : order.paidAt,
-      paymentMeta: result.raw ?? undefined,
-    },
+  await db.$transaction(async (tx) => {
+    await tx.order.update({
+      where: { id: order.id },
+      data: {
+        ...(changed
+          ? {
+              status: result.status,
+              paidAt:
+                result.status === "PAID" ? order.paidAt ?? new Date() : order.paidAt,
+            }
+          : {}),
+        ...(result.raw ? { paymentMeta: result.raw } : {}),
+        ...(result.status === "FAILED" ? { failureReason } : {}),
+      },
+    });
+    await tx.orderEvent.create({
+      data: {
+        orderId: order.id,
+        type: isRegressive ? "PAYMENT_WEBHOOK_IGNORED" : "PAYMENT_WEBHOOK",
+        source: "PAYMENT",
+        message: isRegressive
+          ? `Respuesta ${result.status} recibida, sin cambiar el estado por ser tardía o regresiva.`
+          : changed
+            ? `La pasarela informó un cambio de estado a ${result.status}.`
+            : `La pasarela confirmó nuevamente el estado ${result.status}.`,
+        previousStatus: order.status,
+        nextStatus: changed ? result.status : order.status,
+        payload: result.raw ?? null,
+      },
+    });
   });
 
   // Fire the transactional email for this transition (best-effort; awaited so it
   // completes before a serverless invocation ends, but never throws).
-  await sendOrderStatusEmail(order.id, result.status);
+  if (changed) await sendOrderStatusEmail(order.id, result.status);
 
   return order.id;
 }

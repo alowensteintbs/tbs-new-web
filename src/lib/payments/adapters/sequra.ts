@@ -248,6 +248,7 @@ export const sequraAdapter: PaymentAdapter = {
     // Resolve the order — by our stored paymentRef (the UUID) or the echoed id.
     const order = await db.order.findFirst({
       where: {
+        deletedAt: null,
         OR: [
           ...(uuid ? [{ paymentRef: uuid }] : []),
           ...(ourOrderId ? [{ id: ourOrderId }] : []),

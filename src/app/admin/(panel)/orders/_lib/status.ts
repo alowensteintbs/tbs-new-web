@@ -14,3 +14,13 @@ export const ORDER_STATUS_META: Record<
 };
 
 export const ORDER_STATUSES = Object.keys(ORDER_STATUS_META) as OrderStatus[];
+
+/** Allowed lifecycle transitions. Shared by the UI and Server Actions. */
+export const ORDER_STATUS_TRANSITIONS: Partial<
+  Record<OrderStatus, readonly OrderStatus[]>
+> = {
+  PENDING: ["PAID", "CANCELLED", "FAILED"],
+  PAID: ["FULFILLED", "REFUNDED"],
+  FULFILLED: ["REFUNDED"],
+  FAILED: ["PENDING", "CANCELLED"],
+};

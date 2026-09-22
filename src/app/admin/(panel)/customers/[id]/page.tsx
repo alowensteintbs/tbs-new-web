@@ -38,6 +38,7 @@ export default async function CustomerDetailPage({
       country: true,
       createdAt: true,
       orders: {
+        where: { deletedAt: null },
         orderBy: { createdAt: "desc" },
         select: {
           id: true,

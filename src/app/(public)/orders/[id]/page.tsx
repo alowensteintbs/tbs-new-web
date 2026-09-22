@@ -56,8 +56,8 @@ export default async function OrderStatusPage({
 }) {
   const { id } = await params;
   const { paid } = await searchParams;
-  const order = await db.order.findUnique({
-    where: { id },
+  const order = await db.order.findFirst({
+    where: { id, deletedAt: null },
     select: {
       number: true,
       subtotal: true,
