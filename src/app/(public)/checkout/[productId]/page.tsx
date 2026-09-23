@@ -37,17 +37,9 @@ export default async function CheckoutPage({
   const price = product.prices[0];
   const gateways = price ? await getGatewaysForCurrency(currency.id) : [];
 
-  // Billing-country options: restricted to the currency's configured countries
-  // when set (so dLocal/BNPL only see supported countries), else the full list.
-  const currencyRow = await db.currency.findUnique({
-    where: { id: currency.id },
-    select: { countryCodes: true },
-  });
-  const allowedCountries = (currencyRow?.countryCodes ?? "")
-    .split(",")
-    .map((c) => c.trim())
-    .filter(Boolean);
-  const countries = countryOptions(allowedCountries);
+  // The country selector must remain global: choosing a country refreshes the
+  // quote client-side, resolving its configured currency and product price.
+  const countries = countryOptions();
 
   const unavailableMessage = !price
     ? `Este producto no tiene precio en tu moneda (${currency.code}). Contactanos para completar la compra.`

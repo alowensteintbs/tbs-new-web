@@ -1,14 +1,16 @@
 "use client";
 
 import Image from "next/image";
-import { useActionState, useMemo, useState, useTransition } from "react";
+import { useActionState, useMemo, useRef, useState, useTransition } from "react";
 import { countryCallingCode, SPANISH_PROVINCES } from "@/lib/address";
 import type { AvailableGateway } from "@/lib/payments/checkout";
 import type { CountryOption } from "@/lib/countries";
 import {
   placeOrder,
   previewCoupon,
+  getCheckoutQuote,
   type CheckoutState,
+  type CheckoutQuote,
   type CouponPreview,
 } from "../actions";
 import { CheckoutPaymentModal } from "./checkout-payment-modal";
@@ -58,14 +60,32 @@ function gatewayLabel(gateway: AvailableGateway) {
   return gateway.name;
 }
 
+const GATEWAY_LOGOS = {
+  stripe: { src: "/payment-providers/stripe.svg", alt: "Stripe", width: 512, height: 214 },
+  paypal: { src: "/payment-providers/paypal.svg", alt: "PayPal", width: 124, height: 33 },
+  aplazame: { src: "/payment-providers/aplazame.svg", alt: "Aplazame", width: 120, height: 32 },
+  dlocal: { src: "/payment-providers/dlocal.png", alt: "dLocal", width: 545, height: 130 },
+} as const;
+
+function GatewayLogo({ provider }: { provider: string }) {
+  const logo = GATEWAY_LOGOS[provider as keyof typeof GATEWAY_LOGOS];
+  if (!logo) return null;
+
+  return (
+    <Image
+      src={logo.src}
+      alt={logo.alt}
+      width={logo.width}
+      height={logo.height}
+      className={styles.gatewayLogo}
+    />
+  );
+}
+
 function checkoutButtonLabel(gateway?: AvailableGateway) {
   if (!gateway) return "Continuar al pago";
-  if (gateway.provider === "stripe") return "Continuar con tarjeta";
-  if (gateway.provider === "paypal") return "Continuar con PayPal";
-  if (gateway.provider === "sequra") return "Continuar con seQura";
-  if (gateway.provider === "aplazame") return "Continuar con Aplazame";
   if (gateway.provider === "manual") return "Ver instrucciones de pago";
-  return "Continuar al pago";
+  return `Continuar con ${gatewayLabel(gateway)}`;
 }
 
 export function CheckoutForm({
@@ -94,38 +114,67 @@ export function CheckoutForm({
   const [couponOpen, setCouponOpen] = useState(false);
   const [couponCode, setCouponCode] = useState("");
   const [coupon, setCoupon] = useState<CouponPreview | null>(null);
+  const [quote, setQuote] = useState<CheckoutQuote>({
+    available: true,
+    currencyId,
+    currencyCode,
+    amount,
+    amountLabel,
+    gateways,
+  });
   const [selectedGateway, setSelectedGateway] = useState(gateways[0]?.id ?? "");
   const [selectedCountry, setSelectedCountry] = useState(
     countries.find((country) => country.code === "ES")?.code ?? countries[0]?.code ?? ""
   );
   const [checking, startCheck] = useTransition();
+  const [updatingQuote, startQuoteUpdate] = useTransition();
+  const quoteRequest = useRef(0);
+
+  const activeGateways = quote.available ? quote.gateways : [];
+  const activeCurrencyId = quote.available ? quote.currencyId : "";
+  const activeCurrencyCode = quote.available ? quote.currencyCode : currencyCode;
+  const activeAmount = quote.available ? quote.amount : amount;
+  const activeAmountLabel = quote.available ? quote.amountLabel : "No disponible";
 
   const installmentLabel = useMemo(
     () =>
       new Intl.NumberFormat("es-ES", {
         style: "currency",
-        currency: currencyCode,
-      }).format(amount / 12),
-    [amount, currencyCode]
+        currency: activeCurrencyCode,
+      }).format(activeAmount / 12),
+    [activeAmount, activeCurrencyCode]
   );
-  const selectedGatewayDetails = gateways.find(
+  const selectedGatewayDetails = activeGateways.find(
     (gateway) => gateway.id === selectedGateway
   );
 
   function applyCoupon() {
-    if (!couponCode.trim()) return;
+    if (!couponCode.trim() || !quote.available) return;
     const fd = new FormData();
     fd.set("productId", productId);
-    fd.set("currencyId", currencyId);
+    fd.set("currencyId", quote.currencyId);
     fd.set("couponCode", couponCode);
     startCheck(async () => setCoupon(await previewCoupon(fd)));
+  }
+
+  function updateCountry(country: string) {
+    setSelectedCountry(country);
+    setCoupon(null);
+    const request = ++quoteRequest.current;
+    startQuoteUpdate(async () => {
+      const nextQuote = await getCheckoutQuote(productId, country);
+      if (request === quoteRequest.current) {
+        setQuote(nextQuote);
+        setSelectedGateway(nextQuote.available ? nextQuote.gateways[0]?.id ?? "" : "");
+      }
+    });
   }
 
   return (
     <>
     <form action={formAction} className={styles.form}>
       <input type="hidden" name="productId" value={productId} />
-      <input type="hidden" name="currencyId" value={currencyId} />
+      <input type="hidden" name="currencyId" value={activeCurrencyId} />
 
       <section className={styles.summary} aria-labelledby="checkout-summary-title">
         <h1 id="checkout-summary-title" className={styles.summaryHeading}>
@@ -141,7 +190,7 @@ export function CheckoutForm({
         <div className={styles.summaryBody}>
           <div className={styles.summaryRow}>
             <span>{productName}</span>
-            <span>{amountLabel}</span>
+            <span>{activeAmountLabel}</span>
           </div>
           <hr className={styles.summaryDivider} />
           <div className={styles.summaryDetails}>
@@ -153,13 +202,13 @@ export function CheckoutForm({
             )}
             <div className={styles.summaryRow}>
               <span>Subtotal</span>
-              <span>{amountLabel}</span>
+              <span>{activeAmountLabel}</span>
             </div>
           </div>
           <hr className={styles.summaryDivider} />
           <div className={`${styles.summaryRow} ${styles.summaryTotal}`}>
             <span>TOTAL</span>
-            <span>{coupon?.ok ? coupon.totalLabel : amountLabel}</span>
+            <span>{coupon?.ok ? coupon.totalLabel : activeAmountLabel}</span>
           </div>
         </div>
       </section>
@@ -242,7 +291,7 @@ export function CheckoutForm({
                     id="country"
                     name="country"
                     value={selectedCountry}
-                    onChange={(event) => setSelectedCountry(event.target.value)}
+                    onChange={(event) => updateCountry(event.target.value)}
                     required
                     className={styles.select}
                   >
@@ -260,6 +309,7 @@ export function CheckoutForm({
                     aria-hidden="true"
                   />
                 </div>
+                {updatingQuote && <p className={styles.quoteUpdating}>Actualizando precio…</p>}
                 <FieldError errors={state.fieldErrors?.country} />
               </div>
               {selectedCountry === "ES" ? (
@@ -331,7 +381,7 @@ export function CheckoutForm({
                     type="button"
                     className={styles.couponButton}
                     onClick={applyCoupon}
-                    disabled={checking || !couponCode.trim()}
+                    disabled={checking || !couponCode.trim() || !quote.available}
                   >
                     {checking ? "Comprobando…" : "Aplicar"}
                   </button>
@@ -354,7 +404,16 @@ export function CheckoutForm({
           </h2>
           <fieldset className={styles.gateways}>
             <legend className="sr-only">Elige un método de pago</legend>
-            {gateways.map((gateway) => {
+            {updatingQuote && <p className={styles.quoteUpdating}>Actualizando métodos de pago…</p>}
+            {!updatingQuote && !quote.available && (
+              <p className={styles.formError}>{quote.error}</p>
+            )}
+            {!updatingQuote && quote.available && activeGateways.length === 0 && (
+              <p className={styles.formError}>
+                No hay métodos de pago disponibles para esta moneda.
+              </p>
+            )}
+            {!updatingQuote && activeGateways.map((gateway) => {
               const selected = selectedGateway === gateway.id;
               return (
                 <label
@@ -381,6 +440,9 @@ export function CheckoutForm({
                   </span>
                   {gateway.provider === "sequra" && (
                     <span className={styles.sequraBadge}>seQura</span>
+                  )}
+                  {gateway.provider !== "sequra" && (
+                    <GatewayLogo provider={gateway.provider} />
                   )}
                   {selected && gateway.provider === "sequra" && (
                     <span className={styles.gatewayExtra}>
@@ -411,7 +473,11 @@ export function CheckoutForm({
 
           {state.error && <p className={styles.formError}>{state.error}</p>}
 
-          <button type="submit" disabled={isPending} className={styles.submit}>
+          <button
+            type="submit"
+            disabled={isPending || updatingQuote || !quote.available || !selectedGateway}
+            className={styles.submit}
+          >
             {isPending ? "Procesando…" : checkoutButtonLabel(selectedGatewayDetails)}
           </button>
 

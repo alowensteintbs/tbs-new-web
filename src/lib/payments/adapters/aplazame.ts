@@ -31,12 +31,24 @@ import type {
  *   - productType → optional; forces a financing plan (instalments | pay_in_4 |
  *                   pay_later). Blank = the buyer chooses at Aplazame's checkout.
  *
- * Sandbox vs. production share the API host; the environment is determined by
- * which private key is used. The gateway's `live` flag stays informational.
+ * Sandbox and production share the API host, but the environment is selected
+ * explicitly in the `Accept` media type. The gateway's `live` flag therefore
+ * determines which header is sent.
  */
 
 const API_BASE = "https://api.aplazame.com";
-const API_VERSION = "application/vnd.aplazame.v4+json";
+const LIVE_API_VERSION = "application/vnd.aplazame.v4+json";
+const SANDBOX_API_VERSION = "application/vnd.aplazame.sandbox.v4+json";
+
+function apiVersion(live: boolean): string {
+  return live ? LIVE_API_VERSION : SANDBOX_API_VERSION;
+}
+
+/** Do not attach provider bodies to errors: they can contain buyer data. */
+function responseSummary(res: Response, body: string): string {
+  const mediaType = res.headers.get("x-aplazame-media-type") ?? "sin X-Aplazame-Media-Type";
+  return `${res.status}; ${mediaType}; respuesta de ${body.length} caracteres`;
+}
 
 /** EUR is 2-decimal; Aplazame expects amounts as integer cents. */
 function toCents(amount: number | string): number {
@@ -82,6 +94,11 @@ function buildCheckoutPayload(order: PayableOrder, config: GatewayConfig, ctx: P
     name: it.productName,
     quantity: it.quantity,
     price: toCents(Number(it.unitPrice)),
+    // The checkout stores final course prices. Declare the amount as tax-exempt
+    // so Aplazame's pre-tax article price and `total_amount` remain identical.
+    tax_rate: 0,
+    url: `${ctx.baseUrl}/orders/${order.id}`,
+    image_url: `${ctx.baseUrl}/favicon.ico`,
   }));
   // Aplazame validates total_amount === sum(article.price * quantity). Compute
   // it from the items (no shipping/discount for digital courses) so it matches.
@@ -105,6 +122,7 @@ function buildCheckoutPayload(order: PayableOrder, config: GatewayConfig, ctx: P
       id: order.id,
       total_amount: totalAmount,
       currency: order.currencyCode.toUpperCase(),
+      tax_rate: 0,
       articles,
     },
     customer: {
@@ -124,6 +142,22 @@ function buildCheckoutPayload(order: PayableOrder, config: GatewayConfig, ctx: P
       country,
       postcode: c.postalCode ?? "",
     },
+    // Aplazame requires a shipping object even for a course delivered online.
+    // It has no delivery cost and reuses the address collected at checkout.
+    shipping: {
+      first_name: c.name || first_name,
+      last_name: c.surname || last_name,
+      phone: c.phone ?? "",
+      street: c.addressLine ?? "",
+      city: c.city ?? "",
+      state: c.province ?? "",
+      country,
+      postcode: c.postalCode ?? "",
+      name: "Acceso digital",
+      price: 0,
+      tax_rate: 0,
+      method: "pickup_store",
+    },
   };
 
   // Force a financing plan only when the admin configured one; otherwise the
@@ -141,25 +175,32 @@ export const aplazameAdapter: PaymentAdapter = {
   async createPayment(order, config, ctx) {
     const res = await fetch(`${API_BASE}/checkout`, {
       method: "POST",
+      // Keep the checkout URL that Aplazame returns in `Location`. Node's
+      // fetch follows redirects by default, which would turn the response into
+      // the hosted page's final 200 and hide the URL we need to return.
+      redirect: "manual",
       headers: {
-        Accept: API_VERSION,
+        Accept: apiVersion(ctx.live),
         Authorization: bearer(config),
         "Content-Type": "application/json",
       },
       body: JSON.stringify(buildCheckoutPayload(order, config, ctx)),
     });
-    if (!res.ok) {
-      const detail = await res.text().catch(() => "");
-      throw new Error(`Aplazame: creación del checkout falló (${res.status}) ${detail}`);
-    }
-
     // Aplazame returns the hosted checkout URL in the Location header.
     const location = res.headers.get("location");
-    if (!location) {
-      throw new Error("Aplazame: la creación del checkout no devolvió Location");
+    if (location && (res.ok || (res.status >= 300 && res.status < 400))) {
+      return { kind: "redirect", url: location };
     }
 
-    return { kind: "redirect", url: location };
+    const detail = await res.text().catch(() => "");
+    if (!res.ok) {
+      throw new Error(
+        `Aplazame: creación del checkout falló (${responseSummary(res, detail)})`
+      );
+    }
+    throw new Error(
+      `Aplazame: checkout respondió sin Location (${responseSummary(res, detail)})`
+    );
   },
 
   async handleWebhook(rawBody, headers, config) {

@@ -6,7 +6,8 @@ import { z } from "zod";
 import { db } from "@/lib/db";
 import { Prisma } from "@/generated/prisma/client";
 import { getSiteUrl } from "@/lib/env";
-import { formatPrice } from "@/lib/currency-resolver";
+import { formatPrice, resolveCurrency } from "@/lib/currency-resolver";
+import { getEnabledCurrencies } from "@/lib/catalog";
 import {
   countryCallingCode,
   isSpanishPostalCode,
@@ -18,8 +19,10 @@ import { sendOrderStatusEmail } from "@/lib/email/notify";
 import { getAdapter } from "@/lib/payments";
 import {
   formatOrderNumber,
+  getGatewaysForCurrency,
   readGatewayConfig,
 } from "@/lib/payments/checkout";
+import type { AvailableGateway } from "@/lib/payments/checkout";
 import type { PayableOrder, PaymentStart } from "@/lib/payments/types";
 
 const checkoutSchema = z
@@ -58,6 +61,59 @@ const checkoutSchema = z
 export type CouponPreview =
   | { ok: true; code: string; discountLabel: string; totalLabel: string }
   | { ok: false; error: string };
+
+/**
+ * Price and payment methods resolved from the country selected in checkout.
+ * Product prices are stored by currency; currencies declare the countries they
+ * serve. This action is only a UI quote: placeOrder resolves everything again
+ * on the server before creating an order.
+ */
+export type CheckoutQuote =
+  | {
+      available: true;
+      currencyId: string;
+      currencyCode: string;
+      amount: number;
+      amountLabel: string;
+      gateways: AvailableGateway[];
+    }
+  | { available: false; error: string };
+
+export async function getCheckoutQuote(
+  productId: string,
+  countryRaw: string
+): Promise<CheckoutQuote> {
+  const country = countryRaw.trim().toUpperCase();
+  if (!COUNTRIES[country]) {
+    return { available: false, error: "El país o región seleccionado no es válido." };
+  }
+
+  const currency = resolveCurrency(await getEnabledCurrencies(), country);
+  if (!currency) {
+    return { available: false, error: "No hay una moneda disponible para este país." };
+  }
+
+  const product = await db.product.findFirst({
+    where: { id: productId, visible: true },
+    select: { prices: { where: { currencyId: currency.id }, select: { amount: true } } },
+  });
+  const price = product?.prices[0];
+  if (!price) {
+    return {
+      available: false,
+      error: `Este producto no tiene precio en ${currency.code}.`,
+    };
+  }
+
+  return {
+    available: true,
+    currencyId: currency.id,
+    currencyCode: currency.code,
+    amount: Number(price.amount),
+    amountLabel: formatPrice(Number(price.amount), currency.code),
+    gateways: await getGatewaysForCurrency(currency.id),
+  };
+}
 
 /**
  * Validate a coupon code against the current product/currency and return the

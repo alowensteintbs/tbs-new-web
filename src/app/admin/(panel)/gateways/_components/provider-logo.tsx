@@ -1,50 +1,43 @@
+import Image from "next/image";
 import type { ReactElement } from "react";
 
 /**
- * Brand logos for the payment providers, rendered as self-contained inline SVG
- * wordmarks — no remote assets, correct brand colours, crisp at any size. Used
- * in the admin only: the gateway list and the create-form provider picker.
+ * Brand logos for the payment providers. The main gateway marks are local SVG
+ * assets obtained from their public brand sources, so the panel never depends
+ * on a remote image at runtime. Used in the admin only: the gateway list and
+ * the create-form provider picker.
  * Any provider without a bespoke mark falls back to a neutral monogram chip.
  */
 
 const WORDMARK_FONT =
   "system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif";
 
-function Stripe() {
+function ProviderImage({
+  src,
+  alt,
+  className = "h-5 w-5",
+}: {
+  src: string;
+  alt: string;
+  className?: string;
+}) {
   return (
-    <svg viewBox="0 0 66 24" className="h-3.5 w-auto" role="img" aria-label="Stripe">
-      <text
-        x="0"
-        y="19"
-        fontFamily={WORDMARK_FONT}
-        fontSize="23"
-        fontWeight="800"
-        letterSpacing="-1.2"
-        fill="#635BFF"
-      >
-        stripe
-      </text>
-    </svg>
+    <Image
+      src={src}
+      alt={alt}
+      width={120}
+      height={32}
+      className={`object-contain ${className}`}
+    />
   );
 }
 
+function Stripe() {
+  return <ProviderImage src="/payment-providers/stripe.svg" alt="Stripe" />;
+}
+
 function PayPal() {
-  return (
-    <svg viewBox="0 0 78 24" className="h-3.5 w-auto" role="img" aria-label="PayPal">
-      <text
-        x="0"
-        y="19"
-        fontFamily={WORDMARK_FONT}
-        fontSize="22"
-        fontWeight="800"
-        fontStyle="italic"
-        letterSpacing="-0.6"
-      >
-        <tspan fill="#003087">Pay</tspan>
-        <tspan fill="#0079C1">Pal</tspan>
-      </text>
-    </svg>
-  );
+  return <ProviderImage src="/payment-providers/paypal.svg" alt="PayPal" />;
 }
 
 function SeQura() {
@@ -67,19 +60,11 @@ function SeQura() {
 
 function Aplazame() {
   return (
-    <svg viewBox="0 0 92 24" className="h-3.5 w-auto" role="img" aria-label="Aplazame">
-      <text
-        x="0"
-        y="19"
-        fontFamily={WORDMARK_FONT}
-        fontSize="21"
-        fontWeight="800"
-        letterSpacing="-0.8"
-        fill="#00C08B"
-      >
-        aplazame
-      </text>
-    </svg>
+    <ProviderImage
+      src="/payment-providers/aplazame.svg"
+      alt="Aplazame"
+      className="h-4 w-auto"
+    />
   );
 }
 
