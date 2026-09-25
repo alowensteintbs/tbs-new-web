@@ -2117,6 +2117,9 @@
 .pagina :global(.tbs-grid-dark) { background-color: #121214; }
 @media (min-width: 601px) {
   .tituloCarrusel h2 { font-family: var(--font-space-grotesk), sans-serif; font-size: 42px; line-height: 38px; letter-spacing: -0.02em; }
+  .carruselBeneficios {
+    width: calc(100% + max(24px, (100vw - 1200px) / 2));
+  }
   .tarjetaBeneficio { border-radius: 28px; }
   .tarjetaBeneficio ul { font-family: var(--font-space-grotesk), sans-serif; line-height: 22px; letter-spacing: -0.02em; }
   .pagina [data-product-mentors] article { height: 576px; }
