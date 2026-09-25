@@ -2134,3 +2134,4 @@
 .formularioClaseGratis .enviarBoton { background: #daff0a; color: #5c6b04; width: 100%; font-size: 18px; }
 .consentimiento { display: flex; align-items: start; gap: 8px; font-size: 11px; line-height: 14px; margin-top: 12px; }
 .consentimiento input { accent-color: #daff0a; margin-top: 2px; }
+.consentimiento a { color: inherit; font-weight: 700; text-decoration: underline; text-underline-offset: 2px; }

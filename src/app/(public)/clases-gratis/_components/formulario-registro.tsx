@@ -77,7 +77,9 @@ export function FormularioRegistro({ clase, ubicacion = "inicio" }: { clase: Cla
 
       {!enviado && <label className="my-8 flex items-center gap-2 font-raleway text-xs leading-4 text-white">
         <input type="checkbox" name="consentimiento" required className="size-[18px] shrink-0 appearance-none rounded-[1px] border border-white bg-transparent checked:bg-[#0066ff]" />
-        <span>He leído y acepto los <span className="underline">Términos y condiciones</span> y la <span className="underline">Política de privacidad</span>*</span>
+        <span>
+          He leído y acepto los <a href="/terminos-y-condiciones" className="underline">Términos y condiciones</a> y la <a href="/politica-de-privacidad" className="underline">Política de privacidad</a>*
+        </span>
       </label>}
 
       {!enviado && <button

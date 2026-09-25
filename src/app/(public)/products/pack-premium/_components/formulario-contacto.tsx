@@ -270,7 +270,7 @@ export function FormularioContacto({
       {claseGratis && !envioConfirmado && (
         <label className={styles.consentimiento}>
           <input type="checkbox" required name="consentimiento" />
-          He leído y acepto los Términos y condiciones y la Política de privacidad.
+          He leído y acepto los <a href="/terminos-y-condiciones">Términos y condiciones</a> y la <a href="/politica-de-privacidad">Política de privacidad</a>.
         </label>
       )}
       {!envioConfirmado && <div className={styles.enviar}>
