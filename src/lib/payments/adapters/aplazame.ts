@@ -15,8 +15,10 @@ import type {
  * with Bearer auth. The flow is a hosted-checkout redirect + a webhook that is
  * confirmed *in the HTTP response body*, not via a follow-up API call:
  *
- *   1. createPayment → POST /checkout with the order. Aplazame answers 2xx with
- *      a `Location` header = the hosted checkout URL; we redirect the buyer there.
+ *   1. createPayment → POST /checkout with the order. Some Aplazame accounts
+ *      answer with a `Location` header, while the current API flow answers a
+ *      checkout `id`; in that case we open checkout.aplazame.com with the id
+ *      and the merchant's public key.
  *   2. The buyer completes the payment on Aplazame's page (enters their NIF,
  *      picks a financing plan, passes identity checks).
  *   3. Aplazame POSTs a notification to `merchant.notification_url` (our
@@ -28,6 +30,8 @@ import type {
  *
  * Credentials (gateway `config`, encrypted at rest):
  *   - privateKey  → Bearer token; authenticates both /checkout and the webhook
+ *   - publicKey   → identifies the merchant when the buyer opens the hosted
+ *                   Aplazame checkout. It is safe to expose in that URL.
  *   - productType → optional; forces a financing plan (instalments | pay_in_4 |
  *                   pay_later). Blank = the buyer chooses at Aplazame's checkout.
  *
@@ -67,6 +71,20 @@ function bearer(config: GatewayConfig): string {
     throw new Error("Aplazame: falta la clave privada de API en el gateway");
   }
   return `Bearer ${config.privateKey}`;
+}
+
+function checkoutUrl(checkoutId: string, config: GatewayConfig, live: boolean): string {
+  if (!config.publicKey?.trim()) {
+    throw new Error(
+      "Aplazame: creó el checkout, pero falta la clave pública de API para abrirlo"
+    );
+  }
+
+  const url = new URL("https://checkout.aplazame.com/");
+  url.searchParams.set("order", checkoutId);
+  url.searchParams.set("public-key", config.publicKey.trim());
+  if (!live) url.searchParams.set("sandbox", "true");
+  return url.toString();
 }
 
 /** JSON ack bodies Aplazame reads to (dis)confirm the sale. */
@@ -186,7 +204,7 @@ export const aplazameAdapter: PaymentAdapter = {
       },
       body: JSON.stringify(buildCheckoutPayload(order, config, ctx)),
     });
-    // Aplazame returns the hosted checkout URL in the Location header.
+    // Older integrations receive the hosted checkout URL directly in Location.
     const location = res.headers.get("location");
     if (location && (res.ok || (res.status >= 300 && res.status < 400))) {
       return { kind: "redirect", url: location };
@@ -198,12 +216,31 @@ export const aplazameAdapter: PaymentAdapter = {
         `Aplazame: creación del checkout falló (${responseSummary(res, detail)})`
       );
     }
+    // The current documented flow returns `{ id: checkout_id }`: the browser
+    // starts the hosted checkout using that id and the merchant public key.
+    let checkoutId: string | undefined;
+    try {
+      const response = JSON.parse(detail) as { id?: unknown };
+      if (typeof response.id === "string" && response.id.trim()) {
+        checkoutId = response.id;
+      }
+    } catch {
+      // Keep the sanitized error below; provider bodies may include buyer data.
+    }
+    if (checkoutId) {
+      return {
+        kind: "redirect",
+        url: checkoutUrl(checkoutId, config, ctx.live),
+        paymentRef: checkoutId,
+      };
+    }
+
     throw new Error(
-      `Aplazame: checkout respondió sin Location (${responseSummary(res, detail)})`
+      `Aplazame: checkout respondió sin URL ni id (${responseSummary(res, detail)})`
     );
   },
 
-  async handleWebhook(rawBody, headers, config) {
+  async handleWebhook(rawBody, headers, config, ctx) {
     // Aplazame authenticates the notification with our own private key.
     if (!authIsValid(headers.get("authorization"), config)) {
       throw new Error("Aplazame: firma/autenticación del webhook inválida");
@@ -214,6 +251,8 @@ export const aplazameAdapter: PaymentAdapter = {
       status?: string;
       status_reason?: string;
       mid?: string;
+      total_amount?: number;
+      currency?: { code?: string } | string;
     };
     try {
       event = JSON.parse(rawBody);
@@ -228,7 +267,33 @@ export const aplazameAdapter: PaymentAdapter = {
       return { ack: ACK_KO, raw: rawBody };
     }
 
-    const base: WebhookResult = { orderId, paymentRef, raw: rawBody };
+    const currency =
+      typeof event.currency === "string" ? event.currency : event.currency?.code;
+    const amount = Number(event.total_amount) / 100;
+    if (
+      !paymentRef ||
+      !currency ||
+      !Number.isFinite(amount) ||
+      !Number.isInteger(Number(event.total_amount))
+    ) {
+      // Aplazame authenticated the message, but incomplete payment data must
+      // never be enough to confirm one of our orders.
+      return { ack: ACK_KO, raw: rawBody };
+    }
+
+    // The notification is authenticated by Aplazame with our private key.
+    // Still bind its amount, currency and gateway to the local order before a
+    // state change, just as the other hosted payment adapters do.
+    const base: WebhookResult = {
+      orderId,
+      paymentRef,
+      raw: rawBody,
+      verifiedPayment: {
+        gatewayId: ctx?.gatewayId ?? "",
+        amount,
+        currency,
+      },
+    };
 
     switch (event.status) {
       case "ok": // Final: sale confirmed by Aplazame.
@@ -237,7 +302,9 @@ export const aplazameAdapter: PaymentAdapter = {
         return { ...base, status: "FAILED", ack: ACK_KO };
       default: // `pending` / `confirmation_required`: confirm, but don't mark
         // PAID yet — the order stays PENDING until the final `ok` arrives.
-        return { ...base, ack: ACK_OK };
+        // Returning PENDING also makes the shared webhook sink verify that
+        // this confirmation handshake belongs to a real matching order.
+        return { ...base, status: "PENDING", ack: ACK_OK };
     }
   },
 };

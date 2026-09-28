@@ -59,6 +59,13 @@ export async function POST(
   const orderId = await applyWebhookResult(result);
   if (orderId) revalidatePath("/admin/orders");
 
+  // Aplazame's pending confirmation callback is a two-way handshake. Never
+  // acknowledge it as approved if its authenticated payload did not match one
+  // of our pending orders (unknown `mid`, wrong total/currency or gateway).
+  if (!orderId && gateway.provider === "aplazame") {
+    return new Response("Order not found", { status: 404 });
+  }
+
   // Some providers confirm the sale via the response body (Aplazame's
   // `{"status":"ok"}` handshake). Return their ack verbatim when present.
   if (result.ack) {

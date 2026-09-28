@@ -92,6 +92,12 @@ export const PAYMENT_PROVIDERS: PaymentProvider[] = [
     description: "Pago fraccionado / financiación (BNPL). EUR.",
     fields: [
       {
+        key: "publicKey",
+        label: "Clave pública de API",
+        placeholder: "pk_…",
+        help: "Clave pública de Aplazame. Se utiliza para abrir el checkout alojado; puede aparecer en la URL de redirección.",
+      },
+      {
         key: "privateKey",
         label: "Clave privada de API",
         secret: true,

@@ -36,6 +36,9 @@ export async function getGatewaysForCurrency(
       return Boolean(config.apiKey?.trim() && config.apiSecret?.trim());
     }
     if (g.provider === "cleo") return Boolean(config.secretKey?.trim());
+    if (g.provider === "aplazame") {
+      return Boolean(config.publicKey?.trim() && config.privateKey?.trim());
+    }
     return true;
   }).map((g) => ({
     id: g.id,
