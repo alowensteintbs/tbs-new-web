@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useState } from "react";
 import type { CheckoutState } from "../actions";
 import { SequraCheckout } from "./sequra-checkout";
 import { StripeEmbeddedCheckout } from "./stripe-embedded-checkout";
@@ -10,6 +11,7 @@ function providerName(provider: string) {
   if (provider === "paypal") return "PayPal";
   if (provider === "aplazame") return "Aplazame";
   if (provider === "dlocal") return "dLocal";
+  if (provider === "cleo") return "Cleo";
   return provider;
 }
 
@@ -47,6 +49,11 @@ function PaymentShell({
 }
 
 export function CheckoutPaymentModal({ state }: { state: CheckoutState }) {
+  const externalKey = state.external
+    ? `${state.external.orderId}:${state.external.url}`
+    : null;
+  const [dismissedExternal, setDismissedExternal] = useState<string | null>(null);
+
   if (state.embedded) {
     return (
       <PaymentShell
@@ -68,7 +75,7 @@ export function CheckoutPaymentModal({ state }: { state: CheckoutState }) {
     return <SequraCheckout html={state.widget.html} />;
   }
 
-  if (state.external) {
+  if (state.external && dismissedExternal !== externalKey) {
     const name = providerName(state.external.provider);
     return (
       <PaymentShell
@@ -80,9 +87,13 @@ export function CheckoutPaymentModal({ state }: { state: CheckoutState }) {
           <a className={styles.paymentPrimaryAction} href={state.external.url}>
             Ir a {name}
           </a>
-          <Link className={styles.paymentSecondaryAction} href={`/orders/${state.external.orderId}`}>
-            Ver mi pedido
-          </Link>
+          <button
+            type="button"
+            className={styles.paymentSecondaryAction}
+            onClick={() => setDismissedExternal(externalKey)}
+          >
+            Volver al checkout
+          </button>
         </div>
       </PaymentShell>
     );

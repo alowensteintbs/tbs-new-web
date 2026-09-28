@@ -5,6 +5,7 @@ import { sequraAdapter } from "./adapters/sequra";
 import { paypalAdapter } from "./adapters/paypal";
 import { aplazameAdapter } from "./adapters/aplazame";
 import { dlocalAdapter } from "./adapters/dlocal";
+import { cleoAdapter } from "./adapters/cleo";
 
 /**
  * Registry of payment adapters by provider key. PayPal/etc. are added here as
@@ -18,6 +19,7 @@ const ADAPTERS: Record<string, PaymentAdapter> = {
   [paypalAdapter.provider]: paypalAdapter,
   [aplazameAdapter.provider]: aplazameAdapter,
   [dlocalAdapter.provider]: dlocalAdapter,
+  [cleoAdapter.provider]: cleoAdapter,
 };
 
 export function getAdapter(provider: string): PaymentAdapter | undefined {

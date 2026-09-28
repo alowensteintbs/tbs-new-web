@@ -86,6 +86,16 @@ function DLocal() {
   );
 }
 
+function Cleo() {
+  return (
+    <ProviderImage
+      src="/payment-providers/cleo.png"
+      alt="Cleo"
+      className="h-5 w-auto"
+    />
+  );
+}
+
 /** Manual / bank transfer: a neutral landmark (bank) glyph, no brand. */
 function Manual() {
   return (
@@ -113,6 +123,7 @@ const LOGOS: Record<string, () => ReactElement> = {
   sequra: SeQura,
   aplazame: Aplazame,
   dlocal: DLocal,
+  cleo: Cleo,
   manual: Manual,
 };
 

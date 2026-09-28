@@ -7,7 +7,6 @@ import { db } from "@/lib/db";
 import { Prisma } from "@/generated/prisma/client";
 import { getSiteUrl } from "@/lib/env";
 import { formatPrice, resolveCurrency } from "@/lib/currency-resolver";
-import { getEnabledCurrencies } from "@/lib/catalog";
 import {
   countryCallingCode,
   isSpanishPostalCode,
@@ -88,7 +87,14 @@ export async function getCheckoutQuote(
     return { available: false, error: "El país o región seleccionado no es válido." };
   }
 
-  const currency = resolveCurrency(await getEnabledCurrencies(), country);
+  // Country changes are interactive and must reflect admin edits immediately.
+  // Do not use the catalog currency cache here: a newly added country/currency
+  // mapping would otherwise leave the checkout showing the previous currency.
+  const currencies = await db.currency.findMany({
+    where: { enabled: true },
+    select: { id: true, code: true, name: true, symbol: true, countryCodes: true },
+  });
+  const currency = resolveCurrency(currencies, country);
   if (!currency) {
     return { available: false, error: "No hay una moneda disponible para este país." };
   }
@@ -209,7 +215,27 @@ function paymentStartError(provider: string, error: unknown): CheckoutState {
     };
   }
 
-  const providerName = provider === "sequra" ? "seQura" : provider;
+  if (provider === "cleo" && detail.includes("importe debe ser un entero")) {
+    return {
+      error:
+        "Cleo solo admite importes enteros entre $1.000 y $10.000.000 CLP. Revisa el precio del producto o elige otro medio de pago.",
+    };
+  }
+
+  if (provider === "cleo" && detail.includes("solo admite pagos en clp")) {
+    return {
+      error: "Cleo solo está disponible para compras en pesos chilenos (CLP).",
+    };
+  }
+
+  const providerName =
+    provider === "sequra"
+      ? "seQura"
+      : provider === "dlocal"
+        ? "dLocal"
+        : provider === "cleo"
+          ? "Cleo"
+          : provider;
   return {
     error: `No pudimos iniciar el pago con ${providerName}. Revisa tus datos o elige otro medio de pago.`,
   };
@@ -426,6 +452,7 @@ export async function placeOrder(
   try {
     start = await adapter.createPayment(payable, config, {
       baseUrl: getSiteUrl(),
+      checkoutUrl: `${getSiteUrl()}/checkout/${product.id}`,
       gatewayId: gateway.id,
       live: gateway.live,
     });

@@ -52,6 +52,7 @@ const DEFAULT_CURRENCIES = [
   },
   { code: "MXN", name: "Peso mexicano", symbol: "$", countryCodes: "MX" },
   { code: "USD", name: "US Dollar", symbol: "$", countryCodes: "US" },
+  { code: "CLP", name: "Peso chileno", symbol: "$", countryCodes: "CL" },
 ];
 
 async function seedCurrencies() {
@@ -80,6 +81,10 @@ async function seedGateways() {
       select: { id: true },
     });
     if (existing) continue;
+    const cleoCurrency =
+      provider.key === "cleo"
+        ? await prisma.currency.findUnique({ where: { code: "CLP" }, select: { id: true } })
+        : null;
     await prisma.paymentGateway.create({
       data: {
         provider: provider.key,
@@ -88,6 +93,9 @@ async function seedGateways() {
         live: false,
         position: i,
         config: emptyConfig,
+        ...(cleoCurrency
+          ? { currencies: { create: { currencyId: cleoCurrency.id } } }
+          : {}),
       },
     });
   }

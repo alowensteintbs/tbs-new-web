@@ -2,143 +2,144 @@ import "server-only";
 import { createHmac, timingSafeEqual } from "node:crypto";
 import type { PayableOrder, PaymentAdapter } from "../types";
 
-/**
- * dLocal adapter (payins REDIRECT flow — emerging markets, multi-currency).
- *
- * No Node SDK; a thin REST client over `fetch` with dLocal's HMAC-SHA256 header
- * auth. The flow is a hosted-redirect:
- *
- *   1. createPayment → POST /payments with `payment_method_flow: "REDIRECT"`.
- *      dLocal answers with the payment `id`, a `status` (PENDING) and a
- *      `redirect_url`; we send the buyer there to pick a local method and pay.
- *   2. On any status change dLocal POSTs a signed notification to
- *      `notification_url` (our per-gateway webhook). We verify the signature and
- *      map `status`: PAID → PAID; REJECTED/CANCELLED/EXPIRED → FAILED; the rest
- *      (PENDING/AUTHORIZED/VERIFIED) are non-terminal and left as-is. dLocal
- *      only needs a plain 2xx ack, so no response body is required.
- *
- * Auth (every request + notification): the signature is
- *   HMAC_SHA256(secretKey, X-Login + X-Date + body)  (hex)
- * carried in `Authorization: V2-HMAC-SHA256, Signature: <hex>`.
- *
- * Credentials (gateway `config`, encrypted at rest):
- *   - login     → X-Login header
- *   - transKey  → X-Trans-Key header
- *   - secretKey → HMAC signing key (requests + notification verification)
- *
- * Sandbox vs. production is the base host, chosen by the gateway's `live` flag.
- */
+/** dLocal Go hosted checkout. SmartFields is a separate, unused integration. */
+const SANDBOX_BASE = "https://api-sbx.dlocalgo.com";
+const LIVE_BASE = "https://api.dlocalgo.com";
 
-const SANDBOX_BASE = "https://sandbox.dlocal.com";
-const LIVE_BASE = "https://api.dlocal.com";
-const API_VERSION = "2.1";
+type DlocalGoPayment = {
+  id?: string;
+  order_id?: string;
+  amount?: number;
+  currency?: string;
+  status?: string;
+  redirect_url?: string;
+};
 
 function baseUrl(live: boolean): string {
   return live ? LIVE_BASE : SANDBOX_BASE;
 }
 
-/** dLocal's `Authorization: V2-HMAC-SHA256, Signature: <hex>`. */
-function sign(secretKey: string, login: string, xDate: string, body: string): string {
-  return createHmac("sha256", secretKey)
-    .update(login + xDate + body)
-    .digest("hex");
+function credentials(config: Record<string, string>) {
+  const apiKey = config.apiKey?.trim();
+  const secretKey = config.apiSecret?.trim();
+  if (!apiKey || !secretKey) {
+    throw new Error("dLocal Go: faltan API Key y Secret en la configuración");
+  }
+  return { apiKey, secretKey };
 }
 
-/** Split our single `name` into dLocal's payer name (kept whole — it takes one). */
+function authorization(apiKey: string, secretKey: string): string {
+  return `Bearer ${apiKey}:${secretKey}`;
+}
+
+function verifyNotification(rawBody: string, header: string | null, apiKey: string, secretKey: string) {
+  const signature = /^V2-HMAC-SHA256,\s*Signature:\s*([a-f0-9]{64})$/i.exec(header ?? "")?.[1];
+  if (!signature) throw new Error("dLocal Go: falta la firma de la notificación");
+
+  const expected = createHmac("sha256", secretKey)
+    .update(apiKey + rawBody)
+    .digest();
+  const received = Buffer.from(signature, "hex");
+  if (!timingSafeEqual(received, expected)) {
+    throw new Error("dLocal Go: firma de la notificación inválida");
+  }
+}
+
 function payerName(order: PayableOrder): string {
-  const c = order.customer;
-  return [c.name, c.surname].filter(Boolean).join(" ").trim() || c.name;
+  return [order.customer.name, order.customer.surname].filter(Boolean).join(" ").trim();
 }
 
 export const dlocalAdapter: PaymentAdapter = {
   provider: "dlocal",
 
   async createPayment(order, config, ctx) {
-    const { login, transKey, secretKey } = config;
-    if (!login || !transKey || !secretKey) {
-      throw new Error("dLocal: faltan credenciales (login/transKey/secretKey)");
-    }
-    const country = (order.customer.country ?? "").toUpperCase();
-    if (!country) {
-      throw new Error("dLocal: falta el país del comprador (requerido)");
-    }
+    const { apiKey, secretKey } = credentials(config);
+    const country = order.customer.country?.toUpperCase();
+    if (!country) throw new Error("dLocal Go: falta el país del comprador");
 
-    // dLocal amounts are decimal numbers in the currency's normal units (NOT
-    // cents); it applies the per-currency decimal rules itself.
-    const amount = Number(Number(order.total).toFixed(2));
-
-    const payload: Record<string, unknown> = {
-      amount,
+    const payload = {
+      amount: Number(Number(order.total).toFixed(2)),
       currency: order.currencyCode.toUpperCase(),
       country,
-      payment_method_flow: "REDIRECT",
+      order_id: order.id,
       payer: {
         name: payerName(order),
         email: order.customer.email,
-        // `document` (national id) is collected by dLocal on its hosted page
-        // for the REDIRECT flow, so we don't send one from checkout.
+        ...(order.customer.phone ? { phone: order.customer.phone } : {}),
       },
-      order_id: order.id,
+      success_url: `${ctx.baseUrl}/orders/${order.id}?paid=1`,
+      back_url: ctx.checkoutUrl ?? `${ctx.baseUrl}/orders/${order.id}`,
       notification_url: `${ctx.baseUrl}/api/payments/webhook/${ctx.gatewayId}`,
-      callback_url: `${ctx.baseUrl}/orders/${order.id}?paid=1`,
     };
 
-    const body = JSON.stringify(payload);
-    const xDate = new Date().toISOString();
-    const res = await fetch(`${baseUrl(ctx.live)}/payments`, {
+    const res = await fetch(`${baseUrl(ctx.live)}/v1/payments`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "X-Date": xDate,
-        "X-Login": login,
-        "X-Trans-Key": transKey,
-        "X-Version": API_VERSION,
-        "User-Agent": "TBS-Checkout",
-        Authorization: `V2-HMAC-SHA256, Signature: ${sign(secretKey, login, xDate, body)}`,
+        Authorization: authorization(apiKey, secretKey),
       },
-      body,
+      body: JSON.stringify(payload),
+      cache: "no-store",
     });
     if (!res.ok) {
-      const detail = await res.text().catch(() => "");
-      throw new Error(`dLocal: creación del pago falló (${res.status}) ${detail}`);
+      throw new Error(`dLocal Go: creación del pago falló (${res.status})`);
     }
 
-    const json = (await res.json()) as { id?: string; redirect_url?: string };
-    if (!json.redirect_url) {
-      throw new Error("dLocal: la respuesta no incluyó redirect_url");
+    const payment = (await res.json()) as DlocalGoPayment;
+    if (!payment.id || !payment.redirect_url) {
+      throw new Error("dLocal Go: la respuesta no incluyó id o redirect_url");
     }
-
-    return { kind: "redirect", url: json.redirect_url, paymentRef: json.id };
+    return { kind: "redirect", url: payment.redirect_url, paymentRef: payment.id };
   },
 
-  async handleWebhook(rawBody, headers, config) {
-    const { login, secretKey } = config;
-    if (!login || !secretKey) {
-      throw new Error("dLocal: faltan credenciales para verificar la notificación");
+  async handleWebhook(rawBody, headers, config, ctx) {
+    const { apiKey, secretKey } = credentials(config);
+    if (!ctx) throw new Error("dLocal Go: falta el contexto de la pasarela");
+    verifyNotification(rawBody, headers.get("authorization"), apiKey, secretKey);
+
+    let notification: { payment_id?: unknown };
+    try {
+      notification = JSON.parse(rawBody) as { payment_id?: unknown };
+    } catch {
+      throw new Error("dLocal Go: notificación inválida");
+    }
+    const paymentId = notification.payment_id;
+    if (typeof paymentId !== "string" || !/^DP-[A-Za-z0-9-]+$/.test(paymentId)) {
+      throw new Error("dLocal Go: falta un payment_id válido");
     }
 
-    // Verify the signature: HMAC over our X-Login + the notification's X-Date +
-    // its raw body must match the Signature carried in the Authorization header.
-    const xDate = headers.get("x-date") ?? "";
-    const authHeader = headers.get("authorization") ?? "";
-    const received = /Signature:\s*([a-f0-9]+)/i.exec(authHeader)?.[1] ?? "";
-    const expected = sign(secretKey, login, xDate, rawBody);
-    const a = Buffer.from(received);
-    const b = Buffer.from(expected);
-    if (a.length !== b.length || !timingSafeEqual(a, b)) {
-      throw new Error("dLocal: firma de la notificación inválida");
+    // The notification contains only an ID. The authenticated GET is the source
+    // of truth for order, amount, currency and final status.
+    const res = await fetch(`${baseUrl(ctx.live)}/v1/payments/${encodeURIComponent(paymentId)}`, {
+      headers: { Authorization: authorization(apiKey, secretKey) },
+      cache: "no-store",
+    });
+    if (!res.ok) {
+      throw new Error(`dLocal Go: consulta del pago falló (${res.status})`);
+    }
+    const payment = (await res.json()) as DlocalGoPayment;
+    if (
+      payment.id !== paymentId ||
+      typeof payment.order_id !== "string" ||
+      !payment.order_id ||
+      typeof payment.amount !== "number" ||
+      !Number.isFinite(payment.amount) ||
+      typeof payment.currency !== "string"
+    ) {
+      throw new Error("dLocal Go: datos del pago incompletos o inconsistentes");
     }
 
-    const event = JSON.parse(rawBody) as {
-      id?: string;
-      status?: string;
-      order_id?: string;
+    const base = {
+      orderId: payment.order_id,
+      paymentRef: paymentId,
+      verifiedPayment: {
+        gatewayId: ctx.gatewayId,
+        amount: payment.amount,
+        currency: payment.currency,
+      },
+      raw: JSON.stringify(payment),
     };
-    const orderId = event.order_id;
-    if (!orderId) return null;
-
-    const base = { orderId, paymentRef: event.id, raw: rawBody };
-    switch (event.status) {
+    switch (payment.status) {
       case "PAID":
         return { ...base, status: "PAID" as const };
       case "REJECTED":
@@ -146,7 +147,7 @@ export const dlocalAdapter: PaymentAdapter = {
       case "EXPIRED":
         return { ...base, status: "FAILED" as const };
       default:
-        // PENDING / AUTHORIZED / VERIFIED — non-terminal; acknowledge only.
+        // PENDING and unknown statuses never confirm or fail an order.
         return null;
     }
   },

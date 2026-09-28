@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useActionState, useMemo, useRef, useState, useTransition } from "react";
+import { useActionState, useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { countryCallingCode, SPANISH_PROVINCES } from "@/lib/address";
 import type { AvailableGateway } from "@/lib/payments/checkout";
 import type { CountryOption } from "@/lib/countries";
@@ -29,6 +29,8 @@ function Field({
   errors,
   pattern,
   title,
+  value,
+  onChange,
 }: {
   label: string;
   name: string;
@@ -37,6 +39,8 @@ function Field({
   errors?: string[];
   pattern?: string;
   title?: string;
+  value: string;
+  onChange: (value: string) => void;
 }) {
   return (
     <div className={styles.field}>
@@ -49,11 +53,55 @@ function Field({
         placeholder={placeholder}
         pattern={pattern}
         title={title}
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
         required
       />
       <FieldError errors={errors} />
     </div>
   );
+}
+
+type CheckoutFormValues = {
+  email: string;
+  name: string;
+  surname: string;
+  phone: string;
+  addressLine: string;
+  city: string;
+  postalCode: string;
+  province: string;
+  terms: boolean;
+};
+
+type CheckoutDraft = CheckoutFormValues & {
+  country: string;
+  gatewayId: string;
+  couponCode: string;
+  couponOpen: boolean;
+};
+
+const EMPTY_FORM_VALUES: CheckoutFormValues = {
+  email: "",
+  name: "",
+  surname: "",
+  phone: "",
+  addressLine: "",
+  city: "",
+  postalCode: "",
+  province: "Sevilla",
+  terms: false,
+};
+
+function readCheckoutDraft(productId: string): Partial<CheckoutDraft> | null {
+  try {
+    const raw = sessionStorage.getItem(`tbs-checkout:${productId}`);
+    if (!raw) return null;
+    const draft = JSON.parse(raw) as unknown;
+    return draft && typeof draft === "object" ? (draft as Partial<CheckoutDraft>) : null;
+  } catch {
+    return null;
+  }
 }
 
 function gatewayLabel(gateway: AvailableGateway) {
@@ -65,6 +113,7 @@ const GATEWAY_LOGOS = {
   paypal: { src: "/payment-providers/paypal.svg", alt: "PayPal", width: 124, height: 33 },
   aplazame: { src: "/payment-providers/aplazame.svg", alt: "Aplazame", width: 120, height: 32 },
   dlocal: { src: "/payment-providers/dlocal.png", alt: "dLocal", width: 545, height: 130 },
+  cleo: { src: "/payment-providers/cleo.png", alt: "Cleo", width: 1180, height: 526 },
 } as const;
 
 function GatewayLogo({ provider }: { provider: string }) {
@@ -107,6 +156,9 @@ export function CheckoutForm({
   amount: number;
   amountLabel: string;
 }) {
+  const defaultCountry =
+    countries.find((country) => country.code === "ES")?.code ?? countries[0]?.code ?? "";
+  const defaultGateway = gateways[0]?.id ?? "";
   const [state, formAction, isPending] = useActionState<CheckoutState, FormData>(
     placeOrder,
     {}
@@ -114,6 +166,8 @@ export function CheckoutForm({
   const [couponOpen, setCouponOpen] = useState(false);
   const [couponCode, setCouponCode] = useState("");
   const [coupon, setCoupon] = useState<CouponPreview | null>(null);
+  const [formValues, setFormValues] = useState<CheckoutFormValues>(EMPTY_FORM_VALUES);
+  const [draftReady, setDraftReady] = useState(false);
   const [quote, setQuote] = useState<CheckoutQuote>({
     available: true,
     currencyId,
@@ -122,10 +176,8 @@ export function CheckoutForm({
     amountLabel,
     gateways,
   });
-  const [selectedGateway, setSelectedGateway] = useState(gateways[0]?.id ?? "");
-  const [selectedCountry, setSelectedCountry] = useState(
-    countries.find((country) => country.code === "ES")?.code ?? countries[0]?.code ?? ""
-  );
+  const [selectedGateway, setSelectedGateway] = useState(defaultGateway);
+  const [selectedCountry, setSelectedCountry] = useState(defaultCountry);
   const [checking, startCheck] = useTransition();
   const [updatingQuote, startQuoteUpdate] = useTransition();
   const quoteRequest = useRef(0);
@@ -148,6 +200,96 @@ export function CheckoutForm({
     (gateway) => gateway.id === selectedGateway
   );
 
+  useEffect(() => {
+    let cancelled = false;
+    async function restoreDraft() {
+      // Defer restoration until after hydration so the server and first client
+      // render stay identical while still restoring the tab's checkout draft.
+      await Promise.resolve();
+      if (cancelled) return;
+
+      const draft = readCheckoutDraft(productId);
+      if (!draft) {
+        setDraftReady(true);
+        return;
+      }
+
+      setFormValues({
+        email: typeof draft.email === "string" ? draft.email : "",
+        name: typeof draft.name === "string" ? draft.name : "",
+        surname: typeof draft.surname === "string" ? draft.surname : "",
+        phone: typeof draft.phone === "string" ? draft.phone : "",
+        addressLine: typeof draft.addressLine === "string" ? draft.addressLine : "",
+        city: typeof draft.city === "string" ? draft.city : "",
+        postalCode: typeof draft.postalCode === "string" ? draft.postalCode : "",
+        province: typeof draft.province === "string" ? draft.province : "Sevilla",
+        terms: draft.terms === true,
+      });
+      const restoredCoupon = typeof draft.couponCode === "string" ? draft.couponCode : "";
+      setCouponCode(restoredCoupon);
+      setCouponOpen(draft.couponOpen === true || Boolean(restoredCoupon));
+
+      const restoredCountry =
+        typeof draft.country === "string" && countries.some(({ code }) => code === draft.country)
+          ? draft.country
+          : defaultCountry;
+      setSelectedCountry(restoredCountry);
+
+      try {
+        const nextQuote = await getCheckoutQuote(productId, restoredCountry);
+        if (cancelled) return;
+        setQuote(nextQuote);
+        const restoredGateway =
+          typeof draft.gatewayId === "string" &&
+          nextQuote.available &&
+          nextQuote.gateways.some(({ id }) => id === draft.gatewayId)
+            ? draft.gatewayId
+            : nextQuote.available
+              ? nextQuote.gateways[0]?.id ?? ""
+              : "";
+        setSelectedGateway(restoredGateway);
+      } catch {
+        // Keep the initial quote if restoring the country cannot be completed.
+      } finally {
+        if (!cancelled) setDraftReady(true);
+      }
+    }
+
+    void restoreDraft();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [countries, defaultCountry, productId]);
+
+  useEffect(() => {
+    if (!draftReady) return;
+    const draft: CheckoutDraft = {
+      ...formValues,
+      country: selectedCountry,
+      gatewayId: selectedGateway,
+      couponCode,
+      couponOpen,
+    };
+    try {
+      sessionStorage.setItem(`tbs-checkout:${productId}`, JSON.stringify(draft));
+    } catch {
+      // The checkout still works if storage is disabled or full.
+    }
+  }, [
+    couponCode,
+    couponOpen,
+    draftReady,
+    formValues,
+    productId,
+    selectedCountry,
+    selectedGateway,
+  ]);
+
+  function updateField(field: keyof CheckoutFormValues, value: string | boolean) {
+    setFormValues((current) => ({ ...current, [field]: value }));
+  }
+
   function applyCoupon() {
     if (!couponCode.trim() || !quote.available) return;
     const fd = new FormData();
@@ -160,6 +302,17 @@ export function CheckoutForm({
   function updateCountry(country: string) {
     setSelectedCountry(country);
     setCoupon(null);
+    setFormValues((current) => ({
+      ...current,
+      province:
+        country === "ES"
+          ? SPANISH_PROVINCES.some((province) => province === current.province)
+            ? current.province
+            : "Sevilla"
+          : country === selectedCountry
+            ? current.province
+            : "",
+    }));
     const request = ++quoteRequest.current;
     startQuoteUpdate(async () => {
       const nextQuote = await getCheckoutQuote(productId, country);
@@ -225,6 +378,8 @@ export function CheckoutForm({
               type="email"
               placeholder="tu@correo.com"
               errors={state.fieldErrors?.email}
+              value={formValues.email}
+              onChange={(value) => updateField("email", value)}
             />
             <div className={`${styles.fieldRow} ${styles.fieldRowTight}`}>
               <Field
@@ -232,12 +387,16 @@ export function CheckoutForm({
                 name="name"
                 placeholder="Nombre"
                 errors={state.fieldErrors?.name}
+                value={formValues.name}
+                onChange={(value) => updateField("name", value)}
               />
               <Field
                 label="Apellidos"
                 name="surname"
                 placeholder="Apellidos"
                 errors={state.fieldErrors?.surname}
+                value={formValues.surname}
+                onChange={(value) => updateField("surname", value)}
               />
             </div>
             <div className={styles.field}>
@@ -252,6 +411,8 @@ export function CheckoutForm({
                   name="phone"
                   type="tel"
                   placeholder="600 000 000"
+                  value={formValues.phone}
+                  onChange={(event) => updateField("phone", event.target.value)}
                   required
                 />
               </div>
@@ -262,6 +423,8 @@ export function CheckoutForm({
               name="addressLine"
               placeholder="Calle, número, piso, puerta"
               errors={state.fieldErrors?.addressLine}
+              value={formValues.addressLine}
+              onChange={(value) => updateField("addressLine", value)}
             />
             <div className={styles.fieldRow}>
               <Field
@@ -269,12 +432,16 @@ export function CheckoutForm({
                 name="city"
                 placeholder="Ciudad / Municipio"
                 errors={state.fieldErrors?.city}
+                value={formValues.city}
+                onChange={(value) => updateField("city", value)}
               />
               <Field
                 label="Código postal / ZIP"
                 name="postalCode"
                 placeholder="41001"
                 errors={state.fieldErrors?.postalCode}
+                value={formValues.postalCode}
+                onChange={(value) => updateField("postalCode", value)}
                 pattern={selectedCountry === "ES" ? "[0-9]{5}" : undefined}
                 title={
                   selectedCountry === "ES"
@@ -319,7 +486,8 @@ export function CheckoutForm({
                     <select
                       id="province"
                       name="province"
-                      defaultValue="Sevilla"
+                      value={formValues.province}
+                      onChange={(event) => updateField("province", event.target.value)}
                       required
                       className={styles.select}
                     >
@@ -349,6 +517,8 @@ export function CheckoutForm({
                   name="province"
                   placeholder="Provincia / Región"
                   errors={state.fieldErrors?.province}
+                  value={formValues.province}
+                  onChange={(value) => updateField("province", value)}
                 />
               )}
             </div>
@@ -463,7 +633,14 @@ export function CheckoutForm({
           </p>
 
           <label className={styles.terms}>
-            <input type="checkbox" name="terms" value="accepted" required />
+            <input
+              type="checkbox"
+              name="terms"
+              value="accepted"
+              checked={formValues.terms}
+              onChange={(event) => updateField("terms", event.target.checked)}
+              required
+            />
             <span>
               He leído y estoy de acuerdo con los{" "}
               <a href="/terminos-y-condiciones">términos y condiciones de la web</a> *

@@ -113,9 +113,9 @@ function buildCheckoutPayload(order: PayableOrder, config: GatewayConfig, ctx: P
       notification_url: `${ctx.baseUrl}/api/payments/webhook/${ctx.gatewayId}`,
       success_url: `${ctx.baseUrl}/orders/${order.id}?paid=1`,
       pending_url: `${ctx.baseUrl}/orders/${order.id}?paid=1`,
-      error_url: `${ctx.baseUrl}/orders/${order.id}`,
-      dismiss_url: `${ctx.baseUrl}/orders/${order.id}`,
-      ko_url: `${ctx.baseUrl}/orders/${order.id}`,
+      error_url: ctx.checkoutUrl ?? `${ctx.baseUrl}/orders/${order.id}`,
+      dismiss_url: ctx.checkoutUrl ?? `${ctx.baseUrl}/orders/${order.id}`,
+      ko_url: ctx.checkoutUrl ?? `${ctx.baseUrl}/orders/${order.id}`,
     },
     order: {
       // Our order id round-trips as `mid` on the notification; we resolve by it.

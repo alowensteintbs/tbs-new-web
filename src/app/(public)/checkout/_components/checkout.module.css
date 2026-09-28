@@ -630,8 +630,11 @@
 }
 
 .paymentSecondaryAction {
+  width: 100%;
   border: 1px solid #b9bcc0;
+  background: transparent;
   color: #242429;
+  cursor: pointer;
 }
 
 @media (max-width: 79.999rem) {

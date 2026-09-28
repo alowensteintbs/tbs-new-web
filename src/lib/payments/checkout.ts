@@ -5,6 +5,7 @@ import { sendOrderStatusEmail } from "@/lib/email/notify";
 import { paymentFailureReason } from "@/lib/orders/audit";
 import { getProvider } from "./providers";
 import type { GatewayConfig, WebhookResult } from "./types";
+import { matchesVerifiedPayment } from "./verified-payment";
 
 export type AvailableGateway = {
   id: string;
@@ -24,10 +25,19 @@ export async function getGatewaysForCurrency(
   const gateways = await db.paymentGateway.findMany({
     where: { enabled: true, currencies: { some: { currencyId } } },
     orderBy: [{ position: "asc" }, { createdAt: "asc" }],
-    select: { id: true, provider: true, name: true },
+    select: { id: true, provider: true, name: true, config: true },
   });
 
-  return gateways.map((g) => ({
+  // Never offer gateways whose essential credentials are missing. Existing
+  // dLocal Payins rows must be reconfigured for dLocal Go before they qualify.
+  return gateways.filter((g) => {
+    const config = readGatewayConfig(g.config);
+    if (g.provider === "dlocal") {
+      return Boolean(config.apiKey?.trim() && config.apiSecret?.trim());
+    }
+    if (g.provider === "cleo") return Boolean(config.secretKey?.trim());
+    return true;
+  }).map((g) => ({
     id: g.id,
     provider: g.provider,
     name: g.name,
@@ -61,14 +71,31 @@ export async function applyWebhookResult(
   const order = await db.order.findFirst({
     where: {
       deletedAt: null,
-      OR: [
-        ...(result.paymentRef ? [{ paymentRef: result.paymentRef }] : []),
-        ...(result.orderId ? [{ id: result.orderId }] : []),
-      ],
+      ...(result.verifiedPayment
+        ? { id: result.orderId ?? "" }
+        : {
+            OR: [
+              ...(result.paymentRef ? [{ paymentRef: result.paymentRef }] : []),
+              ...(result.orderId ? [{ id: result.orderId }] : []),
+            ],
+          }),
     },
-    select: { id: true, status: true, paidAt: true },
+    select: {
+      id: true,
+      status: true,
+      paidAt: true,
+      gatewayId: true,
+      paymentRef: true,
+      total: true,
+      currency: { select: { code: true } },
+    },
   });
   if (!order) return null;
+
+  if (!matchesVerifiedPayment(order, result)) {
+    console.error("[webhook:verified-payment] el pago no coincide con el pedido");
+    return null;
+  }
 
   // Guard against out-of-order / regressive transitions. We still retain the
   // provider payload as an audit event, but never regress the order itself.

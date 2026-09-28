@@ -116,7 +116,7 @@ function buildOrderBody(order: PayableSubset, ctx: PaymentContext) {
           shipping_preference: "NO_SHIPPING", // digital goods
           user_action: "PAY_NOW",
           return_url: `${ctx.baseUrl}/orders/${order.id}?paid=1`,
-          cancel_url: `${ctx.baseUrl}/orders/${order.id}`,
+          cancel_url: ctx.checkoutUrl ?? `${ctx.baseUrl}/orders/${order.id}`,
         },
       },
     },

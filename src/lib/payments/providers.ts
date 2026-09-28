@@ -112,22 +112,42 @@ export const PAYMENT_PROVIDERS: PaymentProvider[] = [
   },
   {
     key: "dlocal",
-    label: "dLocal",
+    label: "dLocal Go",
     description:
-      "Pagos en mercados emergentes (LatAm, África, Asia). Redirección al checkout local.",
+      "Pagos locales con redirección al checkout de dLocal Go.",
     fields: [
       {
-        key: "login",
-        label: "X-Login",
-        placeholder: "tu x-login de dLocal",
-        help: "Identificador de login del comercio (header X-Login).",
+        key: "apiKey",
+        label: "API Key",
+        secret: true,
+        help: "API Key de dLocal Go para el entorno seleccionado.",
       },
-      { key: "transKey", label: "X-Trans-Key", secret: true },
+      {
+        key: "apiSecret",
+        label: "Secret",
+        secret: true,
+        help: "Secret de dLocal Go del mismo entorno que la API Key. SmartFields API Key no se utiliza en este checkout.",
+      },
+    ],
+  },
+  {
+    key: "cleo",
+    label: "Cleo",
+    description: "Compra ahora y paga después en Chile. Checkout alojado en CLP.",
+    fields: [
       {
         key: "secretKey",
         label: "Secret Key",
         secret: true,
-        help: "Clave secreta usada para firmar (HMAC-SHA256) las peticiones y verificar las notificaciones. Usa credenciales de sandbox para probar.",
+        placeholder: "sk_test_… / sk_live_…",
+        help: "Clave secreta de CLEO para el entorno seleccionado. Se utiliza únicamente desde el servidor.",
+      },
+      {
+        key: "webhookSecret",
+        label: "Webhook Signing Secret",
+        secret: true,
+        placeholder: "whsec_…",
+        help: "Secreto HMAC mostrado por CLEO al emitir la clave. Los callbacks se confirman además consultando la sesión por API.",
       },
     ],
   },

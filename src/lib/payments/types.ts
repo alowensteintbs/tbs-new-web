@@ -53,6 +53,8 @@ export type PaymentStart =
  */
 export type PaymentContext = {
   baseUrl: string;
+  /** Checkout page used when the buyer cancels or goes back without paying. */
+  checkoutUrl?: string;
   gatewayId: string;
   live: boolean;
 };
@@ -66,6 +68,12 @@ export type WebhookResult = {
   status?: "PENDING" | "PAID" | "FAILED" | "REFUNDED";
   /** Raw payload to persist for auditing. */
   raw?: string;
+  /** Verified provider details to match against the local order before updating it. */
+  verifiedPayment?: {
+    gatewayId: string;
+    amount: number;
+    currency: string;
+  };
   /**
    * Provider-specific body to return in the webhook HTTP response. Aplazame
    * confirms the sale in the response body (`{"status":"ok"}` to accept,
