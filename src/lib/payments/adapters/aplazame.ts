@@ -1,5 +1,6 @@
 import "server-only";
 import { timingSafeEqual } from "node:crypto";
+import { discountedPaymentItems } from "../payment-items";
 import type {
   GatewayConfig,
   PayableOrder,
@@ -107,19 +108,19 @@ function authIsValid(header: string | null, config: GatewayConfig): boolean {
 }
 
 function buildCheckoutPayload(order: PayableOrder, config: GatewayConfig, ctx: PaymentContext) {
-  const articles = order.items.map((it) => ({
-    id: it.productName,
+  const articles = discountedPaymentItems(order, toCents).map((it, index) => ({
+    id: `${order.id}-${index + 1}`,
     name: it.productName,
-    quantity: it.quantity,
-    price: toCents(Number(it.unitPrice)),
-    // The checkout stores final course prices. Declare the amount as tax-exempt
-    // so Aplazame's pre-tax article price and `total_amount` remain identical.
+    quantity: 1,
+    price: it.amount,
+    // Declare the discounted final amount as tax-exempt so Aplazame's pre-tax
+    // article price and `total_amount` remain identical.
     tax_rate: 0,
     url: `${ctx.baseUrl}/orders/${order.id}`,
     image_url: `${ctx.baseUrl}/favicon.ico`,
   }));
-  // Aplazame validates total_amount === sum(article.price * quantity). Compute
-  // it from the items (no shipping/discount for digital courses) so it matches.
+  // Aplazame validates total_amount === sum(article.price * quantity). The
+  // discounted lines above make this match the final amount we stored.
   const totalAmount = articles.reduce((sum, a) => sum + a.price * a.quantity, 0);
 
   const c = order.customer;

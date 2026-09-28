@@ -76,6 +76,21 @@ test("crea el checkout Aplazame v4 y devuelve su Location", async () => {
   }
 });
 
+test("envía a Aplazame el total rebajado por el cupón", async () => {
+  const originalFetch = global.fetch;
+  global.fetch = async (_url, options) => {
+    const body = JSON.parse(options.body);
+    assert.equal(body.order.total_amount, 18000);
+    assert.equal(body.order.articles[0].price, 18000);
+    return new Response(null, { status: 201, headers: { Location: "https://checkout.aplazame.com/token" } });
+  };
+  try {
+    await aplazameAdapter.createPayment({ ...order, total: 180 }, config, ctx);
+  } finally {
+    global.fetch = originalFetch;
+  }
+});
+
 test("el admin solicita las claves pública y privada y permite elegir modalidad", () => {
   const fields = getProvider("aplazame").fields;
   assert.deepEqual(fields.map((field) => field.key), ["publicKey", "privateKey", "productType"]);

@@ -1,5 +1,6 @@
 import "server-only";
 import { db } from "@/lib/db";
+import { discountedPaymentItems } from "../payment-items";
 import type {
   GatewayConfig,
   PayableOrder,
@@ -71,7 +72,7 @@ function splitName(name: string): { given_names: string; surnames: string } {
 /** The subset of order data SeQura's solicitation/confirmation payload needs. */
 type SolicitableOrder = Pick<
   PayableOrder,
-  "id" | "number" | "currencyCode" | "items" | "customer"
+  "id" | "number" | "total" | "currencyCode" | "items" | "customer"
 >;
 
 /**
@@ -85,8 +86,8 @@ function buildOrderPayload(
   ctx: PaymentContext,
   state: "confirmed" | "on_hold" | null = null
 ) {
-  const items = order.items.map((it) => {
-    const priceWithTax = toCents(Number(it.unitPrice));
+  const items = discountedPaymentItems(order, toCents).map((it) => {
+    const priceWithTax = it.amount;
     return {
       // Courses are digital services (this SeQura contract requires the cart to
       // hold at least one `service` item). `ends_in` sets the access period.
@@ -94,8 +95,8 @@ function buildOrderPayload(
       reference: it.productName,
       name: it.productName,
       price_with_tax: priceWithTax,
-      quantity: it.quantity,
-      total_with_tax: priceWithTax * it.quantity,
+      quantity: 1,
+      total_with_tax: priceWithTax,
       downloadable: true,
       ends_in: "P1Y", // 1 año de acceso (ISO-8601)
       rendered: false,
@@ -257,6 +258,7 @@ export const sequraAdapter: PaymentAdapter = {
       select: {
         id: true,
         number: true,
+        total: true,
         currency: { select: { code: true } },
         customer: {
           select: {
@@ -290,6 +292,7 @@ export const sequraAdapter: PaymentAdapter = {
     const payable: SolicitableOrder = {
       id: order.id,
       number: order.number,
+      total: order.total,
       currencyCode: order.currency.code,
       items: order.items,
       customer: order.customer,

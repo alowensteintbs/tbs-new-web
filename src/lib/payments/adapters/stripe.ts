@@ -1,4 +1,5 @@
 import Stripe from "stripe";
+import { discountedPaymentItems } from "../payment-items";
 import type { PaymentAdapter, GatewayConfig } from "../types";
 
 /**
@@ -52,11 +53,13 @@ export const stripeAdapter: PaymentAdapter = {
         metadata: { orderId: order.id, orderNumber: order.number },
       },
       customer_email: order.customer.email,
-      line_items: order.items.map((it) => ({
-        quantity: it.quantity,
+      line_items: discountedPaymentItems(order, (amount) =>
+        toMinorUnits(amount, order.currencyCode)
+      ).map((it) => ({
+        quantity: 1,
         price_data: {
           currency,
-          unit_amount: toMinorUnits(Number(it.unitPrice), order.currencyCode),
+          unit_amount: it.amount,
           product_data: { name: it.productName },
         },
       })),
