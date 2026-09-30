@@ -43,33 +43,44 @@ export function OrderNotesForm({ orderId }: { orderId: string }) {
   );
 }
 
-export function ArchiveOrderButton({ orderId }: { orderId: string }) {
+export function ArchiveOrderButton({ orderId, orderNumber, compact = false }: {
+  orderId: string;
+  orderNumber?: string;
+  compact?: boolean;
+}) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
 
   function archive() {
-    if (!confirm("¿Eliminar este pedido de las vistas operativas? Se conservará su historial para auditoría.")) return;
+    if (!confirm(`¿Eliminar ${orderNumber ?? "este pedido"} del listado? Se conservarán sus datos e historial. Esta acción no cancela ni reembolsa el pago.`)) return;
     setError(null);
     startTransition(async () => {
-      const result = await archiveOrder(orderId);
-      if (result.error) setError(result.error);
-      else router.push("/admin/orders");
+      try {
+        const result = await archiveOrder(orderId);
+        if (result.error) setError(result.error);
+        else if (!compact) router.push("/admin/orders");
+      } catch {
+        setError("No se pudo eliminar el pedido. Intentá nuevamente.");
+      }
     });
   }
 
   return (
-    <div className="mt-5 border-t border-gray-100 pt-5">
+    <div className={compact ? "inline-block" : "mt-5 border-t border-gray-100 pt-5"}>
       <button
         type="button"
         onClick={archive}
         disabled={isPending}
-        className="rounded-lg border border-red-200 px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50 disabled:opacity-50"
+        aria-label={compact ? `Eliminar pedido ${orderNumber ?? orderId}` : undefined}
+        className={compact
+          ? "text-sm font-medium text-red-600 hover:underline disabled:cursor-wait disabled:opacity-50"
+          : "rounded-lg border border-red-200 px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50 disabled:opacity-50"}
       >
-        Eliminar pedido
+        {isPending ? "Eliminando…" : compact ? "Eliminar" : "Eliminar pedido"}
       </button>
-      <p className="mt-2 text-xs text-gray-500">Solo se pueden eliminar pedidos sin cobro registrado.</p>
-      {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
+      {!compact && <p className="mt-2 text-xs text-gray-500">Se oculta el pedido conservando sus datos e historial. No cancela ni reembolsa el pago.</p>}
+      {error && <p role="alert" className="mt-2 max-w-64 whitespace-normal text-sm text-red-600">{error}</p>}
     </div>
   );
 }

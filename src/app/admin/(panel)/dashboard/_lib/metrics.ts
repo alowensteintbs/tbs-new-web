@@ -73,11 +73,12 @@ export async function getDashboardMetrics(): Promise<DashboardMetrics> {
       _sum: { total: true },
       _count: { _all: true },
     }),
-    db.order.groupBy({ by: ["status"], _count: { _all: true } }),
-    db.order.count({ where: { createdAt: { gte: monthStart } } }),
-    db.order.count({ where: { createdAt: { gte: todayStart } } }),
+    db.order.groupBy({ by: ["status"], where: { deletedAt: null }, _count: { _all: true } }),
+    db.order.count({ where: { deletedAt: null, createdAt: { gte: monthStart } } }),
+    db.order.count({ where: { deletedAt: null, createdAt: { gte: todayStart } } }),
     db.customer.count({ where: { createdAt: { gte: monthStart } } }),
     db.order.findMany({
+      where: { deletedAt: null },
       orderBy: { createdAt: "desc" },
       take: 8,
       select: {

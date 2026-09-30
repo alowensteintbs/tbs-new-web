@@ -12,7 +12,10 @@ export function getPagination(
   params: Record<string, string | undefined>,
   pageSize = DEFAULT_PAGE_SIZE
 ): PaginationParams {
-  const page = Math.max(1, Number(params.page) || 1);
+  const requestedPage = Number(params.page);
+  const page = Number.isSafeInteger(requestedPage) && requestedPage > 0
+    && Number.isSafeInteger((requestedPage - 1) * pageSize)
+    ? requestedPage : 1;
   return { page, pageSize, skip: (page - 1) * pageSize, take: pageSize };
 }
 

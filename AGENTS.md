@@ -40,6 +40,13 @@ Las páginas de marketing se **clonan** desde Figma de forma **determinística**
 
 Selección de gateway automática por moneda (`Currency.countryCodes`). Proveedores declarados en `src/lib/payments/providers.ts`; agregar uno = entrada nueva + adapter en `src/lib/payments/adapters/`, **sin migración**. `config` del gateway está **cifrado en reposo** (AES-256-GCM, `src/lib/crypto.ts`, clave derivada de `SESSION_SECRET`). Los campos secretos nunca se envían al cliente; blank-on-edit conserva el valor guardado. Manual/transferencia ya funciona de punta a punta.
 
+## Rendimiento
+
+- Priorizar velocidad y bajo consumo de recursos en cada cambio.
+- Paginar y filtrar en el servidor; seleccionar solo los campos necesarios.
+- Reutilizar el cliente Prisma y su pool por proceso; ejecutar lecturas independientes en paralelo cuando corresponda.
+- Evitar dependencias y JavaScript de cliente innecesarios. Medir antes de afirmar mejoras de latencia y mantener actualizados los datos operativos.
+
 ## Comandos
 
 - `npm run dev` · `npm run build` · `npm run lint` (eslint)

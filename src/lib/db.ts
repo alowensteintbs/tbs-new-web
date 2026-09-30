@@ -31,7 +31,10 @@ function getPrismaClient(): PrismaClient {
   if (globalForPrisma.prisma) return globalForPrisma.prisma;
 
   const client = createPrismaClient();
-  if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = client;
+  // Reutiliza un cliente y su pool por proceso también en producción.
+  // El Proxy se consulta en cada operación: sin guardar el cliente, cada
+  // acceso crea otro pool y multiplica las conexiones a la base de datos.
+  globalForPrisma.prisma = client;
   return client;
 }
 

@@ -139,31 +139,29 @@ export async function addOrderNote(id: string, body: string): Promise<{ error?: 
 /** Reversible deletion: the order disappears from normal views but remains auditable. */
 export async function archiveOrder(id: string): Promise<{ error?: string }> {
   const actor = await getActor();
-  const order = await db.order.findFirst({
-    where: { id, deletedAt: null },
-    select: { id: true, status: true },
-  });
-  if (!order) return { error: "El pedido no existe o ya fue eliminado." };
-  if (["PAID", "FULFILLED", "REFUNDED"].includes(order.status)) {
-    return { error: "No se puede eliminar un pedido con un cobro registrado. Cancélalo o conserva su historial." };
-  }
+  if (!id.trim()) return { error: "Pedido inválido." };
 
-  await db.$transaction([
-    db.order.update({
-      where: { id: order.id },
+  const archived = await db.$transaction(async (tx) => {
+    // Archivo atómico en cualquier estado; conserva el pago y evita duplicar eventos.
+    const result = await tx.order.updateMany({
+      where: { id, deletedAt: null },
       data: { deletedAt: new Date(), deletedBy: actor.name },
-    }),
-    db.orderEvent.create({
+    });
+    if (result.count !== 1) return false;
+    await tx.orderEvent.create({
       data: {
-        orderId: order.id,
+        orderId: id,
         type: "ORDER_ARCHIVED",
         source: "ADMIN",
         message: "Pedido eliminado de las vistas operativas (archivo reversible).",
         actorId: actor.id,
         actorName: actor.name,
       },
-    }),
-  ]);
-  revalidatePath("/admin/orders");
+    });
+    return true;
+  });
+  if (!archived) return { error: "El pedido no existe o ya fue eliminado." };
+  refreshOrder(id);
+  revalidatePath("/admin/dashboard");
   return {};
 }

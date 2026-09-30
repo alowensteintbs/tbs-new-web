@@ -83,7 +83,7 @@
   font-weight: 700;
 }
 
-:global(.legal-callout) {
+.article :global(.legal-callout) {
   margin-top: 22px;
   border-left: 4px solid #e1ff3b;
   border-radius: 0 14px 14px 0;
@@ -91,38 +91,38 @@
   padding: 16px 18px;
 }
 
-:global(.legal-callout) p {
+.article :global(.legal-callout) p {
   margin: 0;
   color: #e6f0ff;
 }
 
-:global(.legal-table-wrap) {
+.article :global(.legal-table-wrap) {
   margin-top: 22px;
   overflow-x: auto;
   border: 1px solid rgb(255 255 255 / 12%);
   border-radius: 16px;
 }
 
-:global(.legal-table-wrap) table {
+.article :global(.legal-table-wrap) table {
   width: 100%;
   min-width: 620px;
   border-collapse: collapse;
   text-align: left;
 }
 
-:global(.legal-table-wrap) th,
-:global(.legal-table-wrap) td {
+.article :global(.legal-table-wrap) th,
+.article :global(.legal-table-wrap) td {
   padding: 13px 15px;
   vertical-align: top;
 }
 
-:global(.legal-table-wrap) th {
+.article :global(.legal-table-wrap) th {
   background: rgb(255 255 255 / 8%);
   color: #f7f7f7;
   font-weight: 700;
 }
 
-:global(.legal-table-wrap) tr + tr td {
+.article :global(.legal-table-wrap) tr + tr td {
   border-top: 1px solid rgb(255 255 255 / 10%);
 }
 
