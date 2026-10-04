@@ -39,7 +39,7 @@ export default async function OrderDetailPage({
       },
       gateway: { select: { name: true, provider: true } },
       items: {
-        select: { productName: true, productSku: true, unitPrice: true, quantity: true },
+        select: { productName: true, productSku: true, unitPrice: true, quantity: true, origen: true },
       },
       notes: {
         orderBy: { createdAt: "desc" },
@@ -100,6 +100,9 @@ export default async function OrderDetailPage({
             <li key={i} className="flex items-center justify-between py-3 text-sm">
               <div>
                 <span className="font-medium text-gray-900">{it.productName}</span>
+                {it.origen === "ORDER_BUMP" && (
+                  <span className="ml-2 rounded bg-green-50 px-2 py-1 text-xs text-green-700">Oferta adicional</span>
+                )}
                 {it.productSku && (
                   <span className="ml-2 text-xs text-gray-400">{it.productSku}</span>
                 )}

@@ -46,10 +46,12 @@ export async function getReportMetrics(period: ReportPeriod, currencyId?: string
     }),
     db.$queryRaw<CourseRow[]>(Prisma.sql`
       SELECT i.productName AS name, c.code, COUNT(DISTINCT o.id) AS orders, SUM(i.quantity) AS units,
-        SUM(COALESCE(o.total * (i.unitPrice * i.quantity) / NULLIF(
+        SUM(CASE WHEN i.discountAmount IS NOT NULL
+          THEN i.unitPrice * i.quantity - i.discountAmount
+          ELSE COALESCE(o.total * (i.unitPrice * i.quantity) / NULLIF(
           CASE WHEN o.subtotal > 0 THEN o.subtotal
           ELSE (SELECT SUM(legacy.unitPrice * legacy.quantity) FROM OrderItem legacy WHERE legacy.orderId = o.id) END,
-          0), 0)) AS revenue
+          0), 0) END) AS revenue
       FROM OrderItem i JOIN \`Order\` o ON o.id = i.orderId JOIN Currency c ON c.id = o.currencyId
       WHERE ${paid} GROUP BY i.productId, i.productName, c.code
       ORDER BY c.code, revenue DESC, i.productName LIMIT 100

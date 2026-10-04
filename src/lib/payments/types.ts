@@ -6,7 +6,7 @@ export type GatewayConfig = Record<string, string>;
 /** An order with the data an adapter needs to start a payment. */
 export type PayableOrder = Pick<Order, "id" | "number" | "total" | "status"> & {
   currencyCode: string;
-  items: Pick<OrderItem, "productName" | "unitPrice" | "quantity">[];
+  items: (Pick<OrderItem, "productName" | "unitPrice" | "quantity"> & Partial<Pick<OrderItem, "discountAmount">>)[];
   /**
    * Buyer details. Address fields are optional in the type (older orders may
    * lack them) but the checkout now collects them; SeQura needs them in the

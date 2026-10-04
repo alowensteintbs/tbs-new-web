@@ -12,6 +12,7 @@ type NavItem = {
   icon: React.ReactNode;
   ready?: boolean; // false/undefined => "Próximamente", not clickable
   requiredRole?: string; // only rendered for a session with this role
+  allowedRoles?: string[];
 };
 
 const navItems: NavItem[] = [
@@ -34,6 +35,13 @@ const navItems: NavItem[] = [
         <path strokeLinecap="round" strokeLinejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
       </svg>
     ),
+  },
+  {
+    href: "/admin/order-bumps",
+    label: "Order bumps",
+    ready: true,
+    allowedRoles: ["ADMIN", "SUPERADMIN"],
+    icon: <span aria-hidden="true" className="text-xl">+</span>,
   },
   {
     href: "/admin/categories",
@@ -168,7 +176,8 @@ export function Sidebar({ collapsed, onToggle, role }: SidebarProps) {
   const pathname = usePathname();
   // Role-gated items (e.g. Usuarios) only show for the matching role; the page
   // and its actions enforce the real check server-side regardless.
-  const items = navItems.filter((i) => !i.requiredRole || i.requiredRole === role);
+  const items = navItems.filter((i) => (!i.requiredRole || i.requiredRole === role)
+    && (!i.allowedRoles || i.allowedRoles.includes(role ?? "")));
 
   return (
     <aside

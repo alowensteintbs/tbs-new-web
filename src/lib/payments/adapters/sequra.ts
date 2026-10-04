@@ -274,7 +274,7 @@ export const sequraAdapter: PaymentAdapter = {
           },
         },
         items: {
-          select: { productName: true, unitPrice: true, quantity: true },
+          select: { productName: true, unitPrice: true, quantity: true, discountAmount: true },
         },
       },
     });

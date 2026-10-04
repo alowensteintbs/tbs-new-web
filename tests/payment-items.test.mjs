@@ -6,6 +6,32 @@ const load = createRequire(import.meta.url);
 load("tsx/cjs");
 const { discountedPaymentItems } = load("../src/lib/payments/payment-items.ts");
 
+test("el descuento del principal no reduce el precio especial del bump", () => {
+  assert.deepEqual(discountedPaymentItems({ total: 213, items: [
+    { productName: "Principal", unitPrice: 200, quantity: 1, discountAmount: 20 },
+    { productName: "Bump", unitPrice: 33, quantity: 1, discountAmount: 0 },
+  ] }, (amount) => Math.round(amount * 100)), [
+    { productName: "Principal", amount: 18000 }, { productName: "Bump", amount: 3300 },
+  ]);
+});
+test("principal gratis con bump pagado produce solo el artículo cobrable", () => {
+  assert.deepEqual(discountedPaymentItems({ total: 33, items: [
+    { productName: "Principal", unitPrice: 200, quantity: 1, discountAmount: 200 },
+    { productName: "Bump", unitPrice: 33, quantity: 1, discountAmount: 0 },
+  ] }, (amount) => Math.round(amount * 100)), [{ productName: "Bump", amount: 3300 }]);
+});
+test("los descuentos por línea deben coincidir exactamente con el total", () => {
+  assert.throws(() => discountedPaymentItems({ total: 200, items: [
+    { productName: "Principal", unitPrice: 200, quantity: 1, discountAmount: 20 },
+  ] }, (amount) => Math.round(amount * 100)), /no coincide/);
+});
+test("reparte los centavos dentro de una línea con varias unidades", () => {
+  const items = discountedPaymentItems({ total: 19.99, items: [
+    { productName: "Curso", unitPrice: 10, quantity: 3, discountAmount: 10.01 },
+  ] }, (amount) => Math.round(amount * 100));
+  assert.deepEqual(items.map((item) => item.amount), [667, 666, 666]);
+});
+
 test("distribuye el descuento y conserva exactamente el total cobrable", () => {
   const items = discountedPaymentItems(
     {

@@ -70,20 +70,21 @@ model Redirect {
 }
 
 model Currency {
-  id        String         @id @default(cuid())
-  code      String         @unique // ISO 4217, e.g. EUR, MXN, USD
-  name      String // e.g. "Euro"
-  symbol    String // e.g. "€"
-  enabled   Boolean        @default(true)
+  id              String                @id @default(cuid())
+  code            String                @unique // ISO 4217, e.g. EUR, MXN, USD
+  name            String // e.g. "Euro"
+  symbol          String // e.g. "€"
+  enabled         Boolean               @default(true)
   // CSV of ISO-3166 alpha-2 country codes that resolve to this currency,
   // e.g. "MX" or "ES,IT,FR". Used to pick a currency by visitor country.
-  countryCodes String @default("")
-  createdAt DateTime       @default(now())
-  updatedAt DateTime       @updatedAt
-  prices    ProductPrice[]
-  gateways  GatewayCurrency[]
-  orders    Order[]
-  coupons   Coupon[]
+  countryCodes    String                @default("")
+  createdAt       DateTime              @default(now())
+  updatedAt       DateTime              @updatedAt
+  prices          ProductPrice[]
+  gateways        GatewayCurrency[]
+  orders          Order[]
+  coupons         Coupon[]
+  ofertasCheckout OfertaCheckoutPrice[]
 
   @@index([name]) // search by name (code is already unique-indexed)
   @@index([enabled]) // filter by status
@@ -104,21 +105,23 @@ model Category {
 }
 
 model Product {
-  id          String         @id @default(cuid())
-  name        String
-  landingSlug String         @unique
-  sku         String?
-  description String         @db.Text
-  academyId   String         @default("") // external academy identifier
-  visible     Boolean        @default(true)
-  featured    Boolean        @default(false)
-  categoryId  String?
-  category    Category?      @relation(fields: [categoryId], references: [id], onDelete: SetNull)
-  createdAt   DateTime       @default(now())
-  updatedAt   DateTime       @updatedAt
-  prices      ProductPrice[]
-  images      ProductImage[]
-  coupons     CouponProduct[]
+  id              String           @id @default(cuid())
+  name            String
+  landingSlug     String           @unique
+  sku             String?
+  description     String           @db.Text
+  academyId       String           @default("") // external academy identifier
+  visible         Boolean          @default(true)
+  featured        Boolean          @default(false)
+  categoryId      String?
+  category        Category?        @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  prices          ProductPrice[]
+  images          ProductImage[]
+  coupons         CouponProduct[]
+  ofertasCheckout OfertaCheckout[] @relation("ProductoPrincipal")
+  ofrecidoEn      OfertaCheckout[] @relation("ProductoOfrecido")
 
   @@index([name]) // search by name
   @@index([updatedAt]) // default sort
@@ -156,7 +159,7 @@ model ProductPrice {
 /// serves via GatewayCurrency — checkout shows only gateways whose currency
 /// matches the visitor's resolved Currency.
 model PaymentGateway {
-  id        String  @id @default(cuid())
+  id        String   @id @default(cuid())
   /// Stable provider key resolved by the integration layer, e.g.
   /// "stripe", "paypal", "afterpay", "klarna", "sequra", "manual".
   /// NOT unique: a provider can have several instances with distinct
@@ -164,15 +167,15 @@ model PaymentGateway {
   /// to the currencies it serves. Selection at checkout is by currency.
   provider  String
   name      String // display label shown to the buyer, e.g. "Tarjeta (Stripe)"
-  enabled   Boolean @default(true)
+  enabled   Boolean  @default(true)
   // false = test/sandbox credentials, true = live.
-  live      Boolean @default(false)
+  live      Boolean  @default(false)
   // Provider-specific credentials & options as JSON (api keys, secrets,
   // webhook ids, bank details for manual transfer, …). Encrypted at the app
   // layer before persisting. Defaults to "{}" in app code — MySQL TEXT
   // columns cannot carry a DEFAULT.
-  config    String  @db.Text
-  position  Int     @default(0) // display order at checkout
+  config    String   @db.Text
+  position  Int      @default(0) // display order at checkout
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -222,57 +225,56 @@ enum OrderStatus {
   FAILED // payment attempt failed
 }
 
-/// A single purchase. Single-item flow (no cart): one product per order,
-/// but items are modelled in OrderItem to keep totals explicit and allow
-/// future multi-item support. Price & currency are snapshotted at purchase.
+/// A direct purchase: one main product plus optional checkout offers, no cart.
+/// Items snapshot their prices and discounts at purchase time.
 model Order {
-  id         String      @id @default(cuid())
+  id             String          @id @default(cuid())
   // Atomic autoincrement backing the human-facing number: guarantees the
   // reference is unique and truly sequential (no random-collision risk).
-  seq        Int         @unique @default(autoincrement())
+  seq            Int             @unique @default(autoincrement())
   // Human-friendly sequential reference (TBS-000123) shown to the buyer. The
   // PUBLIC status URL keys off `id` (an unguessable cuid), NOT this number, so
   // orders can't be enumerated.
-  number     String      @unique
-  customerId String
-  customer   Customer    @relation(fields: [customerId], references: [id])
-  currencyId String
-  currency   Currency    @relation(fields: [currencyId], references: [id])
+  number         String          @unique
+  customerId     String
+  customer       Customer        @relation(fields: [customerId], references: [id])
+  currencyId     String
+  currency       Currency        @relation(fields: [currencyId], references: [id])
   // Price before discount (sum of items). `total` is the final charged amount
   // (subtotal - discountAmount) that goes to the gateway.
-  subtotal       Decimal @db.Decimal(12, 2) @default(0)
-  discountAmount Decimal @db.Decimal(12, 2) @default(0)
+  subtotal       Decimal         @default(0) @db.Decimal(12, 2)
+  discountAmount Decimal         @default(0) @db.Decimal(12, 2)
   // Coupon applied, if any. SetNull so deleting a coupon keeps order history;
   // `couponCode` snapshots the code even if the coupon row is later removed.
-  couponId   String?
-  coupon     Coupon?     @relation(fields: [couponId], references: [id], onDelete: SetNull)
-  couponCode String?
-  total      Decimal     @db.Decimal(12, 2)
-  status     OrderStatus @default(PENDING)
+  couponId       String?
+  coupon         Coupon?         @relation(fields: [couponId], references: [id], onDelete: SetNull)
+  couponCode     String?
+  total          Decimal         @db.Decimal(12, 2)
+  status         OrderStatus     @default(PENDING)
   // Which gateway is/was used. SetNull so deleting a gateway keeps order history.
-  gatewayId  String?
-  gateway    PaymentGateway? @relation(fields: [gatewayId], references: [id], onDelete: SetNull)
+  gatewayId      String?
+  gateway        PaymentGateway? @relation(fields: [gatewayId], references: [id], onDelete: SetNull)
   // Provider's payment/session id for reconciliation against webhooks.
-  paymentRef String?
+  paymentRef     String?
   // Raw provider payload (last webhook/notification) for auditing.
-  paymentMeta String? @db.Text
+  paymentMeta    String?         @db.Text
   // Human-readable failure detail, either supplied by an admin or extracted
   // from the provider response. The full original response lives in events.
-  failureReason String? @db.Text
+  failureReason  String?         @db.Text
   // Legacy internal field retained only to match the already-applied database
   // schema. It is intentionally not exposed or written by the application.
   adminReference String?
   // "Delete" is a reversible archive so a financial/audit trail is never
   // physically erased. Archived orders are excluded from every public/admin
   // operational query.
-  deletedAt DateTime?
-  deletedBy String?
-  paidAt     DateTime?
-  createdAt  DateTime    @default(now())
-  updatedAt  DateTime    @updatedAt
-  items      OrderItem[]
-  notes      OrderNote[]
-  events     OrderEvent[]
+  deletedAt      DateTime?
+  deletedBy      String?
+  paidAt         DateTime?
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  items          OrderItem[]
+  notes          OrderNote[]
+  events         OrderEvent[]
 
   @@index([customerId])
   @@index([status])
@@ -325,29 +327,29 @@ enum CouponType {
 /// restricted to specific products (CouponProduct). Usage is derived from the
 /// Orders that reference it (no separate counter to drift).
 model Coupon {
-  id      String     @id @default(cuid())
-  code    String     @unique // normalized uppercase, e.g. "VERANO20"
-  type    CouponType
+  id              String          @id @default(cuid())
+  code            String          @unique // normalized uppercase, e.g. "VERANO20"
+  type            CouponType
   // PERCENTAGE: 0-100 in `percent`. FIXED: `amount` in `currency`.
-  percent Decimal?   @db.Decimal(5, 2)
-  amount  Decimal?   @db.Decimal(12, 2)
+  percent         Decimal?        @db.Decimal(5, 2)
+  amount          Decimal?        @db.Decimal(12, 2)
   // Required for FIXED; optional for PERCENTAGE. When set, the coupon only
   // applies when the checkout currency matches (and `minAmount` is in it).
-  currencyId String?
-  currency   Currency? @relation(fields: [currencyId], references: [id], onDelete: SetNull)
+  currencyId      String?
+  currency        Currency?       @relation(fields: [currencyId], references: [id], onDelete: SetNull)
   // Minimum order subtotal for the coupon to apply (in `currency`). Optional.
-  minAmount Decimal?  @db.Decimal(12, 2)
+  minAmount       Decimal?        @db.Decimal(12, 2)
   // Total redemption cap across all customers (null = unlimited).
-  maxUses   Int?
+  maxUses         Int?
   // If true, each customer (by email) can redeem it only once.
-  oncePerCustomer Boolean @default(false)
-  startsAt  DateTime?
-  endsAt    DateTime?
-  enabled   Boolean   @default(true)
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  products  CouponProduct[]
-  orders    Order[]
+  oncePerCustomer Boolean         @default(false)
+  startsAt        DateTime?
+  endsAt          DateTime?
+  enabled         Boolean         @default(true)
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  products        CouponProduct[]
+  orders          Order[]
 
   @@index([enabled])
   @@index([currencyId])
@@ -367,16 +369,58 @@ model CouponProduct {
 /// Line item with a snapshot of the product at purchase time (name/sku/price
 /// stay fixed even if the product later changes or is deleted).
 model OrderItem {
-  id          String  @id @default(cuid())
-  orderId     String
-  order       Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  id             String          @id @default(cuid())
+  orderId        String
+  order          Order           @relation(fields: [orderId], references: [id], onDelete: Cascade)
   // Nullable FK so deleting a product doesn't erase order history.
-  productId   String?
-  productName String
-  productSku  String?
-  unitPrice   Decimal @db.Decimal(12, 2)
-  quantity    Int     @default(1)
+  productId      String?
+  productName    String
+  productSku     String?
+  unitPrice      Decimal         @db.Decimal(12, 2)
+  quantity       Int             @default(1)
+  discountAmount Decimal?        @db.Decimal(12, 2)
+  ofertaId       String?
+  oferta         OfertaCheckout? @relation(fields: [ofertaId], references: [id], onDelete: SetNull)
+  origen         OrigenOrderItem @default(PRINCIPAL)
 
   @@index([orderId])
   @@index([productId])
+}
+
+enum OrigenOrderItem {
+  PRINCIPAL
+  ORDER_BUMP
+}
+
+/// Optional checkout additions. Reuses the tables created before the restore.
+model OfertaCheckout {
+  id                  String                @id @default(cuid())
+  productoPrincipalId String
+  productoOfrecidoId  String
+  productoPrincipal   Product               @relation("ProductoPrincipal", fields: [productoPrincipalId], references: [id], onDelete: Cascade)
+  productoOfrecido    Product               @relation("ProductoOfrecido", fields: [productoOfrecidoId], references: [id], onDelete: Cascade)
+  titulo              String
+  descripcion         String                @db.Text
+  activo              Boolean               @default(false)
+  posicion            Int                   @default(0)
+  createdAt           DateTime              @default(now())
+  updatedAt           DateTime              @updatedAt
+  prices              OfertaCheckoutPrice[]
+  items               OrderItem[]
+
+  @@unique([productoPrincipalId, productoOfrecidoId])
+  @@index([productoPrincipalId, activo, posicion])
+  @@index([productoOfrecidoId])
+}
+
+model OfertaCheckoutPrice {
+  id         String         @id @default(cuid())
+  ofertaId   String
+  currencyId String
+  amount     Decimal        @db.Decimal(12, 2)
+  oferta     OfertaCheckout @relation(fields: [ofertaId], references: [id], onDelete: Cascade)
+  currency   Currency       @relation(fields: [currencyId], references: [id], onDelete: Cascade)
+
+  @@unique([ofertaId, currencyId])
+  @@index([currencyId])
 }

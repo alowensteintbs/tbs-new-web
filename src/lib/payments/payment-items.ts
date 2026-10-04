@@ -10,6 +10,31 @@ export function discountedPaymentItems(
   order: Pick<PayableOrder, "items" | "total">,
   toMinorUnits: (amount: number) => number
 ): { productName: string; amount: number }[] {
+  // New orders snapshot each line's discount. Keep legacy proportional
+  // allocation only for historical orders without those snapshots.
+  if (order.items.length > 0 && order.items.every((item) => item.discountAmount != null)) {
+    const units = order.items.flatMap((item) => {
+      const quantity = Number(item.quantity);
+      const gross = toMinorUnits(Number(item.unitPrice) * quantity);
+      const discount = toMinorUnits(Number(item.discountAmount));
+      if (!Number.isSafeInteger(quantity) || quantity < 1 || !Number.isSafeInteger(gross)
+        || !Number.isSafeInteger(discount) || discount < 0 || discount > gross) {
+        throw new Error("El pedido contiene artículos con un importe no válido.");
+      }
+      const net = gross - discount;
+      return Array.from({ length: quantity }, (_, index) => ({
+        productName: item.productName,
+        amount: Math.floor(net / quantity) + (index < net % quantity ? 1 : 0),
+      }));
+    });
+    const total = toMinorUnits(Number(order.total));
+    if (!Number.isSafeInteger(total) || total <= 0 || units.reduce((sum, item) => sum + item.amount, 0) !== total) {
+      throw new Error("El importe final del pedido no coincide con sus artículos.");
+    }
+    // Financing providers require positive article amounts. Free lines remain
+    // in OrderItem/receipts but do not contribute a payable provider article.
+    return units.filter((item) => item.amount > 0);
+  }
   const units = order.items.flatMap((item) => {
     const quantity = Number(item.quantity);
     const amount = toMinorUnits(Number(item.unitPrice));

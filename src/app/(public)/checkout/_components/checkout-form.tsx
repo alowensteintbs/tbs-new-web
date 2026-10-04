@@ -4,6 +4,7 @@ import Image from "next/image";
 import { useActionState, useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { countryCallingCode, SPANISH_PROVINCES } from "@/lib/address";
 import type { AvailableGateway } from "@/lib/payments/checkout";
+import type { CheckoutOffer } from "@/lib/order-bumps";
 import type { CountryOption } from "@/lib/countries";
 import {
   placeOrder,
@@ -79,6 +80,7 @@ type CheckoutDraft = CheckoutFormValues & {
   gatewayId: string;
   couponCode: string;
   couponOpen: boolean;
+  ofertaIds: string[];
 };
 
 const EMPTY_FORM_VALUES: CheckoutFormValues = {
@@ -143,6 +145,7 @@ export function CheckoutForm({
   currencyId,
   currencyCode,
   gateways,
+  offers,
   countries,
   amount,
   amountLabel,
@@ -152,6 +155,7 @@ export function CheckoutForm({
   currencyId: string;
   currencyCode: string;
   gateways: AvailableGateway[];
+  offers: CheckoutOffer[];
   countries: CountryOption[];
   amount: number;
   amountLabel: string;
@@ -166,6 +170,8 @@ export function CheckoutForm({
   const [couponOpen, setCouponOpen] = useState(false);
   const [couponCode, setCouponCode] = useState("");
   const [coupon, setCoupon] = useState<CouponPreview | null>(null);
+  const [ofertaIds, setOfertaIds] = useState<string[]>([]);
+  const couponRequest = useRef(0);
   const [formValues, setFormValues] = useState<CheckoutFormValues>(EMPTY_FORM_VALUES);
   const [draftReady, setDraftReady] = useState(false);
   const [quote, setQuote] = useState<CheckoutQuote>({
@@ -175,6 +181,7 @@ export function CheckoutForm({
     amount,
     amountLabel,
     gateways,
+    offers,
   });
   const [selectedGateway, setSelectedGateway] = useState(defaultGateway);
   const [selectedCountry, setSelectedCountry] = useState(defaultCountry);
@@ -187,14 +194,22 @@ export function CheckoutForm({
   const activeCurrencyCode = quote.available ? quote.currencyCode : currencyCode;
   const activeAmount = quote.available ? quote.amount : amount;
   const activeAmountLabel = quote.available ? quote.amountLabel : "No disponible";
+  const activeOffers = quote.available ? quote.offers : [];
+  const selectedOffers = activeOffers.filter((offer) => ofertaIds.includes(offer.id));
+  const subtotalAmount = (Math.round(activeAmount * 100) + selectedOffers.reduce(
+    (sum, offer) => sum + Math.round(offer.amount * 100), 0
+  )) / 100;
+  const subtotalLabel = new Intl.NumberFormat("es-ES", {
+    style: "currency", currency: activeCurrencyCode,
+  }).format(subtotalAmount);
 
   const installmentLabel = useMemo(
     () =>
       new Intl.NumberFormat("es-ES", {
         style: "currency",
         currency: activeCurrencyCode,
-      }).format(activeAmount / 12),
-    [activeAmount, activeCurrencyCode]
+      }).format(subtotalAmount / 12),
+    [subtotalAmount, activeCurrencyCode]
   );
   const selectedGatewayDetails = activeGateways.find(
     (gateway) => gateway.id === selectedGateway
@@ -236,9 +251,13 @@ export function CheckoutForm({
       setSelectedCountry(restoredCountry);
 
       try {
+        const request = ++quoteRequest.current;
         const nextQuote = await getCheckoutQuote(productId, restoredCountry);
-        if (cancelled) return;
+        if (cancelled || request !== quoteRequest.current) return;
         setQuote(nextQuote);
+        setOfertaIds(nextQuote.available && Array.isArray(draft.ofertaIds)
+          ? nextQuote.offers.filter((offer) => draft.ofertaIds!.includes(offer.id)).slice(0, 20).map((offer) => offer.id)
+          : []);
         const restoredGateway =
           typeof draft.gatewayId === "string" &&
           nextQuote.available &&
@@ -270,6 +289,7 @@ export function CheckoutForm({
       gatewayId: selectedGateway,
       couponCode,
       couponOpen,
+      ofertaIds,
     };
     try {
       sessionStorage.setItem(`tbs-checkout:${productId}`, JSON.stringify(draft));
@@ -279,6 +299,7 @@ export function CheckoutForm({
   }, [
     couponCode,
     couponOpen,
+    ofertaIds,
     draftReady,
     formValues,
     productId,
@@ -296,12 +317,29 @@ export function CheckoutForm({
     fd.set("productId", productId);
     fd.set("currencyId", quote.currencyId);
     fd.set("couponCode", couponCode);
-    startCheck(async () => setCoupon(await previewCoupon(fd)));
+    for (const id of ofertaIds) fd.append("ofertaId", id);
+    const request = ++couponRequest.current;
+    startCheck(async () => {
+      try {
+        const result = await previewCoupon(fd);
+        if (request === couponRequest.current) setCoupon(result);
+      } catch {
+        if (request === couponRequest.current) setCoupon({ ok: false, error: "No pudimos comprobar el cupón. Vuelve a intentarlo." });
+      }
+    });
+  }
+
+  function toggleOffer(id: string, checked: boolean) {
+    setOfertaIds((current) => checked ? [...current, id] : current.filter((value) => value !== id));
+    couponRequest.current += 1;
+    setCoupon(null);
   }
 
   function updateCountry(country: string) {
     setSelectedCountry(country);
     setCoupon(null);
+    couponRequest.current += 1;
+    setOfertaIds([]);
     setFormValues((current) => ({
       ...current,
       province:
@@ -315,10 +353,16 @@ export function CheckoutForm({
     }));
     const request = ++quoteRequest.current;
     startQuoteUpdate(async () => {
-      const nextQuote = await getCheckoutQuote(productId, country);
-      if (request === quoteRequest.current) {
-        setQuote(nextQuote);
-        setSelectedGateway(nextQuote.available ? nextQuote.gateways[0]?.id ?? "" : "");
+      try {
+        const nextQuote = await getCheckoutQuote(productId, country);
+        if (request === quoteRequest.current) {
+          setQuote(nextQuote);
+          setSelectedGateway(nextQuote.available ? nextQuote.gateways[0]?.id ?? "" : "");
+        }
+      } catch {
+        if (request === quoteRequest.current) {
+          setQuote({ available: false, error: "No pudimos actualizar los precios. Vuelve a seleccionar tu país." });
+        }
       }
     });
   }
@@ -328,6 +372,7 @@ export function CheckoutForm({
     <form action={formAction} className={styles.form}>
       <input type="hidden" name="productId" value={productId} />
       <input type="hidden" name="currencyId" value={activeCurrencyId} />
+      <input type="hidden" name="couponCode" value={coupon?.ok ? coupon.code : ""} />
 
       <section className={styles.summary} aria-labelledby="checkout-summary-title">
         <h1 id="checkout-summary-title" className={styles.summaryHeading}>
@@ -345,6 +390,12 @@ export function CheckoutForm({
             <span>{productName}</span>
             <span>{activeAmountLabel}</span>
           </div>
+          {selectedOffers.map((offer) => (
+            <div key={offer.id} className={styles.summaryRow}>
+              <span>{offer.productName}</span>
+              <span>{new Intl.NumberFormat("es-ES", { style: "currency", currency: activeCurrencyCode }).format(offer.amount)}</span>
+            </div>
+          ))}
           <hr className={styles.summaryDivider} />
           <div className={styles.summaryDetails}>
             {coupon?.ok && (
@@ -355,16 +406,38 @@ export function CheckoutForm({
             )}
             <div className={styles.summaryRow}>
               <span>Subtotal</span>
-              <span>{activeAmountLabel}</span>
+              <span>{subtotalLabel}</span>
             </div>
           </div>
           <hr className={styles.summaryDivider} />
           <div className={`${styles.summaryRow} ${styles.summaryTotal}`}>
             <span>TOTAL</span>
-            <span>{coupon?.ok ? coupon.totalLabel : activeAmountLabel}</span>
+            <span aria-live="polite">{coupon?.ok ? coupon.totalLabel : subtotalLabel}</span>
           </div>
         </div>
       </section>
+
+      {activeOffers.length > 0 && (
+        <fieldset className={styles.offers} disabled={isPending || updatingQuote || !draftReady}>
+          <legend>Completa tu formación</legend>
+          {activeOffers.map((offer) => (
+            <label key={offer.id} className={styles.offer}>
+              <input type="checkbox" name="ofertaId" value={offer.id}
+                checked={ofertaIds.includes(offer.id)}
+                disabled={!ofertaIds.includes(offer.id) && ofertaIds.length >= 20}
+                onChange={(event) => toggleOffer(offer.id, event.target.checked)} />
+              <span>
+                <strong>{offer.titulo}</strong>
+                <span>{offer.productName} · {new Intl.NumberFormat("es-ES", {
+                  style: "currency", currency: activeCurrencyCode,
+                }).format(offer.amount)}</span>
+                {offer.descripcion && <span>{offer.descripcion}</span>}
+              </span>
+            </label>
+          ))}
+        </fieldset>
+      )}
+      <FieldError errors={state.fieldErrors?.ofertaIds} />
 
       <div className={styles.columns}>
         <section className={styles.panel} aria-labelledby="customer-title">
@@ -538,20 +611,20 @@ export function CheckoutForm({
                 <div className={styles.couponFields}>
                   <input
                     className={styles.input}
-                    name="couponCode"
                     aria-label="Código de descuento"
                     placeholder="Introduce tu código"
                     value={couponCode}
                     onChange={(event) => {
                       setCouponCode(event.target.value);
                       setCoupon(null);
+                      couponRequest.current += 1;
                     }}
                   />
                   <button
                     type="button"
                     className={styles.couponButton}
                     onClick={applyCoupon}
-                    disabled={checking || !couponCode.trim() || !quote.available}
+                    disabled={checking || updatingQuote || !draftReady || !couponCode.trim() || !quote.available}
                   >
                     {checking ? "Comprobando…" : "Aplicar"}
                   </button>
@@ -652,7 +725,7 @@ export function CheckoutForm({
 
           <button
             type="submit"
-            disabled={isPending || updatingQuote || !quote.available || !selectedGateway}
+            disabled={isPending || updatingQuote || checking || !draftReady || !quote.available || !selectedGateway}
             className={styles.submit}
           >
             {isPending ? "Procesando…" : checkoutButtonLabel(selectedGatewayDetails)}

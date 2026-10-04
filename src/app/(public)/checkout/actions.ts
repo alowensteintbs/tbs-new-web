@@ -14,6 +14,7 @@ import {
 } from "@/lib/address";
 import { COUNTRIES } from "@/lib/countries";
 import { validateCoupon, normalizeCode } from "@/lib/coupons";
+import { getCheckoutOffers, resolveOrderBumps, type CheckoutOffer } from "@/lib/order-bumps";
 import { sendOrderStatusEmail } from "@/lib/email/notify";
 import { getAdapter } from "@/lib/payments";
 import {
@@ -26,10 +27,11 @@ import type { PayableOrder, PaymentStart } from "@/lib/payments/types";
 
 const checkoutSchema = z
   .object({
-    productId: z.string().min(1),
-    currencyId: z.string().min(1),
-    gatewayId: z.string().min(1, "Elige un método de pago"),
+    productId: z.string().min(1).max(191),
+    currencyId: z.string().min(1).max(191),
+    gatewayId: z.string().min(1, "Elige un método de pago").max(191),
     couponCode: z.string().trim().max(60).optional(),
+    ofertaIds: z.array(z.string().min(1).max(191)).max(20),
     email: z.email("Email inválido"),
     name: z.string().trim().min(1, "El nombre es requerido").max(120),
     surname: z.string().trim().min(1, "Los apellidos son requeridos").max(120),
@@ -75,6 +77,7 @@ export type CheckoutQuote =
       amount: number;
       amountLabel: string;
       gateways: AvailableGateway[];
+      offers: CheckoutOffer[];
     }
   | { available: false; error: string };
 
@@ -111,13 +114,17 @@ export async function getCheckoutQuote(
     };
   }
 
+  const [gateways, offers] = await Promise.all([
+    getGatewaysForCurrency(currency.id), getCheckoutOffers(productId, currency.id),
+  ]);
   return {
     available: true,
     currencyId: currency.id,
     currencyCode: currency.code,
     amount: Number(price.amount),
     amountLabel: formatPrice(Number(price.amount), currency.code),
-    gateways: await getGatewaysForCurrency(currency.id),
+    gateways,
+    offers,
   };
 }
 
@@ -133,11 +140,11 @@ export async function previewCoupon(formData: FormData): Promise<CouponPreview> 
   if (!codeRaw.trim()) return { ok: false, error: "Introduce un código." };
 
   const [product, currency] = await Promise.all([
-    db.product.findUnique({
-      where: { id: productId },
+    db.product.findFirst({
+      where: { id: productId, visible: true },
       select: { prices: { where: { currencyId }, select: { amount: true } } },
     }),
-    db.currency.findUnique({ where: { id: currencyId }, select: { code: true } }),
+    db.currency.findFirst({ where: { id: currencyId, enabled: true }, select: { code: true } }),
   ]);
   const price = product?.prices[0];
   if (!price || !currency) {
@@ -145,10 +152,13 @@ export async function previewCoupon(formData: FormData): Promise<CouponPreview> 
   }
 
   const subtotal = new Prisma.Decimal(price.amount);
+  const bumps = await resolveOrderBumps(productId, currencyId, formData.getAll("ofertaId").map(String));
+  if (!bumps.ok) return { ok: false, error: bumps.error };
   const res = await validateCoupon({ codeRaw, productId, currencyId, subtotal });
   if (!res.ok) return { ok: false, error: res.error };
 
-  const newTotal = subtotal.minus(res.discount);
+  // Coupons apply to the main product; the bump keeps its special offer price.
+  const newTotal = subtotal.plus(bumps.subtotal).minus(res.discount);
   return {
     ok: true,
     code: normalizeCode(codeRaw),
@@ -250,6 +260,7 @@ export async function placeOrder(
     currencyId: formData.get("currencyId"),
     gatewayId: formData.get("gatewayId"),
     couponCode: String(formData.get("couponCode") ?? ""),
+    ofertaIds: formData.getAll("ofertaId"),
     email: formData.get("email"),
     name: formData.get("name"),
     surname: formData.get("surname"),
@@ -258,7 +269,7 @@ export async function placeOrder(
     city: formData.get("city"),
     postalCode: formData.get("postalCode"),
     province: formData.get("province"),
-    country: (formData.get("country") as string)?.toUpperCase(),
+    country: typeof formData.get("country") === "string" ? String(formData.get("country")).toUpperCase() : undefined,
     terms: formData.get("terms"),
   });
   if (!parsed.success) {
@@ -293,8 +304,8 @@ export async function placeOrder(
       },
       select: { id: true, provider: true, config: true, live: true },
     }),
-    db.currency.findUnique({
-      where: { id: input.currencyId },
+    db.currency.findFirst({
+      where: { id: input.currencyId, enabled: true },
       select: { countryCodes: true },
     }),
   ]);
@@ -303,6 +314,9 @@ export async function placeOrder(
   const price = product.prices[0];
   if (!price) return { error: "El producto no tiene precio en esta moneda." };
   if (!gateway) return { error: "El método de pago no es válido para esta moneda." };
+  if (!currency) return { error: "La moneda ya no está disponible." };
+  const bumps = await resolveOrderBumps(product.id, input.currencyId, input.ofertaIds);
+  if (!bumps.ok) return { fieldErrors: { ofertaIds: [bumps.error] } };
 
   const allowedCountries = (currency?.countryCodes ?? "")
     .split(",")
@@ -317,7 +331,8 @@ export async function placeOrder(
 
   // Coupon (optional). Validated authoritatively here from the code — never
   // trust a client-computed discount. On failure the buyer sees the reason.
-  const subtotal = new Prisma.Decimal(price.amount);
+  const mainSubtotal = new Prisma.Decimal(price.amount);
+  const subtotal = mainSubtotal.plus(bumps.subtotal);
   let discount = new Prisma.Decimal(0);
   let couponId: string | null = null;
   let couponCode: string | null = null;
@@ -326,7 +341,7 @@ export async function placeOrder(
       codeRaw: input.couponCode,
       productId: product.id,
       currencyId: input.currencyId,
-      subtotal,
+      subtotal: mainSubtotal,
       customerEmail: input.email,
     });
     if (!res.ok) return { fieldErrors: { couponCode: [res.error] } };
@@ -395,13 +410,15 @@ export async function placeOrder(
           },
         },
         items: {
-          create: {
+          create: [{
             productId: product.id,
             productName: product.name,
             productSku: product.sku,
             unitPrice: price.amount,
             quantity: 1,
-          },
+            discountAmount: discount,
+            origen: "PRINCIPAL",
+          }, ...bumps.items],
         },
       },
       select: { id: true, seq: true },
@@ -415,7 +432,7 @@ export async function placeOrder(
         total: true,
         status: true,
         currency: { select: { code: true } },
-        items: { select: { productName: true, unitPrice: true, quantity: true } },
+        items: { select: { productName: true, unitPrice: true, quantity: true, discountAmount: true } },
       },
     });
   });

@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { db } from "@/lib/db";
 import { getActiveCurrency, formatPrice } from "@/lib/currency-resolver";
 import { getGatewaysForCurrency } from "@/lib/payments/checkout";
+import { getCheckoutOffers } from "@/lib/order-bumps";
 import { countryOptions } from "@/lib/countries";
 import { TestimonialsSection } from "@/components/home/testimonials-section";
 import { CheckoutForm } from "../_components/checkout-form";
@@ -35,7 +36,9 @@ export default async function CheckoutPage({
   if (!product) notFound();
 
   const price = product.prices[0];
-  const gateways = price ? await getGatewaysForCurrency(currency.id) : [];
+  const [gateways, offers] = price ? await Promise.all([
+    getGatewaysForCurrency(currency.id), getCheckoutOffers(product.id, currency.id),
+  ]) : [[], []];
 
   // The country selector must remain global: choosing a country refreshes the
   // quote client-side, resolving its configured currency and product price.
@@ -61,6 +64,7 @@ export default async function CheckoutPage({
               currencyId={currency.id}
               currencyCode={currency.code}
               gateways={gateways}
+              offers={offers}
               countries={countries}
               amount={Number(price.amount)}
               amountLabel={formatPrice(Number(price.amount), currency.code)}
