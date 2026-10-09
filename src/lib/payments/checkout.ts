@@ -2,6 +2,7 @@ import "server-only";
 import { db } from "@/lib/db";
 import { decrypt } from "@/lib/crypto";
 import { sendOrderStatusEmail } from "@/lib/email/notify";
+import { procesarInscripcionAcademia } from "@/lib/academia/inscripcion";
 import { paymentFailureReason } from "@/lib/orders/audit";
 import { getProvider } from "./providers";
 import type { GatewayConfig, WebhookResult } from "./types";
@@ -103,21 +104,23 @@ export async function applyWebhookResult(
   // Guard against out-of-order / regressive transitions. We still retain the
   // provider payload as an audit event, but never regress the order itself.
   const isRegressive =
+    (result.status === "PENDING" && order.status !== "PENDING") ||
+    (result.status === "PAID" && ["FULFILLED", "REFUNDED", "CANCELLED"].includes(order.status)) ||
     (result.status === "FAILED" && order.status !== "PENDING") ||
     (
     result.status === "REFUNDED" &&
     order.status !== "PAID" &&
     order.status !== "FULFILLED"
     );
-  const changed = !isRegressive && order.status !== result.status;
+  let changed = !isRegressive && order.status !== result.status;
   const failureReason =
     result.status === "FAILED"
       ? paymentFailureReason(result.raw) ?? "La pasarela informó que el pago falló, sin detalle adicional."
       : null;
 
   await db.$transaction(async (tx) => {
-    await tx.order.update({
-      where: { id: order.id },
+    const updated = await tx.order.updateMany({
+      where: { id: order.id, status: order.status },
       data: {
         ...(changed
           ? {
@@ -130,6 +133,7 @@ export async function applyWebhookResult(
         ...(result.status === "FAILED" ? { failureReason } : {}),
       },
     });
+    changed = changed && updated.count > 0;
     await tx.orderEvent.create({
       data: {
         orderId: order.id,
@@ -150,6 +154,7 @@ export async function applyWebhookResult(
   // Fire the transactional email for this transition (best-effort; awaited so it
   // completes before a serverless invocation ends, but never throws).
   if (changed) await sendOrderStatusEmail(order.id, result.status);
+  if (result.status === "PAID" && !isRegressive) await procesarInscripcionAcademia(order.id);
 
   return order.id;
 }

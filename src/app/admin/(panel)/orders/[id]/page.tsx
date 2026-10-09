@@ -6,7 +6,7 @@ import { formatPrice } from "@/lib/currency-resolver";
 import { getProvider } from "@/lib/payments/providers";
 import { ORDER_STATUS_META } from "../_lib/status";
 import { OrderStatusActions } from "../_components/order-status-actions";
-import { ArchiveOrderButton, OrderNotesForm } from "../_components/order-operations";
+import { ArchiveOrderButton, OrderNotesForm, InscripcionAcademiaButton } from "../_components/order-operations";
 
 export const metadata: Metadata = { title: "Detalle del pedido" };
 
@@ -33,6 +33,10 @@ export default async function OrderDetailPage({
       failureReason: true,
       paidAt: true,
       createdAt: true,
+      academiaEstado: true,
+      academiaIntentos: true,
+      academiaError: true,
+      academiaCompletadaAt: true,
       currency: { select: { code: true } },
       customer: {
         select: { id: true, name: true, email: true, phone: true, country: true },
@@ -243,6 +247,17 @@ export default async function OrderDetailPage({
       )}
 
       {/* Status actions */}
+      <section className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
+        <h3 className="mb-4 text-xs font-semibold uppercase tracking-wider text-gray-400">Acceso a la academia</h3>
+        <p className="text-sm text-gray-700">{order.academiaEstado === "COMPLETADA" ? "Cursos entregados" :
+          order.academiaEstado === "PROCESANDO" ? "Inscripción en proceso" :
+          order.academiaEstado === "ERROR" ? "La inscripción necesita revisión" : "Pendiente de inscripción"}</p>
+        <p className="mt-2 text-sm text-gray-500">Intentos: {order.academiaIntentos}</p>
+        {order.academiaError && <p className="mt-2 text-sm text-red-600">{order.academiaError}</p>}
+        {order.academiaCompletadaAt && <p className="mt-2 text-sm text-gray-500">Confirmado el {dateFmt.format(order.academiaCompletadaAt)}</p>}
+        {["PAID", "FULFILLED"].includes(order.status) && order.academiaEstado !== "COMPLETADA" && <InscripcionAcademiaButton orderId={order.id} />}
+      </section>
+
       <section className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
         <h3 className="mb-4 text-xs font-semibold uppercase tracking-wider text-gray-400">
           Acciones

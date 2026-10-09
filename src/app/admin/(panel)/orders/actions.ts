@@ -3,7 +3,8 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { db } from "@/lib/db";
-import { requireSession } from "@/lib/auth/dal";
+import { requireSession, requireRole } from "@/lib/auth/dal";
+import { procesarInscripcionAcademia } from "@/lib/academia/inscripcion";
 import type { OrderActor } from "@/lib/orders/audit";
 import { ORDER_STATUSES, ORDER_STATUS_TRANSITIONS } from "./_lib/status";
 import type { OrderStatus } from "@/generated/prisma/client";
@@ -65,14 +66,19 @@ export async function updateOrderStatus(
   if (!ORDER_STATUS_TRANSITIONS[order.status]?.includes(nextStatus)) {
     return { error: "La transición de estado no está permitida." };
   }
+  if (nextStatus === "FULFILLED") {
+    const resultado = await procesarInscripcionAcademia(parsed.data.id);
+    refreshOrder(parsed.data.id);
+    return resultado;
+  }
   const cleanReason = failureReason?.trim().slice(0, 2_000) || null;
   if (nextStatus === "FAILED" && !cleanReason) {
     return { error: "Indica el motivo por el que el pago falló." };
   }
   const isPaidState = PAID_STATES.includes(nextStatus);
-  await db.$transaction(async (tx) => {
-    await tx.order.update({
-      where: { id: parsed.data.id },
+  const applied = await db.$transaction(async (tx) => {
+    const updated = await tx.order.updateMany({
+      where: { id: parsed.data.id, status: order.status, deletedAt: null },
       data: {
         status: parsed.data.status as never,
         // Stamp on first entry to a paid state; preserve it while paid; clear
@@ -81,6 +87,7 @@ export async function updateOrderStatus(
         ...(nextStatus === "FAILED" ? { failureReason: cleanReason } : {}),
       },
     });
+    if (!updated.count) return false;
     await tx.orderEvent.create({
       data: {
         orderId: parsed.data.id,
@@ -94,10 +101,22 @@ export async function updateOrderStatus(
         actorName: actor.name,
       },
     });
+    return true;
   });
 
+  if (!applied) return { error: "El pedido cambió mientras lo editabas. Actualizá la página." };
+
+  if (nextStatus === "PAID") await procesarInscripcionAcademia(parsed.data.id);
   refreshOrder(parsed.data.id);
   return {};
+}
+
+export async function reintentarInscripcionAcademia(id: string): Promise<{ error?: string }> {
+  await requireRole("ADMIN", "SUPERADMIN");
+  if (!z.string().min(1).max(191).safeParse(id).success) return { error: "Pedido inválido." };
+  const result = await procesarInscripcionAcademia(id);
+  refreshOrder(id);
+  return result;
 }
 
 /** Add an immutable internal note to the order timeline. */

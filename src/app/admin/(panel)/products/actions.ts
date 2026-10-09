@@ -20,7 +20,7 @@ const productSchema = z.object({
     .transform((v) => (v === "" ? null : v))
     .nullable(),
   description: z.string().max(5000).default(""),
-  academyId: z.string().trim().min(1, "El ID academia es requerido").max(100),
+  academyId: z.string().trim().min(1, "Los slugs de academia son requeridos").max(191),
   categoryId: z
     .string()
     .trim()

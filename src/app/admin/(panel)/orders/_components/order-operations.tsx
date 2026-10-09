@@ -2,7 +2,23 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { addOrderNote, archiveOrder } from "../actions";
+import { addOrderNote, archiveOrder, reintentarInscripcionAcademia } from "../actions";
+
+export function InscripcionAcademiaButton({ orderId }: { orderId: string }) {
+  const router = useRouter();
+  const [pending, startTransition] = useTransition();
+  const [error, setError] = useState<string>();
+  return <div className="mt-4">
+    <button type="button" disabled={pending} className="rounded-lg border border-blue-200 px-4 py-2 text-sm font-medium text-blue-700 disabled:opacity-50"
+      onClick={() => startTransition(async () => {
+        setError(undefined);
+        try { const result = await reintentarInscripcionAcademia(orderId); setError(result.error); }
+        catch { setError("No se pudo procesar la inscripción. Intentá nuevamente."); }
+        router.refresh();
+      })}>{pending ? "Inscribiendo…" : "Inscribir / reintentar en la academia"}</button>
+    {error && <p role="alert" className="mt-2 text-sm text-red-600">{error}</p>}
+  </div>;
+}
 
 export function OrderNotesForm({ orderId }: { orderId: string }) {
   const [body, setBody] = useState("");

@@ -11,12 +11,23 @@ test("checkout y administración con MySQL real, sin conservar datos de prueba",
   const load = createRequire(import.meta.url);
   load("tsx/cjs");
   load("dotenv").config({ quiet: true });
-  let scopedDb;
+  const { z } = load("zod");
+  let scopedDb, inscripciones = 0;
   const originalLoad = Module._load;
   const redirect = (url) => { throw new Error(`TEST_REDIRECT:${url}`); };
   Module._load = function(request, ...args) {
     if (request === "server-only") return {};
     if (request === "@/lib/db") return { db: new Proxy({}, { get: (_, key) => scopedDb[key] }) };
+    if (request === "@/lib/academia/api" || (request === "./api" && args[0]?.filename.includes("academia"))) return {
+      cursosAcademia: (values) => [...new Set(values.flatMap((value) => value.split(",").map((slug) => slug.trim()).filter(Boolean)))],
+      tieneAccesoAcademia: async () => false,
+      solicitudAcademiaSchema: z.object({ email: z.email(), firstName: z.string(), lastName: z.string(), courseSlugs: z.array(z.string()).min(1) }),
+      inscribirAcademia: async (datos) => {
+        assert.deepEqual(datos.courseSlugs, ["qa-principal", "qa-adicional"]);
+        inscripciones++;
+        return { usuarioCreado: false, cursos: datos.courseSlugs };
+      },
+    };
     if (request === "next/navigation") return { redirect };
     if (request === "next/cache") return { revalidatePath() {}, unstable_cache: (fn) => fn };
     if (request === "@/lib/auth/dal") return { requireRole: async () => ({ role: "ADMIN" }) };
@@ -25,6 +36,7 @@ test("checkout y administración con MySQL real, sin conservar datos de prueba",
   };
   const { db } = load("../src/lib/db.ts");
   const { placeOrder, previewCoupon } = load("../src/app/(public)/checkout/actions.ts");
+  const { procesarInscripcionAcademia } = load("../src/lib/academia/inscripcion.ts");
   const { getCheckoutOffers } = load("../src/lib/order-bumps.ts");
   const { saveOffer } = load("../src/app/admin/(panel)/order-bumps/actions.ts");
   const { getReportMetrics } = load("../src/app/admin/(panel)/reportes/_lib/metrics.ts");
@@ -42,9 +54,9 @@ test("checkout y administración con MySQL real, sin conservar datos de prueba",
       } });
       const currency = await tx.currency.findFirstOrThrow({ where: { enabled: true, code: "EUR" } });
       const main = await tx.product.create({ data: { name: `QA principal ${marker}`, landingSlug: `qa-main-${marker}`,
-        description: "", visible: true, prices: { create: { currencyId: currency.id, amount: "199.99" } } } });
+        description: "", academyId: "qa-principal", visible: true, prices: { create: { currencyId: currency.id, amount: "199.99" } } } });
       const extra = await tx.product.create({ data: { name: `QA adicional ${marker}`, landingSlug: `qa-extra-${marker}`,
-        description: "", visible: true } });
+        description: "", academyId: "qa-adicional", visible: true } });
       const gateway = await tx.paymentGateway.create({ data: { provider: "manual", name: "QA sin cobro", config: "{}", live: false,
         currencies: { create: { currencyId: currency.id } } } });
       const offer = await tx.ofertaCheckout.create({ data: { productoPrincipalId: main.id, productoOfrecidoId: extra.id,
@@ -120,6 +132,14 @@ test("checkout y administración con MySQL real, sin conservar datos de prueba",
       const history = await tx.orderItem.findUniqueOrThrow({ where: { id: bump.id } });
       assert.equal(history.ofertaId, null); assert.equal(history.productName, extra.name);
       assert.equal(history.unitPrice.toString(), "33");
+      await tx.product.update({ where: { id: main.id }, data: { academyId: "modificado-despues" } });
+      assert.deepEqual(await procesarInscripcionAcademia(order.id), {});
+      assert.equal((await tx.order.findUniqueOrThrow({ where: { id: order.id } })).status, "FULFILLED");
+      const entrega = await tx.order.findUniqueOrThrow({ where: { id: order.id } });
+      assert.equal(entrega.academiaEstado, "COMPLETADA");
+      assert.deepEqual(JSON.parse(entrega.academiaSolicitud).courseSlugs, ["qa-principal", "qa-adicional"]);
+      assert.deepEqual(await procesarInscripcionAcademia(order.id), {});
+      assert.equal(inscripciones, 1);
       throw rollback;
     }, { timeout: 30_000 }), (error) => error === rollback);
     assert.equal(await db.customer.count({ where: { email } }), 0);

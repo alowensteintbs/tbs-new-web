@@ -16,6 +16,8 @@ import { COUNTRIES } from "@/lib/countries";
 import { validateCoupon, normalizeCode } from "@/lib/coupons";
 import { getCheckoutOffers, resolveOrderBumps, type CheckoutOffer } from "@/lib/order-bumps";
 import { sendOrderStatusEmail } from "@/lib/email/notify";
+import { cursosAcademia, tieneAccesoAcademia } from "@/lib/academia/api";
+import { procesarInscripcionAcademia } from "@/lib/academia/inscripcion";
 import { getAdapter } from "@/lib/payments";
 import {
   formatOrderNumber,
@@ -289,6 +291,7 @@ export async function placeOrder(
         id: true,
         name: true,
         sku: true,
+        academyId: true,
         visible: true,
         prices: {
           where: { currencyId: input.currencyId },
@@ -317,6 +320,21 @@ export async function placeOrder(
   if (!currency) return { error: "La moneda ya no está disponible." };
   const bumps = await resolveOrderBumps(product.id, input.currencyId, input.ofertaIds);
   if (!bumps.ok) return { fieldErrors: { ofertaIds: [bumps.error] } };
+  const academyIds = [product.academyId, ...bumps.academyIds];
+  if (academyIds.some((ids) => cursosAcademia([ids]).length === 0)) {
+    return { error: "Uno de los cursos no tiene configurado el acceso a la academia. Contactá con soporte." };
+  }
+  const cursos = cursosAcademia(academyIds);
+  // Como el plugin anterior, una caída de la consulta no bloquea el pago.
+  // No se ofrece una acción pública que permita consultar cualquier email.
+  if (process.env.TBS_ACADEMY_API_KEY) {
+    for (let i = 0; i < cursos.length; i += 4) {
+      const accesos = await Promise.allSettled(cursos.slice(i, i + 4).map((slug) => tieneAccesoAcademia(input.email, slug)));
+      if (accesos.some((result) => result.status === "fulfilled" && result.value)) {
+        return { error: "Ya tenés acceso a uno de los cursos seleccionados. Revisá la compra o contactá con soporte." };
+      }
+    }
+  }
 
   const allowedCountries = (currency?.countryCodes ?? "")
     .split(",")
@@ -399,6 +417,9 @@ export async function placeOrder(
         total,
         status: isFree ? "PAID" : "PENDING",
         paidAt: isFree ? new Date() : null,
+        academiaSolicitud: JSON.stringify({
+          email: input.email, firstName: input.name, lastName: input.surname, courseSlugs: cursos,
+        }),
         events: {
           create: {
             type: "ORDER_CREATED",
@@ -441,6 +462,7 @@ export async function placeOrder(
   // created PAID above — send the receipt and go straight to the status page.
   if (isFree) {
     await sendOrderStatusEmail(order.id, "PAID");
+    await procesarInscripcionAcademia(order.id);
     redirect(`/orders/${order.id}?paid=1`);
   }
 

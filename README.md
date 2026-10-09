@@ -1,5 +1,40 @@
 Proyecto Next.JS nueva WEB
 
+## Inscripción en TBS Academy
+
+Configurar únicamente en el servidor (también en producción de Vercel):
+
+```dotenv
+TBS_ACADEMY_API_URL=https://academia.tradersbusinessschool.com/api/woocommerce/enroll
+TBS_ACADEMY_API_KEY=tu_clave_privada
+```
+
+Antes de desplegar, aplicar las migraciones con `npx prisma migrate deploy`
+usando la conexión de producción. La migración `20261009120000_inscripcion_academia`
+forma parte del historial aplicado. La migración `20261009150000_academia_en_pedido`
+traslada el seguimiento y la instantánea de entrega a `Order` y retira la tabla
+auxiliar anterior después de copiar sus datos. El historial se guarda en
+`OrderEvent`; no se mantiene una tabla adicional de alumnos ni inscripciones.
+No ejecutar `migrate reset` ni `migrate dev` contra producción.
+
+En cada producto, guardar los slugs reales de los cursos separados por comas.
+Al comprar se guardan los cursos y los datos del comprador como instantánea.
+Webhooks de pago, confirmaciones de transferencia y pedidos gratuitos disparan
+la inscripción. Solo se marca `FULFILLED` cuando todos los cursos están confirmados.
+Un fallo mantiene el pago confirmado y queda visible en el pedido, con botón de
+reintento. Un bloqueo temporal evita llamadas simultáneas; pedidos completados
+no vuelven a llamar a la API. Tras una respuesta parcial o timeout, la API debe
+aceptar cursos ya otorgados con estado `already_enrolled`, como contempla el plugin.
+No hay reintentos automáticos programados: el admin puede reintentar y también
+se reintenta ante otra notificación válida de pago. No se guardan contraseñas
+temporales ni respuestas completas de la academia.
+
+La comprobación de acceso anterior al pago consulta todos los cursos seleccionados.
+Si esa consulta falla, se permite continuar, igual que en el plugin anterior.
+El endpoint utilizado y el esquema de respuestas se toman del plugin WordPress;
+validar con un pedido de prueba antes de habilitarlo en producción. Reembolsar
+un pedido no revoca accesos: el plugin no define una API para esa operación.
+
 ## Calendly
 
 Las agendas públicas consultan disponibilidad y crean reservas mediante la API

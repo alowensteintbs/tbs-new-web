@@ -6,13 +6,13 @@ const load = createRequire(import.meta.url);
 load("tsx/cjs");
 const { Prisma } = load("../src/generated/prisma/client.ts");
 const decimal = (value) => new Prisma.Decimal(value);
-let fixture, created, payable, customerWrites;
+let fixture, created, payable, customerWrites, inscripciones;
 const currency = { id: "eur", code: "EUR", name: "Euro", symbol: "€", countryCodes: "ES", enabled: true };
-const product = { id: "main", name: "Curso principal", sku: "MAIN", visible: true, prices: [{ amount: decimal("199.99") }] };
+const product = { id: "main", name: "Curso principal", academyId: "curso-principal", sku: "MAIN", visible: true, prices: [{ amount: decimal("199.99") }] };
 function makeOffer(id = "offer-1", amount = "33.00") {
   return { id, titulo: "Añade otra formación", descripcion: "", activo: true,
     productoPrincipalId: "main", productoOfrecidoId: `extra-${id}`,
-    productoOfrecido: { id: `extra-${id}`, name: `Adicional ${id}`, sku: "EXTRA", visible: true },
+    productoOfrecido: { id: `extra-${id}`, name: `Adicional ${id}`, academyId: "curso-adicional", sku: "EXTRA", visible: true },
     prices: [{ amount: decimal(amount) }],
   };
 }
@@ -47,6 +47,7 @@ const db = {
 const originalLoad = Module._load;
 Module._load = function(request, ...args) {
   if (request === "server-only") return {};
+  if (request === "@/lib/academia/inscripcion") return { procesarInscripcionAcademia: async () => { inscripciones++; return {}; } };
   if (request === "@/lib/db") return { db };
   if (request === "@/lib/env") return { getSiteUrl: () => "https://shop.example.com" };
   if (request === "@/lib/payments/checkout") return {
@@ -65,7 +66,7 @@ Module._load = originalLoad;
 
 beforeEach(() => {
   fixture = { currency: { ...currency }, product: { ...product }, offers: [makeOffer()], coupon: null, couponUses: 0 };
-  created = undefined; payable = undefined; customerWrites = 0;
+  created = undefined; payable = undefined; customerWrites = 0; inscripciones = 0;
 });
 function form(ids = []) {
   const data = new FormData();
@@ -87,6 +88,51 @@ test("sin ofertas mantiene una sola línea y el precio original", async () => {
   assert.equal(created.items.create.length, 1);
   assert.equal(created.total.toString(), "199.99");
   assert.equal(created.items.create[0].origen, "PRINCIPAL");
+});
+
+test("guarda los slugs del pack y los adicionales sin duplicados junto al comprador", async () => {
+  fixture.product.academyId = "curso-principal,curso-adicional";
+  await placeOrder({}, form(["offer-1"]));
+  const snapshot = JSON.parse(created.academiaSolicitud);
+  assert.deepEqual(snapshot.courseSlugs, ["curso-principal", "curso-adicional"]);
+  assert.equal(snapshot.email, "buyer@example.com");
+  assert.equal(snapshot.firstName, "Ada");
+  assert.equal(inscripciones, 0);
+});
+
+test("no cobra productos sin cursos configurados", async () => {
+  fixture.offers[0].productoOfrecido.academyId = "";
+  assert.ok((await placeOrder({}, form(["offer-1"]))).error);
+  assert.equal(customerWrites, 0);
+});
+
+test("un pedido gratuito también dispara la inscripción", async () => {
+  coupon(100);
+  const data = form(); data.set("couponCode", "TEST");
+  await assert.rejects(placeOrder({}, data), /NEXT_REDIRECT/);
+  assert.equal(created.status, "PAID");
+  assert.equal(inscripciones, 1);
+});
+
+test("comprador con acceso a un curso adicional no inicia otra compra", async () => {
+  const oldFetch = global.fetch;
+  const oldKey = process.env.TBS_ACADEMY_API_KEY;
+  const oldUrl = process.env.TBS_ACADEMY_API_URL;
+  try {
+    process.env.TBS_ACADEMY_API_KEY = "clave-de-prueba";
+    process.env.TBS_ACADEMY_API_URL = "https://academia.example.com/enroll";
+    global.fetch = async (url) => Response.json({ hasAccess: new URL(url).searchParams.get("courseSlug") === "curso-adicional" });
+    assert.match((await placeOrder({}, form(["offer-1"]))).error, /Ya tenés acceso/);
+    assert.equal(customerWrites, 0);
+    assert.equal(created, undefined);
+    global.fetch = async () => { throw new Error("Servicio sin conexión"); };
+    await placeOrder({}, form(["offer-1"]));
+    assert.equal(created.status, "PENDING");
+  } finally {
+    global.fetch = oldFetch;
+    if (oldKey === undefined) delete process.env.TBS_ACADEMY_API_KEY; else process.env.TBS_ACADEMY_API_KEY = oldKey;
+    if (oldUrl === undefined) delete process.env.TBS_ACADEMY_API_URL; else process.env.TBS_ACADEMY_API_URL = oldUrl;
+  }
 });
 test("usa el precio especial del servidor e ignora importes manipulados", async () => {
   const data = form(["offer-1"]);

@@ -47,7 +47,7 @@ export async function resolveOrderBumps(productId: string, currencyId: string, i
     orderBy: [{ posicion: "asc" }, { id: "asc" }],
     select: {
       id: true,
-      productoOfrecido: { select: { id: true, name: true, sku: true } },
+      productoOfrecido: { select: { id: true, name: true, sku: true, academyId: true } },
       prices: { where: { currencyId }, select: { amount: true } },
     },
   }) : [];
@@ -64,5 +64,5 @@ export async function resolveOrderBumps(productId: string, currencyId: string, i
     ofertaId: offer.id,
     origen: "ORDER_BUMP" as const,
   }));
-  return { ok: true as const, items, subtotal: items.reduce((sum, item) => sum.plus(item.unitPrice), new Prisma.Decimal(0)) };
+  return { ok: true as const, items, academyIds: offers.map((offer) => offer.productoOfrecido.academyId), subtotal: items.reduce((sum, item) => sum.plus(item.unitPrice), new Prisma.Decimal(0)) };
 }

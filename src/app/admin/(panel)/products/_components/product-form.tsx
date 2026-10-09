@@ -120,10 +120,10 @@ export function ProductForm({
       </div>
 
       <Field
-        label="ID academia"
+        label="Slug(s) de cursos en la academia"
         name="academyId"
         defaultValue={initialValues?.academyId}
-        placeholder="Identificador en la academia"
+        placeholder="trading-avanzado,finanzas-personales"
         errors={state.fieldErrors?.academyId}
         required
       />

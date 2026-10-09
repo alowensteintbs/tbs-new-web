@@ -275,6 +275,14 @@ model Order {
   items          OrderItem[]
   notes          OrderNote[]
   events         OrderEvent[]
+  // Entrega a la academia, asociada al pedido; historial en OrderEvent.
+  academiaEstado String          @default("PENDIENTE")
+  academiaSolicitud String?      @db.Text
+  academiaIntentos Int           @default(0)
+  academiaToken String?
+  academiaBloqueoHasta DateTime?
+  academiaError String?          @db.Text
+  academiaCompletadaAt DateTime?
 
   @@index([customerId])
   @@index([status])
