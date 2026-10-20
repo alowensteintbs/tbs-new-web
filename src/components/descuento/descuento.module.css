@@ -1,0 +1,505 @@
+.pagina {
+  padding-bottom: 0;
+}
+
+.contenedor {
+  width: min(1200px, calc(100% - 48px));
+  margin-inline: auto;
+}
+
+/* Cabecera reducida: sin navegación para no sacar al usuario del embudo. */
+.cabecera {
+  position: absolute;
+  inset: 0 0 auto;
+  z-index: 10;
+  padding-top: 58px;
+}
+
+.cabecera > div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.lema {
+  font-size: 10px;
+}
+
+/* Hero */
+.hero {
+  position: relative;
+  overflow: hidden;
+  padding-block: 196px 160px;
+}
+
+.hero::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: -260px;
+  width: 1100px;
+  height: 460px;
+  translate: -50% 0;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgb(17 224 127 / 55%), rgb(17 224 127 / 18%) 55%, transparent);
+  filter: blur(30px);
+  pointer-events: none;
+}
+
+.heroGrid {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 566px;
+  gap: 40px;
+  align-items: center;
+}
+
+.titulo {
+  margin-top: 16px;
+  color: #f7f7f7;
+  font-family: var(--font-space-grotesk), sans-serif;
+  font-size: 88px;
+  font-weight: 700;
+  line-height: 0.95;
+  letter-spacing: -0.035em;
+}
+
+.titulo span {
+  display: block;
+}
+
+.pruebaSocial {
+  margin-top: 54px;
+}
+
+@media (min-width: 1280px) {
+  .pruebaSocial > div {
+    justify-content: flex-start;
+  }
+}
+
+/* Figma: valoraciones antes que el número de alumnos también en escritorio. */
+.pruebaSocial > div > div:first-child {
+  order: 2;
+}
+
+.pruebaSocial > div > div:last-child {
+  order: 1;
+}
+
+.cuentaAtras {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 15px;
+  padding: 17px 17px 14px;
+  border: 1.5px solid rgb(146 241 196 / 55%);
+  border-radius: 16px;
+  background: rgb(17 224 127 / 9%);
+  backdrop-filter: blur(4px);
+}
+
+.bloqueTiempo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.digitos {
+  position: relative;
+  display: grid;
+  width: 100%;
+  aspect-ratio: 167 / 177;
+  place-items: center;
+  overflow: hidden;
+  border-radius: 10px;
+  background: #141416;
+  box-shadow: 0 4px 0 rgb(0 0 0 / 35%);
+  color: #d4d4d8;
+  font-family: var(--font-space-grotesk), sans-serif;
+  font-size: 112px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  letter-spacing: -0.04em;
+}
+
+/* Pliegue del reloj de paletas. */
+.digitos::after {
+  content: "";
+  position: absolute;
+  inset: 50% 0 auto;
+  height: 3px;
+  translate: 0 -50%;
+  background: #141416;
+}
+
+.etiquetaTiempo {
+  color: #92f1c4;
+  font-family: var(--font-space-grotesk), sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+/* Comparativa Curso vs Pack premium */
+.comparativa {
+  position: relative;
+  z-index: 1;
+  margin-inline: 10px;
+  padding-block: 120px 60px;
+  border-radius: 36px;
+  color: #1f1e23;
+}
+
+.tituloComparativa {
+  margin-top: 28px;
+  font-family: var(--font-space-grotesk), sans-serif;
+  font-size: 42px;
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+
+.opciones {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 30px;
+}
+
+.opcion {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  border-radius: 24px;
+  background: #e4e4e7;
+  box-shadow: 0 10px 24px rgb(31 30 35 / 10%);
+}
+
+.opcionPremium {
+  background: #b0d0ff;
+}
+
+.panel {
+  flex: 1;
+  padding: 36px 36px 40px;
+  border: 2px solid transparent;
+  border-radius: 24px;
+  background: #f0f0f0;
+  box-shadow: 0 6px 18px rgb(31 30 35 / 12%);
+}
+
+.opcionPremium .panel {
+  border-color: #0066ff;
+}
+
+.nombreOpcion {
+  font-family: var(--font-space-grotesk), sans-serif;
+  font-size: 56px;
+  font-weight: 700;
+  line-height: 0.82;
+  letter-spacing: -0.02em;
+}
+
+.nombreOpcion em {
+  color: #0055d6;
+  font-family: var(--font-playfair-display), serif;
+  font-weight: 400;
+  letter-spacing: -0.04em;
+}
+
+.descripcion {
+  max-width: 480px;
+  margin-top: 24px;
+  font-family: var(--font-space-grotesk), sans-serif;
+  font-size: 17px;
+  line-height: 1.1;
+}
+
+.incluye {
+  display: grid;
+  gap: 4px;
+  margin-top: 22px;
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 22px;
+}
+
+.incluye li::before {
+  content: "→ ";
+}
+
+.ventajas {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 22px;
+}
+
+.ventajas li {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-height: 105px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  background: #e2e2e4;
+  color: #4b4b52;
+  font-size: 13px;
+  line-height: 16px;
+}
+
+.ventajas svg {
+  flex: 0 0 auto;
+  color: #1f1e23;
+}
+
+.ventajas strong {
+  color: #1f1e23;
+}
+
+.certificacion {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 54px;
+  margin-top: 22px;
+  padding: 8px 12px;
+  border-radius: 12px;
+  background: #ffbe0a;
+}
+
+.certificacion p {
+  font-family: var(--font-space-grotesk), sans-serif;
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.certificacion em {
+  font-family: var(--font-playfair-display), serif;
+  font-weight: 400;
+}
+
+.bonus {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  margin-top: 22px;
+  color: #0066ff;
+  font-family: var(--font-space-grotesk), sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.bonus::before,
+.bonus::after {
+  content: "";
+  flex: 1 1 80px;
+  height: 2px;
+  background: currentColor;
+}
+
+.bonus span {
+  flex: 0 0 auto;
+}
+
+.bonusLista {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 18px;
+}
+
+.bonusLista li {
+  display: grid;
+  place-items: center;
+  min-height: 66px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  background: #e2e2e4;
+  color: #0066ff;
+  font-family: var(--font-space-grotesk), sans-serif;
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1.1;
+  text-align: center;
+}
+
+.bonusLista strong {
+  font-size: 1.15em;
+  white-space: nowrap;
+}
+
+.precio {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 30px 32px;
+  text-align: center;
+}
+
+.importe {
+  display: flex;
+  align-items: center;
+  gap: 22px;
+}
+
+.importe strong {
+  font-family: var(--font-space-grotesk), sans-serif;
+  font-size: 76px;
+  font-weight: 700;
+  line-height: 0.9;
+  letter-spacing: -0.05em;
+}
+
+.importe div {
+  display: grid;
+  gap: 6px;
+}
+
+.importe span {
+  padding: 2px 8px;
+  border-radius: 6px;
+  background: #f0f0f0;
+  font-family: var(--font-space-grotesk), sans-serif;
+  font-size: 15px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.opcionPremium .importe span {
+  background: #8ab8ff;
+}
+
+.precio p {
+  margin-top: 14px;
+  font-family: var(--font-space-grotesk), sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.inscribirme {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 38px;
+  margin-top: 32px;
+  padding: 6px 20px;
+  border-radius: 999px;
+  background: #0066ff;
+  color: #fff;
+  font-size: 20px;
+  font-weight: 600;
+  transition: background-color 0.2s;
+}
+
+.inscribirme:hover {
+  background: #0055d6;
+}
+
+@media (max-width: 1100px) {
+  .heroGrid {
+    grid-template-columns: 1fr;
+    gap: 48px;
+  }
+
+  .cuentaAtras {
+    max-width: 566px;
+  }
+}
+
+@media (max-width: 900px) {
+  .contenedor {
+    width: min(100% - 32px, 600px);
+  }
+
+  .cabecera {
+    padding-top: 24px;
+  }
+
+  .hero {
+    padding-block: 120px 110px;
+  }
+
+  .titulo {
+    font-size: clamp(52px, 15vw, 80px);
+  }
+
+  .pruebaSocial {
+    margin-top: 36px;
+  }
+
+  .digitos {
+    font-size: clamp(48px, 17vw, 112px);
+  }
+
+  .comparativa {
+    margin-inline: 0;
+    padding-block: 72px 48px;
+    border-radius: 28px;
+  }
+
+  .tituloComparativa {
+    font-size: clamp(30px, 8vw, 42px);
+  }
+
+  .opciones {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
+  .panel {
+    padding: 24px 20px 28px;
+  }
+
+  .nombreOpcion {
+    font-size: 48px;
+  }
+
+  .precio {
+    padding: 24px 20px;
+  }
+}
+
+@media (max-width: 560px) {
+  .lema {
+    display: none;
+  }
+
+  .ventajas {
+    grid-template-columns: 1fr;
+  }
+
+  .ventajas li {
+    flex-direction: row;
+    align-items: center;
+    min-height: 0;
+  }
+
+  .bonusLista {
+    grid-template-columns: 1fr;
+  }
+
+  .bonusLista li {
+    font-size: 18px;
+  }
+
+  .certificacion p {
+    font-size: 17px;
+  }
+
+  /* "Criptomonedas" no cabe a 48px en 390px de ancho. */
+  .nombreOpcion {
+    font-size: clamp(32px, 9.5vw, 48px);
+  }
+
+  .importe strong {
+    font-size: 64px;
+  }
+}
